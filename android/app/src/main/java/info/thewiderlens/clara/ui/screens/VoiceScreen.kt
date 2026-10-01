@@ -131,7 +131,7 @@ fun VoiceScreen(
         val before = waitingSince ?: return@LaunchedEffect
         val reply = state.messages.lastOrNull { it.role == "assistant" && it.id !in before } ?: return@LaunchedEffect
         waitingSince = null
-        splitter.feed(reply.content.trim(), final = true).forEach(session::say)
+        splitter.finish(reply.content.trim()).forEach(session::say)
         session.finishReply()
     }
 

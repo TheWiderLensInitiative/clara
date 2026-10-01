@@ -232,6 +232,7 @@ class VoiceSession(
 /** Splits a reply into speakable sentences as it streams in. */
 class SentenceSplitter {
     private var spoken = 0
+    private val said = StringBuilder()   // everything spoken for this reply, normalized, so the final text isn't read twice
     private val boundary = Regex("""(?<=[.!?…])["')\]]*\s+|\n{2,}""")
 
     /** New complete sentences in [text] (the reply so far); keeps short fragments together so speech flows. */
@@ -255,8 +256,39 @@ class SentenceSplitter {
         }
         if (chunk.isNotBlank()) out += chunk.toString().trim()
         spoken += consumed
-        return out.filter { it.any(Char::isLetterOrDigit) }
+        return emit(out)
     }
 
-    fun reset() { spoken = 0 }
+    /**
+     * The finished reply. While a task runs, its text streams in pieces and is spoken as it goes; the final message can
+     * differ slightly (e.g. "Got it. Here's…" instead of "Here's…"), so only sentences not already said are spoken.
+     */
+    fun finish(text: String): List<String> {
+        if (said.isEmpty()) return feed(text, final = true)
+        spoken = 0
+        val fresh = text.split(boundary).map { it.trim() }.filter { s -> norm(s).let { it.isNotEmpty() && !said.contains(it) } }
+        if (fresh.sumOf { it.length } < 40) return emptyList()   // only filler like "Got it." is new: the reply was already said
+        val out = mutableListOf<String>()
+        var chunk = ""
+        for (s in fresh) {
+            chunk = (chunk + " " + s).trim()
+            if (chunk.length >= 25) { out += chunk; chunk = "" }
+        }
+        if (chunk.isNotBlank()) out += chunk
+        return emit(out)
+    }
+
+    fun reset() { spoken = 0; said.setLength(0) }
+
+    private fun emit(parts: List<String>): List<String> =
+        parts.map(::speakable).filter { it.any(Char::isLetterOrDigit) }.onEach { said.append(norm(it)) }
+
+    private fun norm(s: String) = speakable(s).lowercase().filter(Char::isLetterOrDigit)
 }
+
+/** What to say and show for a piece of reply text: no Markdown symbols, list dashes or line breaks. */
+fun speakable(text: String): String =
+    text.replace(Regex("""\*\*|__|`|(?m)^#+\s*"""), "")
+        .replace(Regex("""(?m)^\s*(?:[-•*]|\d+[.)])\s+"""), "")
+        .replace(Regex("""\s*\n\s*"""), " ")
+        .trim()
