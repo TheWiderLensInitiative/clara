@@ -130,10 +130,25 @@ async def _account(store, provider, tok=None) -> str:
         return PROVIDERS[provider]["name"]
 
 
+def _builtin_clients() -> dict:
+    """The Wider Lens's own sign-in apps (bridge/builtin_clients.json), so people connect in one tap without a developer
+    console. Desktop-app clients: Google treats their secret as not confidential; users still approve on the service's
+    own screen, with PKCE, from their own PC."""
+    try:
+        return json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "builtin_clients.json")))
+    except (OSError, ValueError):
+        return {}
+
+
+def builtin_client(provider):
+    return _builtin_clients().get(provider)
+
+
 def get_client(store, provider):
+    """The user's own app if they set one up, otherwise Clara's built-in one (if this service has it)."""
     row = store.connector(provider)
     if not row or not row.get("client"):
-        return None
+        return builtin_client(provider)
     return json.loads(broker.unseal(row["client"]))
 
 
