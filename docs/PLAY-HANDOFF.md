@@ -84,9 +84,9 @@ bottom of that file); rerun it after recording new clips.
 
 - **W1. Privacy policy page** at `https://clara.thewiderlens.info/privacy`, made from `docs/PRIVACY.md` (keep it in step
   with that file). Then use that URL in Play Console instead of the GitHub link.
-- **W2. Join the beta.** Play usually requires a closed test with about 12 testers for 14 days before production. Add a
-  page explaining how to join: a Google Group the owner creates, added as the closed track's tester list, and the
-  opt-in link Play Console shows for the track.
+- **W2. Join the beta.** Done: https://clara.thewiderlens.info/beta. Testers join the Google Group
+  **clara-beta-testers@googlegroups.com** (https://groups.google.com/g/clara-beta-testers). In Play Console, add that
+  group as the closed testing track's tester list, then put Play's opt-in link on the beta page and email it to the group.
 - **W3. Download section**: keep the GitHub link (`https://github.com/TheWiderLensInitiative/clara/releases/latest`)
   and add the official "Get it on Google Play" badge only once the app is public.
 - **W4. Contact**: clara@thewiderlens.info, on Play (store listing contact email), the site, and the privacy policy.
@@ -95,4 +95,4 @@ bottom of that file); rerun it after recording new clips.
 
 - ~~Public developer name~~ Decided: the app is credited as **"Created by DevIgnite × The Wider Lens Initiative Project"** (store description, README, video end cards). The Play developer account stays DevIgnite; the license's copyright holder stays The Wider Lens Initiative Project.
 - ~~Public contact email~~ Decided: clara@thewiderlens.info (W4).
-- Who the ~12 beta testers are.
+- ~~Beta testers~~ Recruiting through the beta page and the Google Group (W2).
