@@ -1,0 +1,2 @@
+• The help card always shows when Clara needs you, and comes back if you reopen the app
+• Taking over her browser stays smooth when you turn your phone sideways
