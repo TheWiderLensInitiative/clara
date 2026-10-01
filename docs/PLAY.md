@@ -42,7 +42,7 @@ The upload key can be the same key. Build the bundle with
 | Category | Productivity |
 | Contact email | a public address for users (required) |
 | Website | https://clara.thewiderlens.info |
-| Privacy policy | https://github.com/TheWiderLensInitiative/clara/blob/main/docs/PRIVACY.md (or the website's copy) |
+| Privacy policy | https://clara.thewiderlens.info/privacy |
 
 ## 4. App content
 
@@ -75,7 +75,7 @@ The upload key can be the same key. Build the bundle with
 - Description: *"Clara keeps a live connection to the user's own computer, where their AI assistant runs, so replies,
   reminders and approval requests (e.g. 'Send this email?') arrive immediately, like a messaging app. The service runs
   only while the phone is paired and shows a persistent notification."*
-- Video: a short screen recording showing the notification and an approval request arriving with the app in the background.
+- Video: a short screen recording showing the notification and an approval request arriving with the app in the background: https://www.youtube.com/watch?v=dCXVuk1OnEs
 
 ### Instructions for reviewers (App access)
 
@@ -87,5 +87,5 @@ The upload key can be the same key. Build the bundle with
 ## 5. Release
 
 New personal developer accounts usually need a **closed test** first (Play Console shows the requirement, typically about 12
-testers for 14 days). Create the closed testing track, upload `app-release.aab`, add testers by email, and promote to
+testers for 14 days). Create the closed testing track, upload `Clara-1.2.0.aab`, add testers by email, and promote to
 production once Play allows it.
