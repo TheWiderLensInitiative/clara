@@ -74,6 +74,7 @@ platform_toolsets:
   - clara_vault
   - clara_connect
   - clara_cloud
+  - clara_guardian
   cli:
   - hermes-cli
 stt:

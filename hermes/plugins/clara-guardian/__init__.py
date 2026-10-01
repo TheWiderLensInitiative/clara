@@ -93,7 +93,48 @@ def _ask_phone(tool_name, args, message):
     return {"action": "block", "message": f"{reason} Don't retry it; find another way or report back that it needs their OK."}
 
 
+HELP_SCHEMA = {
+    "name": "ask_user_for_browser_help",
+    "description": (
+        "Ask the user to take over your browser from their phone when you're stuck on something only a person should do: a CAPTCHA "
+        "or 'are you human' check, a two-factor or SMS code, a sign-in your saved logins can't complete, a payment or consent step, "
+        "or a page you can't get past after trying. Their phone gets a notification; they take over, fix it, and hand it back. "
+        "This waits (up to 15 minutes) until they're done, then tells you. Afterwards take a fresh browser_snapshot: the page has "
+        "probably changed. Don't use it for things you can do yourself, and never ask them for a password in chat."),
+    "parameters": {"type": "object", "properties": {
+        "reason": {"type": "string", "description": "What you need them to do, short and specific, e.g. 'There's a CAPTCHA on the Amazon sign-in page'."},
+    }, "required": ["reason"]},
+}
+
+
+def handle_help(args, session_id=None, **_):
+    """Ask the phone for help via the Bridge, which waits until the user has taken over and handed back."""
+    global _seen_handback
+    import json
+    import urllib.request
+    reason = str((args or {}).get("reason", "")).strip()[:300] or "I'm stuck in the browser and need you for a moment."
+    body = json.dumps({"reason": reason, "conversation_id": session_id}).encode()
+    req = urllib.request.Request(os.environ.get("CLARA_BRIDGE_URL", "http://127.0.0.1:8700") + "/internal/help",
+                                 data=body, method="POST", headers={"Content-Type": "application/json",
+                                 "Authorization": "Bearer " + os.environ.get("CLARA_LINK_TOKEN", "")})
+    try:
+        with urllib.request.urlopen(req, timeout=16 * 60) as r:
+            result = json.loads(r.read()).get("result")
+    except Exception as e:
+        logger.warning("guardian: couldn't ask the phone for help: %s", e)
+        result = None
+    _seen_handback = _mtime(HANDBACK)   # this tool already tells Clara to look again; don't repeat it on her next step
+    if result == "handed_back":
+        return json.dumps({"success": True, "message": "The user took over your browser and has handed it back. Take a fresh "
+                                                       "browser_snapshot to see where things are now, then continue the task."})
+    if result == "busy":
+        return json.dumps({"success": False, "error": "The user is already in control of your browser; wait for them."})
+    return json.dumps({"success": False, "error": "The user didn't take over in time. Stop here and tell them what you need "
+                                                   "(they can take over from the Screen page later), or find another way."})
+
+
 def register(ctx) -> None:
     global _seen_handback
     _seen_handback = _mtime(HANDBACK)   # don't replay an old handback after a restart
     ctx.register_hook("pre_tool_call", _on_pre_tool_call)
+    ctx.register_tool(name="ask_user_for_browser_help", toolset="clara_guardian", schema=HELP_SCHEMA, handler=handle_help, emoji="🙋")

@@ -7,6 +7,7 @@ Run:  installed as the user service clara-bridge (see install.sh); by hand: pyth
 Pair: clara pair   (or: python bridge/pair.py)
 """
 import asyncio
+import secrets
 import shutil
 import datetime as dt
 import json
@@ -2656,6 +2657,9 @@ def _set_takeover(on: bool, who: str = ""):
         TAKEOVER_FILE.unlink(missing_ok=True)
         HANDBACK_FILE.write_text(str(time.time()))
         store.add_activity(None, None, "takeover.ended", None, "Control handed back to Clara")
+        for f in list(_help_waiters):   # Clara asked for this help: she can carry on now
+            if not f.done():
+                f.set_result(True)
     bus.publish("takeover", on=on)
 
 
@@ -2665,7 +2669,51 @@ class TakeoverIn(BaseModel):
 
 @app.get("/v1/screen/status")
 async def screen_status(dev=Depends(device)):
-    return {"takeover": _takeover_on()}
+    return {"takeover": _takeover_on(), "help": help_request}
+
+
+# Clara asking the user to take over her browser (CAPTCHA, 2FA code, a stuck sign-in…)
+help_request: Optional[dict] = None      # the open request, shown in the app until the user hands back
+_help_waiters: list = []                  # futures resolved when the user hands control back
+
+
+class HelpIn(BaseModel):
+    reason: str
+    conversation_id: Optional[str] = None
+
+
+@app.post("/internal/help")
+async def ask_for_help(body: HelpIn, ok=Depends(link)):
+    """Called by Clara's ask_user_for_browser_help tool. Notifies the phone, then waits for take over + hand back."""
+    global help_request
+    if _takeover_on():
+        return {"result": "busy"}
+    cid = body.conversation_id
+    if not cid or not store.get_conversation(cid):
+        row = store._all("SELECT id FROM conversations WHERE active_run IS NOT NULL ORDER BY updated DESC")
+        cid = row[0]["id"] if row else store.latest_conversation_id()
+    help_request = {"id": secrets.token_hex(6), "reason": body.reason.strip()[:300], "conversation_id": cid, "created": time.time()}
+    store.add_activity(cid, None, "help.requested", None, help_request["reason"])
+    bus.publish("help.requested", conversation_id=cid, help=help_request)
+    fut = asyncio.get_running_loop().create_future()
+    _help_waiters.append(fut)
+    try:
+        await asyncio.wait_for(fut, 15 * 60)
+        return {"result": "handed_back"}
+    except asyncio.TimeoutError:
+        return {"result": "timeout"}
+    finally:
+        if fut in _help_waiters:
+            _help_waiters.remove(fut)
+        if not _help_waiters:
+            _clear_help()
+
+
+def _clear_help():
+    global help_request
+    if help_request:
+        bus.publish("help.resolved", conversation_id=help_request["conversation_id"], id=help_request["id"])
+        help_request = None
 
 
 @app.post("/v1/screen/takeover")

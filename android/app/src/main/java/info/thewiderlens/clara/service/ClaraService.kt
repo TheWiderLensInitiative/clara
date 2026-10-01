@@ -37,6 +37,19 @@ class ClaraService : LifecycleService() {
             ClaraHub.events.collect { ev ->
                 when (ev) {
                     is ClaraEvent.ApprovalRequested -> notifyApproval(ev.approval)
+                    is ClaraEvent.HelpRequested -> post(
+                        ID_HELP,
+                        NotificationCompat.Builder(this@ClaraService, ClaraApp.CH_APPROVALS)
+                            .setSmallIcon(R.drawable.ic_stat_clara)
+                            .setContentTitle("Clara needs your help in her browser")
+                            .setContentText(ev.help.reason)
+                            .setStyle(NotificationCompat.BigTextStyle().bigText(ev.help.reason))
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .setContentIntent(openScreen(ev.help.conversationId))
+                            .setAutoCancel(true)
+                            .build(),
+                    )
+                    is ClaraEvent.HelpResolved -> NotificationManagerCompat.from(this@ClaraService).cancel(ID_HELP)
                     is ClaraEvent.ApprovalResolved -> cancelApprovals()
                     is ClaraEvent.Notification -> notifyReminder(ev.message)
                     is ClaraEvent.CloudRequest -> post(
@@ -89,6 +102,13 @@ class ClaraService : LifecycleService() {
         val i = Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         extra?.let { i.putExtra(MainActivity.EXTRA_CONVERSATION, it) }
         return PendingIntent.getActivity(this, extra.hashCode(), i, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    private fun openScreen(conversationId: String?): PendingIntent {
+        val i = Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            .putExtra(MainActivity.EXTRA_OPEN_SCREEN, true)
+        conversationId?.let { i.putExtra(MainActivity.EXTRA_CONVERSATION, it) }
+        return PendingIntent.getActivity(this, ID_HELP, i, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun serviceNotification(): Notification =
@@ -166,6 +186,7 @@ class ClaraService : LifecycleService() {
     companion object {
         const val ID_SERVICE = 1
         const val ID_APPROVAL_BASE = 100_000
+        const val ID_HELP = 99_000
 
         fun start(context: Context) {
             ContextCompat.startForegroundService(context, Intent(context, ClaraService::class.java))

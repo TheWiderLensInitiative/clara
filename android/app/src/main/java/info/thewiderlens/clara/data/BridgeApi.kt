@@ -249,6 +249,8 @@ class BridgeApi(val baseUrl: String, private val token: String?) {
             "cloud.resolved" -> ClaraEvent.CloudResolved(s("id"))
             "cloud.budget" -> ClaraEvent.BudgetSuggestion(json.decodeFromJsonElement(o["suggestion"]!!))
             "cloud.budget.resolved" -> ClaraEvent.BudgetResolved(s("id"))
+            "help.requested" -> ClaraEvent.HelpRequested(json.decodeFromJsonElement(o["help"]!!))
+            "help.resolved" -> ClaraEvent.HelpResolved(s("id"))
             else -> null
         }
     }

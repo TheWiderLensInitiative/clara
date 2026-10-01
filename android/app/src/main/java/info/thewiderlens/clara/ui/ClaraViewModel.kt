@@ -59,6 +59,7 @@ data class UiState(
     val memory: Memory = Memory(),
     val screenshot: ImageBitmap? = null,
     val showLive: Boolean = false,
+    val help: info.thewiderlens.clara.data.HelpRequest? = null,   // Clara needs the user in her browser
     val unreadNotifications: Int = 0,
     val error: String? = null,
     val busyPairing: Boolean = false,
@@ -414,6 +415,8 @@ class ClaraViewModel : ViewModel() {
                 // cloud sub-agent steps arrive already phrased, e.g. "☁️ Qwen: running pytest"
                 if (ev.conversationId == cur && ev.kind == "cloud.step" && ev.detail != null) _ui.update { it.copy(status = ev.detail) }
             }
+            is ClaraEvent.HelpRequested -> _ui.update { it.copy(help = ev.help, status = "Needs your help…") }
+            is ClaraEvent.HelpResolved -> _ui.update { if (it.help?.id == ev.id) it.copy(help = null) else it }
             is ClaraEvent.ScreenshotAvailable -> if (ev.conversationId == cur) _ui.update { it.copy(showLive = true) }  // Clara opened her browser: offer the live view
             is ClaraEvent.ApprovalRequested -> _ui.update { s ->
                 s.copy(pending = listOf(ev.approval) + s.pending.filterNot { it.id == ev.approval.id }, status = "Waiting for your OK…")
@@ -468,7 +471,7 @@ fun friendlyTool(tool: String?): String = when {
 /** The character's mood for the current conversation. */
 fun moodOf(s: UiState, celebrating: Boolean = false): Mood {
     if (s.link == Link.Offline) return Mood.Sleeping
-    if (s.pending.any { it.conversationId == s.conversationId } || s.vaultRequests.isNotEmpty() || s.apiRequests.isNotEmpty() || s.cloudRequests.isNotEmpty()) return Mood.Waiting
+    if (s.help != null || s.pending.any { it.conversationId == s.conversationId } || s.vaultRequests.isNotEmpty() || s.apiRequests.isNotEmpty() || s.cloudRequests.isNotEmpty()) return Mood.Waiting
     if (s.working) {
         if (s.streaming.isNotBlank()) return Mood.Talking
         return when (s.status) {

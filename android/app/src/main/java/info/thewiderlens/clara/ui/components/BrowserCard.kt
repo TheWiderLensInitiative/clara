@@ -146,3 +146,28 @@ private fun BrowserFrame(frame: ImageBitmap?, url: String, live: Boolean, onOpen
         }
     }
 }
+
+/** Clara is stuck in her browser and asked for the user (shown in the chat until they hand control back). */
+@Composable
+fun HelpCard(reason: String, onTakeOver: () -> Unit) {
+    val shape = RoundedCornerShape(20.dp)
+    Column(
+        Modifier.padding(vertical = 6.dp).fillMaxWidth().clip(shape).background(ClaraColors.Panel)
+            .border(1.5.dp, info.thewiderlens.clara.ui.theme.ClaraBrush.approval, shape).padding(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(8.dp).clip(CircleShape).background(ClaraColors.Magenta))
+            Spacer(Modifier.width(8.dp))
+            Text("Clara needs your help", style = MaterialTheme.typography.labelMedium, color = ClaraColors.Magenta)
+        }
+        Spacer(Modifier.padding(top = 8.dp))
+        Text(reason, style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.padding(top = 4.dp))
+        Text(
+            "Take over her browser, fix it, then tap Hand back. She's waiting and will carry on.",
+            style = MaterialTheme.typography.bodyMedium, color = ClaraColors.Muted,
+        )
+        Spacer(Modifier.padding(top = 12.dp))
+        GradientButton("Take over", modifier = Modifier.fillMaxWidth(), onClick = onTakeOver)
+    }
+}

@@ -108,6 +108,10 @@ data class JobList(val jobs: List<Job> = emptyList())
 @Serializable
 data class Memory(val user: String = "", val memory: String = "")
 
+/** Clara asking the user to take over her browser (CAPTCHA, 2FA code, a stuck sign-in…). */
+@Serializable
+data class HelpRequest(val id: String, val reason: String, @SerialName("conversation_id") val conversationId: String? = null)
+
 /** One event from the Bridge's live stream (GET /v1/events). */
 sealed interface ClaraEvent {
     data class Routed(val conversationId: String, val messageId: String, val route: String, val source: String) : ClaraEvent
@@ -127,6 +131,8 @@ sealed interface ClaraEvent {
     data class CloudResolved(val id: String) : ClaraEvent
     data class BudgetSuggestion(val suggestion: info.thewiderlens.clara.data.BudgetSuggestion) : ClaraEvent
     data class BudgetResolved(val id: String) : ClaraEvent
+    data class HelpRequested(val help: HelpRequest) : ClaraEvent
+    data class HelpResolved(val id: String) : ClaraEvent
     data class CharacterChanged(val style: info.thewiderlens.clara.ui.components.CharacterStyle) : ClaraEvent
     data object Connected : ClaraEvent
     data class Disconnected(val reason: String) : ClaraEvent

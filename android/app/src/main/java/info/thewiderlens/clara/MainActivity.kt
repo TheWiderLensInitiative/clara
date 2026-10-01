@@ -110,6 +110,7 @@ class MainActivity : FragmentActivity() {
 
     private fun handle(intent: Intent?) {
         intent?.getStringExtra(EXTRA_CONVERSATION)?.let { vm.openConversation(it) }
+        if (intent?.getBooleanExtra(EXTRA_OPEN_SCREEN, false) == true) openScreen.value = true
     }
 
     override fun onStart() { super.onStart(); ClaraHub.appVisible = true }
@@ -128,6 +129,8 @@ class MainActivity : FragmentActivity() {
 
     companion object {
         const val EXTRA_CONVERSATION = "conversation_id"
+        const val EXTRA_OPEN_SCREEN = "open_screen"
+        val openScreen = kotlinx.coroutines.flow.MutableStateFlow(false)   // a "needs your help" notification was tapped
     }
 }
 
@@ -140,6 +143,8 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
     val snack = remember { SnackbarHostState() }
     LaunchedEffect(state.error) { state.error?.let { snack.showSnackbar(it); vm.clearError() } }
     LaunchedEffect(Unit) { vm.refreshUpcoming(); vm.refreshConnectors() }
+    val wantScreen by MainActivity.openScreen.collectAsStateWithLifecycle()
+    LaunchedEffect(wantScreen) { if (wantScreen) { page = "screen"; MainActivity.openScreen.value = false } }
     BackHandler(enabled = page != null) { page = if (page == "hub" || page == "voice") null else "hub" }
     val back = { page = "hub" }
 
