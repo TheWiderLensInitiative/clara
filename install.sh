@@ -157,7 +157,11 @@ server:
 search:
   formats: [html, json]
 EOF
-if ! sudo docker ps -a --format '{{.Names}}' | grep -qx clara-searxng; then
+if ! sudo docker ps --format '{{.Names}}' | grep -qx clara-searxng; then
+    sudo docker rm -f clara-searxng >/dev/null 2>&1 || true    # a leftover from a failed run
+    if ss -ltn 2>/dev/null | grep -q '127.0.0.1:8888 '; then
+        die "Port 8888 is already used by another program (an older SearXNG? check 'docker ps' as yourself, too). Stop it, then rerun ./install.sh."
+    fi
     sudo docker run -d -q --name clara-searxng --restart unless-stopped -p 127.0.0.1:8888:8080 \
         -v "$DATA/searxng:/etc/searxng" searxng/searxng:latest >/dev/null
 fi
