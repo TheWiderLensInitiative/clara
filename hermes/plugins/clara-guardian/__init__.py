@@ -1,7 +1,9 @@
 """clara-guardian: escalate risky tool calls to the human approval gate, block self-tampering,
 and pause Clara completely while the user has taken over her browser from the phone."""
+import json
 import logging
 import os
+import re
 import time
 from typing import Any, Dict, Optional
 from . import rules
@@ -133,8 +135,31 @@ def handle_help(args, session_id=None, **_):
                                                    "(they can take over from the Screen page later), or find another way."})
 
 
+# Seen in a browser result: a human check Clara can't pass. Guardian asks the user for help itself, so it never depends
+# on the model choosing to (a small local model often tries to script around it instead).
+HUMAN_CHECK = re.compile(r"i'?m not a robot|recaptcha|hcaptcha|verify (that )?you are (a )?human|are you a robot|"
+                         r"checking (if the site connection is secure|your browser)|security check|press (and|&) hold", re.I)
+_auto_help_at: Dict[str, float] = {}   # session -> when Guardian last asked, so one stuck page asks only once in 10 minutes
+
+
+def _on_tool_result(tool_name: str = "", result: Any = None, session_id: str = "", **_: Any):
+    if not tool_name.startswith("browser") or not isinstance(result, str):
+        return None
+    m = HUMAN_CHECK.search(result)
+    if not m or os.path.exists(TAKEOVER) or time.time() - _auto_help_at.get(session_id, 0) < 600:
+        return None
+    _auto_help_at[session_id] = time.time()
+    logger.info("guardian: human check on the page (%r); asking the user for help", m.group(0))
+    outcome = json.loads(handle_help({"reason": "There's a CAPTCHA or 'are you human' check on the page. Please solve it, then hand back."},
+                                     session_id=session_id))
+    note = ("[Guardian] This page had a CAPTCHA / human check. " + (outcome.get("message") or outcome.get("error") or "")
+            + " Don't try to get around a human check yourself.")
+    return note + "\n\n" + result
+
+
 def register(ctx) -> None:
     global _seen_handback
     _seen_handback = _mtime(HANDBACK)   # don't replay an old handback after a restart
     ctx.register_hook("pre_tool_call", _on_pre_tool_call)
+    ctx.register_hook("transform_tool_result", _on_tool_result)
     ctx.register_tool(name="ask_user_for_browser_help", toolset="clara_guardian", schema=HELP_SCHEMA, handler=handle_help, emoji="🙋")
