@@ -87,5 +87,5 @@ The upload key can be the same key. Build the bundle with
 ## 5. Release
 
 New personal developer accounts usually need a **closed test** first (Play Console shows the requirement, typically about 12
-testers for 14 days). Create the closed testing track, upload `Clara-1.3.1.aab`, add testers by email, and promote to
+testers for 14 days). Create the closed testing track, upload `Clara-1.4.0.aab`, add testers by email, and promote to
 production once Play allows it.
