@@ -872,6 +872,7 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                             browser_url = str(args["url"])[:500]
                     if tool and tool.startswith("browser") and kind == "tool.completed":
                         bus.publish("screenshot.available", conversation_id=cid, run_id=run_id)
+                        asyncio.create_task(_grab_browser_frame(run_id))   # the browser closes when the task ends: keep its latest look now
                 elif kind == "approval.request":
                     choices = [c for c in ev.get("choices", PHONE_CHOICES) if c in PHONE_CHOICES]
                     a = store.add_approval(cid, run_id, ev.get("description", ""), ev.get("command", ""), choices)
@@ -2724,23 +2725,31 @@ async def screen_stream(ws: WebSocket):
             _set_takeover(False, dev["name"])  # the phone went away mid-takeover: give Clara back her browser
 
 
-async def _browser_snapshot(run_id: str, since: float) -> Optional[str]:
-    """One frame of Clara's browser, saved in the workspace's hidden .browser folder (not listed in the Library).
-    Taken from the live stream; if the browser already closed, the newest screenshot from this run is used."""
+BROWSER_SNAPS = WORKSPACE / ".browser"   # pictures of the page Clara ended on; hidden from the Library
+
+
+async def _grab_browser_frame(run_id: str) -> bool:
+    """Save one frame from Clara's live browser stream as .browser/<run_id>.jpg (overwriting the previous one)."""
     import base64
-    folder = WORKSPACE / ".browser"
     try:
-        folder.mkdir(exist_ok=True)
+        BROWSER_SNAPS.mkdir(exist_ok=True)
         async with websockets.connect(STREAM_URL, max_size=16_000_000, open_timeout=2) as up:
             while True:
-                raw = await asyncio.wait_for(up.recv(), 3)
-                m = json.loads(raw)
+                m = json.loads(await asyncio.wait_for(up.recv(), 4))
                 if m.get("type") == "frame" and m.get("data"):
-                    out = folder / f"{run_id}.jpg"
-                    out.write_bytes(base64.b64decode(m["data"]))
-                    return str(out.relative_to(WORKSPACE))
+                    (BROWSER_SNAPS / f"{run_id}.jpg").write_bytes(base64.b64decode(m["data"]))
+                    return True
     except Exception:
-        pass
+        return False
+
+
+async def _browser_snapshot(run_id: str, since: float) -> Optional[str]:
+    """The page Clara ended on: the last frame grabbed during the run, a fresh one if her browser is still open,
+    or the newest screenshot she took during the run."""
+    snap = BROWSER_SNAPS / f"{run_id}.jpg"
+    if await _grab_browser_frame(run_id) or snap.exists():
+        return str(snap.relative_to(WORKSPACE))
+    folder = BROWSER_SNAPS
     try:
         shots = [p for p in (HERMES_HOME / "cache" / "screenshots").glob("*.png") if p.stat().st_mtime >= since]
         if shots:
