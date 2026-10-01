@@ -145,6 +145,13 @@ fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, on
                 if (load != null) images.forEach { if (isVideoPath(it)) InlineVideo(it, load) else InlineImage(it, load) }
                 val shot = m.meta?.get("browser")
                 if (shot != null && load != null) BrowserSnapshotCard(shot, m.meta["browser_url"].orEmpty(), load, onOpenBrowser)
+                // a post Clara prepared for a site that doesn't let apps post (Reddit): one tap opens it, the user posts it
+                if (m.meta?.get("kind") == "share") m.meta["url"]?.let { url ->
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    GradientButton(m.meta["label"] ?: "Open", modifier = Modifier.padding(top = 4.dp, bottom = 6.dp).widthIn(max = 330.dp).fillMaxWidth()) {
+                        runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) }
+                    }
+                }
             }
             if (reporting) ReportDialog(text) { reporting = false }
         }

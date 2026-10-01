@@ -1116,6 +1116,66 @@ async def connector_policy(provider: str, body: PolicyIn, dev=Depends(device)):
     return _connector_view(provider)
 
 
+SOCIAL = {"x": ("x", "X"), "facebook": ("meta", "your Facebook Page"), "instagram": ("meta", "Instagram")}
+
+
+def _workspace_file(name):
+    f = (WORKSPACE / str(name or "").replace(str(WORKSPACE) + "/", "")).resolve()
+    return f if str(f).startswith(str(WORKSPACE) + "/") and f.is_file() else None
+
+
+async def _social_post(a):
+    """Post to X, a Facebook Page or Instagram as the user, after they approve the exact post on their phone."""
+    platform = str(a.get("platform") or "").lower()
+    if platform not in SOCIAL:
+        return {"error": "platform must be x, facebook or instagram"}
+    pid, where = SOCIAL[platform]
+    if pid not in _connected():
+        return {"error": f"{connectors.PROVIDERS[pid]['name']} isn't connected. Ask the user to connect it in Clara menu -> Connectors."}
+    texts = [str(t) for t in (a.get("thread") or [a.get("text") or ""]) if str(t).strip()]
+    if not texts and not a.get("file"):
+        return {"error": "nothing to post: give text (or thread) and/or a file"}
+    media = None
+    if a.get("file"):
+        media = _workspace_file(a["file"])
+        if not media or media.suffix.lower() not in (".mp4", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"):
+            return {"error": "file must be an image or video in your workspace, e.g. videos/clara-reel.mp4"}
+    if platform == "instagram" and media is None:
+        return {"error": "Instagram needs a video (posted as a Reel)"}
+    preview = "\n\n— next post in the thread —\n\n".join(texts) + (f"\n\nFile: {media.name}" if media else "")
+    choice = await _phone_approval(f"📣 Post to {where}", preview[:3500], f"social_post:{platform}", choices=("once", "deny"))
+    if choice != "once":
+        return {"error": "The user didn't approve this post."}
+    try:
+        if platform == "x":
+            r = await connectors.x_post(store, texts or [""], media)
+        elif platform == "facebook":
+            r = await connectors.facebook_post(store, texts[0] if texts else "", media)
+        else:
+            r = await connectors.instagram_post(store, texts[0] if texts else "", media)
+    except Exception as e:
+        return {"error": str(e)[:300]}
+    store.add_activity(None, None, f"connector.{platform}", None, f"Posted to {where}: {r['url']}")
+    return {"posted": True, **r}
+
+
+def _reddit_post(a):
+    """Reddit closed self-serve API apps in 2025: Clara prepares the post, the user taps Post in Reddit (one tap, their account)."""
+    try:
+        link, sub = connectors.reddit_submit_link(str(a.get("subreddit") or ""), str(a.get("title") or ""),
+                                                  str(a.get("text") or ""), str(a.get("url") or ""))
+    except ValueError as e:
+        return {"error": str(e)}
+    if not str(a.get("title") or "").strip():
+        return {"error": "a Reddit post needs a title"}
+    cid = store.latest_conversation_id() or store.create_conversation()["id"]
+    body = f"**Ready for r/{sub}:** {a.get('title')}\n\n" + (str(a.get("text") or a.get("url") or ""))[:1500]
+    msg = store.add_message(cid, "assistant", body, route="share",
+                            meta={"kind": "share", "url": link, "label": f"Open in Reddit (r/{sub})"})
+    bus.publish("notification", conversation_id=cid, message=msg)
+    return {"ok": True, "note": f"Sent to the user's phone: they open it in Reddit, check the flair, and tap Post. Don't say it's posted."}
+
+
 class ConnectorCall(BaseModel):
     action: str
     args: dict = {}
@@ -1151,6 +1211,10 @@ async def _generic_call(act, a):
             return {"error": str(e)[:300]}
         store.add_activity(None, None, "connector.youtube", None, f"Posted to YouTube ({privacy}): {title} {r['url']}")
         return r
+    if act == "social_post":
+        return await _social_post(a)
+    if act == "reddit_post":
+        return _reddit_post(a)
     # connection_call
     pid = str(a.get("service") or "").lower().replace(" ", "")
     if pid not in connectors.PROVIDERS:

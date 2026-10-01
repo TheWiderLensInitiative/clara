@@ -194,6 +194,51 @@ PROVIDERS = {
                  "play PUT /me/player/play {uris:[...]} or {context_uri}; pause PUT /me/player/pause; next POST /me/player/next; "
                  "playlists GET /me/playlists, POST /users/{id}/playlists {name}, POST /playlists/{id}/tracks {uris}.",
     },
+    # ---------------------------------------------------------------- social -----------------------
+    "x": {
+        "name": "X", "kind": "oauth", "category": "Social",
+        "services": ["Posts", "Videos", "Threads"],
+        "auth_url": "https://x.com/i/oauth2/authorize",
+        "token_url": "https://api.x.com/2/oauth2/token",
+        "scopes": ["tweet.read", "tweet.write", "users.read", "media.write", "offline.access"],
+        "secret": False, "client_pattern": r"[A-Za-z0-9_\-]{20,40}",
+        "hosts": ["api.x.com"],
+        "account": ("GET", "https://api.x.com/2/users/me", [("data", "username")]),
+        "setup_url": "https://developer.x.com/en/portal/dashboard",
+        "steps": [
+            "Open developer.x.com → sign up for the free tier with the account Clara should post from.",
+            "Projects & Apps → your app → User authentication settings → Set up: permissions “Read and write”, "
+            "type “Native App” (public client).",
+            f"Callback URI: {REDIRECT}; Website URL: your site (e.g. https://clara.thewiderlens.info); Save.",
+            "Keys and tokens → OAuth 2.0 Client ID: copy it here (no secret needed).",
+        ],
+        "guide": "Post with the social_post tool (platform x); it uploads videos/images and makes threads. Reads: "
+                 "GET https://api.x.com/2/users/me, GET https://api.x.com/2/tweets/{id}?tweet.fields=public_metrics.",
+    },
+    "meta": {
+        "name": "Facebook Page & Instagram", "kind": "token", "category": "Social",
+        "services": ["Facebook Page", "Instagram"],
+        "fields": [{"key": "page_id", "label": "Facebook Page ID", "pattern": r"\d{5,25}"},
+                   {"key": "token", "label": "Page access token", "pattern": r"EA[A-Za-z0-9]{60,}"},
+                   {"key": "ig_user_id", "label": "Instagram account ID (optional)", "pattern": r"(\d{5,25})?"}],
+        "auth": "bearer", "hosts": ["graph.facebook.com", "graph-video.facebook.com", "rupload.facebook.com"],
+        "account": ("GET", "https://graph.facebook.com/v23.0/{page_id}?fields=name", ["name"]),
+        "setup_url": "https://developers.facebook.com/apps",
+        "steps": [
+            "Instagram must be a Business or Creator account linked to your Facebook Page (Instagram app → Settings → Account type).",
+            "developers.facebook.com/apps → Create app → “Other” → type “Business” → name “Clara”.",
+            "Tools → Graph API Explorer: pick your app, “Get User Access Token” with pages_show_list, pages_read_engagement, "
+            "pages_manage_posts, instagram_basic, instagram_content_publish, business_management → Generate.",
+            "Click the ⓘ next to the token → Open in Access Token Tool → “Extend Access Token” (60 days); copy the long token "
+            "back into the Explorer.",
+            "In the Explorer run GET me/accounts: copy your Page's “id” and its “access_token” (a Page token made this way "
+            "doesn't expire) here.",
+            "For Instagram, run GET {page-id}?fields=instagram_business_account and copy its “id” as the Instagram account ID.",
+        ],
+        "guide": "Post with the social_post tool (platform facebook or instagram). Reads: GET https://graph.facebook.com/v23.0/{page_id}/posts?"
+                 "fields=message,permalink_url; Instagram GET https://graph.facebook.com/v23.0/{ig_user_id}/media?fields=caption,permalink,"
+                 "like_count,comments_count.",
+    },
     "homeassistant": {
         "name": "Home Assistant", "kind": "token", "category": "Music & home",
         "services": ["Lights", "Climate", "Devices"],

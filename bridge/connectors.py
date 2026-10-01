@@ -5,10 +5,12 @@ happens on the phone, which catches the redirect on 127.0.0.1 (see REDIRECT) and
 PKCE is always used. Token services take a personal token pasted in the app. Either way the secrets are sealed with the
 key broker, calls only go to that service's own hosts, and the token is scrubbed from anything returned to Clara.
 """
+import asyncio
 import base64
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import secrets
 import time
@@ -215,8 +217,10 @@ def allowed_hosts(store, provider) -> list[str]:
 def resolve_url(store, provider, url: str) -> str:
     """Fill in {base_url}/{token} placeholders and refuse anything outside the service's own hosts."""
     p = PROVIDERS[provider]
-    if "{base_url}" in url:
-        url = url.replace("{base_url}", _creds(store, provider).get("base_url", ""))
+    if "{" in url and p["kind"] == "token":   # {base_url}, {page_id}… (never {token}: that's filled at send time)
+        for k, v in _creds(store, provider).items():
+            if k != "token":
+                url = url.replace("{" + k + "}", v)
     u = urlparse(url.replace("{token}", "TOKEN"))
     if u.scheme not in ("https", "http") or u.netloc not in allowed_hosts(store, provider) or "@" in u.netloc:
         raise PermissionError(f"{p['name']} calls may only go to {', '.join(allowed_hosts(store, provider))}")
@@ -518,3 +522,155 @@ async def youtube_upload(store, path, title, description="", privacy="private", 
         raise RuntimeError(f"YouTube upload failed ({up.status_code}): {up.text[:200]}")
     v = up.json()
     return {"video_id": v.get("id"), "url": f"https://youtu.be/{v.get('id')}", "privacy": privacy, "title": title}
+
+
+# --- Social posting ---------------------------------------------------------------------------------------------
+X_API = "https://api.x.com/2"
+GRAPH = "https://graph.facebook.com/v23.0"
+CHUNK = 4 * 1024 * 1024
+
+
+def _mime(path):
+    ext = path.suffix.lower()
+    return {".mp4": "video/mp4", ".mov": "video/quicktime", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+            ".png": "image/png", ".gif": "image/gif", ".webp": "image/webp"}.get(ext, "application/octet-stream")
+
+
+async def _x_media(store, path):
+    """X's v2 chunked upload: initialize, append ≤4 MB pieces, finalize, wait for processing."""
+    data, mime = path.read_bytes(), _mime(path)
+    cat = "tweet_video" if mime.startswith("video") else ("tweet_gif" if mime == "image/gif" else "tweet_image")
+    r = await request(store, "x", "POST", f"{X_API}/media/upload/initialize",
+                      body={"media_type": mime, "total_bytes": len(data), "media_category": cat})
+    if r.status_code >= 400:
+        raise RuntimeError(f"X refused the upload ({r.status_code}): {r.text[:200]}")
+    mid = r.json()["data"]["id"]
+    for i in range(0, len(data), CHUNK):
+        boundary = "clara" + os.urandom(8).hex()
+        part = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"segment_index\"\r\n\r\n{i // CHUNK}\r\n"
+                f"--{boundary}\r\nContent-Disposition: form-data; name=\"media\"; filename=\"{path.name}\"\r\n"
+                f"Content-Type: application/octet-stream\r\n\r\n").encode() + data[i:i + CHUNK] + f"\r\n--{boundary}--\r\n".encode()
+        a = await request(store, "x", "POST", f"{X_API}/media/upload/{mid}/append", content=part,
+                          headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}, timeout=300)
+        if a.status_code >= 400:
+            raise RuntimeError(f"X upload failed ({a.status_code}): {a.text[:200]}")
+    f = await request(store, "x", "POST", f"{X_API}/media/upload/{mid}/finalize")
+    if f.status_code >= 400:
+        raise RuntimeError(f"X couldn't finish the upload ({f.status_code}): {f.text[:200]}")
+    info = (f.json().get("data") or {}).get("processing_info")
+    for _ in range(60):   # videos are processed after upload
+        if not info or info.get("state") == "succeeded":
+            return mid
+        if info.get("state") == "failed":
+            raise RuntimeError(f"X couldn't process the video: {info.get('error')}")
+        await asyncio.sleep(min(10, info.get("check_after_secs", 3)))
+        st = await request(store, "x", "GET", f"{X_API}/media/upload", query={"command": "STATUS", "media_id": mid})
+        info = (st.json().get("data") or {}).get("processing_info")
+    raise RuntimeError("X took too long processing the video")
+
+
+async def x_post(store, texts, media=None):
+    """A post (or a thread: one post per text, each replying to the last). Media goes on the first post."""
+    out, reply_to = [], None
+    for i, text in enumerate(texts):
+        body = {"text": text[:4000]}
+        if i == 0 and media is not None:
+            body["media"] = {"media_ids": [await _x_media(store, media)]}
+        if reply_to:
+            body["reply"] = {"in_reply_to_tweet_id": reply_to}
+        r = await request(store, "x", "POST", f"{X_API}/tweets", body=body)
+        if r.status_code >= 400:
+            raise RuntimeError(f"X refused the post ({r.status_code}): {r.text[:200]}")
+        reply_to = r.json()["data"]["id"]
+        out.append(reply_to)
+    user = await request(store, "x", "GET", f"{X_API}/users/me")
+    handle = (user.json().get("data") or {}).get("username", "i")
+    return {"url": f"https://x.com/{handle}/status/{out[0]}", "ids": out}
+
+
+async def _meta_rupload(store, url, data):
+    """Meta's resumable upload host wants 'Authorization: OAuth <token>', not Bearer."""
+    url = resolve_url(store, "meta", url)
+    tok = _creds(store, "meta")["token"]
+    async with httpx.AsyncClient(timeout=900, follow_redirects=False) as c:
+        r = await c.post(url, content=data, headers={"Authorization": f"OAuth {tok}", "offset": "0", "file_size": str(len(data))})
+    if r.status_code >= 400:
+        raise RuntimeError(f"Meta upload failed ({r.status_code}): {r.text[:200]}")
+
+
+async def facebook_post(store, text, media=None):
+    """A Page post: text (and link), a photo, or a video (vertical short videos go up as Reels)."""
+    cred = _creds(store, "meta")
+    page = cred["page_id"]
+    if media is None:
+        r = await request(store, "meta", "POST", f"{GRAPH}/{page}/feed", body={"message": text})
+        if r.status_code >= 400:
+            raise RuntimeError(f"Facebook refused the post ({r.status_code}): {r.text[:200]}")
+        pid = r.json()["id"]
+        return {"url": f"https://www.facebook.com/{pid}", "id": pid}
+    data, mime = media.read_bytes(), _mime(media)
+    if mime.startswith("image"):
+        boundary = "clara" + os.urandom(8).hex()
+        body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"caption\"\r\n\r\n{text}\r\n"
+                f"--{boundary}\r\nContent-Disposition: form-data; name=\"source\"; filename=\"{media.name}\"\r\n"
+                f"Content-Type: {mime}\r\n\r\n").encode() + data + f"\r\n--{boundary}--\r\n".encode()
+        r = await request(store, "meta", "POST", f"{GRAPH}/{page}/photos", content=body,
+                          headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}, timeout=300)
+        if r.status_code >= 400:
+            raise RuntimeError(f"Facebook refused the photo ({r.status_code}): {r.text[:200]}")
+        pid = r.json().get("post_id") or r.json()["id"]
+        return {"url": f"https://www.facebook.com/{pid}", "id": pid}
+    # video → Reel (three phases: start, upload to rupload, finish & publish)
+    st = await request(store, "meta", "POST", f"{GRAPH}/{page}/video_reels", body={"upload_phase": "start"})
+    if st.status_code >= 400:
+        raise RuntimeError(f"Facebook refused the video ({st.status_code}): {st.text[:200]}")
+    vid = st.json()["video_id"]
+    await _meta_rupload(store, st.json().get("upload_url") or f"https://rupload.facebook.com/video-upload/v23.0/{vid}", data)
+    fin = await request(store, "meta", "POST", f"{GRAPH}/{page}/video_reels",
+                        query={"upload_phase": "finish", "video_id": vid, "video_state": "PUBLISHED", "description": text})
+    if fin.status_code >= 400:
+        raise RuntimeError(f"Facebook couldn't publish the video ({fin.status_code}): {fin.text[:200]}")
+    return {"url": f"https://www.facebook.com/reel/{vid}", "id": vid}
+
+
+async def instagram_post(store, text, media):
+    """An Instagram Reel from a workspace video (resumable upload, then publish once Instagram has processed it)."""
+    cred = _creds(store, "meta")
+    ig = cred.get("ig_user_id")
+    if not ig:
+        raise RuntimeError("Add your Instagram account ID in Connectors → Facebook Page & Instagram first.")
+    if not _mime(media).startswith("video"):
+        raise RuntimeError("Instagram posts from Clara are Reels: give a video.")
+    c = await request(store, "meta", "POST", f"{GRAPH}/{ig}/media",
+                      query={"media_type": "REELS", "upload_type": "resumable", "caption": text[:2200]})
+    if c.status_code >= 400:
+        raise RuntimeError(f"Instagram refused the Reel ({c.status_code}): {c.text[:200]}")
+    cid = c.json()["id"]
+    await _meta_rupload(store, c.json().get("uri") or f"https://rupload.facebook.com/ig-api-upload/v23.0/{cid}", media.read_bytes())
+    for _ in range(90):
+        s = await request(store, "meta", "GET", f"{GRAPH}/{cid}", query={"fields": "status_code"})
+        code = s.json().get("status_code")
+        if code == "FINISHED":
+            break
+        if code in ("ERROR", "EXPIRED"):
+            raise RuntimeError(f"Instagram couldn't process the video ({code})")
+        await asyncio.sleep(5)
+    else:
+        raise RuntimeError("Instagram took too long processing the video")
+    p = await request(store, "meta", "POST", f"{GRAPH}/{ig}/media_publish", query={"creation_id": cid})
+    if p.status_code >= 400:
+        raise RuntimeError(f"Instagram couldn't publish ({p.status_code}): {p.text[:200]}")
+    mid = p.json()["id"]
+    link = await request(store, "meta", "GET", f"{GRAPH}/{mid}", query={"fields": "permalink"})
+    return {"url": link.json().get("permalink") or "https://www.instagram.com/", "id": mid}
+
+
+def reddit_submit_link(subreddit, title, text="", url=""):
+    """Reddit closed self-serve API apps in 2025, so Clara prepares the post and the user taps Post themselves."""
+    from urllib.parse import quote
+    sub = re.sub(r"^/?r/", "", subreddit.strip()).strip("/")
+    if not re.fullmatch(r"[A-Za-z0-9_]{2,21}", sub):
+        raise ValueError("That isn't a subreddit name.")
+    q = f"title={quote(title[:300])}"
+    q += f"&url={quote(url)}" if url else f"&selftext=true&text={quote(text[:38000])}"
+    return f"https://www.reddit.com/r/{sub}/submit?{q}", sub

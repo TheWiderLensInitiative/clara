@@ -60,6 +60,7 @@ private val LOGOS = mapOf(   // official brand logos (Simple Icons CC0 / officia
     "notion" to R.drawable.ic_brand_notion, "todoist" to R.drawable.ic_brand_todoist, "github" to R.drawable.ic_brand_github,
     "slack" to R.drawable.ic_brand_slack, "discord" to R.drawable.ic_brand_discord, "telegram" to R.drawable.ic_brand_telegram,
     "spotify" to R.drawable.ic_brand_spotify, "homeassistant" to R.drawable.ic_brand_homeassistant,
+    "x" to R.drawable.ic_brand_x, "meta" to R.drawable.ic_brand_facebook,
 )
 
 /** The service's logo on a white tile, like an app icon (keeps dark logos like GitHub and Notion visible). */

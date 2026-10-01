@@ -45,6 +45,63 @@ def search(request: Request, q: str, type: str): sp(request); return {"tracks": 
 async def play(request: Request): sp(request); log.append(("play", await request.json())); return Response(status_code=204)
 @app.get("/v1/cover")
 def cover(request: Request): sp(request); return Response(b"\x89PNG\r\n\x1a\n" + b"0" * 100, media_type="image/png")
+# --- X API v2 (posts, chunked media upload) and Meta Graph (Page, Reels, Instagram resumable) ---------------------
+SOCIAL_TOKEN = "EA" + "A" * 70
+media, posts = {}, []
+def social_auth(req):
+    if req.headers.get("authorization") not in (f"Bearer {SOCIAL_TOKEN}", f"OAuth {SOCIAL_TOKEN}"): raise HTTPException(401)
+@app.post("/2/media/upload/initialize")
+async def x_init(request: Request):
+    social_auth(request); d = await request.json(); mid = str(len(media) + 100)
+    media[mid] = {"total": d["total_bytes"], "got": 0, "polls": 0}; return {"data": {"id": mid}}
+@app.post("/2/media/upload/{mid}/append")
+async def x_append(mid: str, request: Request):
+    social_auth(request); form = await request.form(); media[mid]["got"] += len(await form["media"].read()); return Response(status_code=204)
+@app.post("/2/media/upload/{mid}/finalize")
+def x_final(mid: str, request: Request):
+    social_auth(request); m = media[mid]
+    if m["got"] != m["total"]: raise HTTPException(400, f"got {m['got']} of {m['total']}")
+    return {"data": {"id": mid, "processing_info": {"state": "pending", "check_after_secs": 1}}}
+@app.get("/2/media/upload")
+def x_status(command: str, media_id: str, request: Request):
+    social_auth(request); media[media_id]["polls"] += 1
+    return {"data": {"id": media_id, "processing_info": {"state": "succeeded" if media[media_id]["polls"] > 1 else "in_progress", "check_after_secs": 1}}}
+@app.post("/2/tweets")
+async def x_tweet(request: Request):
+    social_auth(request); d = await request.json(); pid = str(9000 + len(posts)); posts.append(("x", d)); return {"data": {"id": pid, "text": d["text"]}}
+@app.get("/2/users/me")
+def x_me(request: Request): social_auth(request); return {"data": {"id": "1", "username": "TheWiderLens"}}
+@app.get("/v23.0/{node}")
+def graph_get(node: str, request: Request, fields: str = ""):
+    social_auth(request)
+    if fields == "status_code": return {"status_code": "FINISHED", "id": node}
+    if fields == "permalink": return {"permalink": f"https://www.instagram.com/reel/{node}/"}
+    return {"id": node, "name": "The Wider Lens"}
+@app.post("/v23.0/{page}/feed")
+async def fb_feed(page: str, request: Request):
+    social_auth(request); posts.append(("fb", await request.json())); return {"id": f"{page}_777"}
+@app.post("/v23.0/{page}/video_reels")
+async def fb_reels(page: str, request: Request, upload_phase: str = None, video_id: str = None, description: str = ""):
+    social_auth(request)
+    phase = upload_phase or (await request.json()).get("upload_phase")
+    if phase == "start": return {"video_id": "555", "upload_url": "http://127.0.0.1:8798/video-upload/v23.0/555"}
+    assert media.get("rup-555", {}).get("got"), "finish before upload"
+    posts.append(("fb-reel", {"video_id": video_id, "description": description})); return {"success": True}
+@app.post("/video-upload/v23.0/{vid}")
+@app.post("/ig-api-upload/v23.0/{vid}")
+async def rupload(vid: str, request: Request):
+    social_auth(request); body = await request.body()
+    assert request.headers.get("authorization", "").startswith("OAuth ") and int(request.headers["file_size"]) == len(body)
+    media[f"rup-{vid}"] = {"got": len(body)}; return {"success": True}
+@app.post("/v23.0/{ig}/media")
+def ig_media(ig: str, request: Request, media_type: str, upload_type: str, caption: str = ""):
+    social_auth(request); assert media_type == "REELS" and upload_type == "resumable"
+    return {"id": "777", "uri": "http://127.0.0.1:8798/ig-api-upload/v23.0/777"}
+@app.post("/v23.0/{ig}/media_publish")
+def ig_publish(ig: str, request: Request, creation_id: str):
+    social_auth(request); assert media.get(f"rup-{creation_id}", {}).get("got"); posts.append(("ig", creation_id)); return {"id": "888"}
+@app.get("/_social")
+def social_log(): return {"posts": posts, "media": media}
 @app.get("/_log")
 def getlog(): return {"log": log, "lights": lights}
 if __name__ == "__main__":
