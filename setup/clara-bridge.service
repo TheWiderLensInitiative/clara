@@ -10,7 +10,7 @@ SupplementaryGroups=clara
 WorkingDirectory=@REPO@/bridge
 Environment=CUDA_VISIBLE_DEVICES=
 Environment=CLARA_DATA_DIR=@DATA@ HERMES_HOME=/var/lib/clara/hermes-home CLARA_WORKSPACE=/var/lib/clara/workspace CLARA_STATE_DIR=/srv/clara-state
-ExecStart=@DATA@/venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port 8700
+ExecStart=@DATA@/venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port 8700 --timeout-graceful-shutdown 3
 Restart=on-failure
 RestartSec=5
 
