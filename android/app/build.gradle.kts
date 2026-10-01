@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.clara.app"
+    namespace = "info.thewiderlens.clara"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "dev.clara.app"
+        applicationId = "info.thewiderlens.clara"
         minSdk = 28
         targetSdk = 37
         versionCode = 1

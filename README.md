@@ -2,7 +2,8 @@
 
 <h1 align="center">Clara</h1>
 <p align="center"><b>A private AI assistant that runs on your own PC, with a phone app to talk to her.</b><br>
-Free and open source. No subscription. Your chats, files and memories never leave your computer.</p>
+Free and open source. No subscription. Your chats, files and memories never leave your computer.<br>
+<a href="https://clara.thewiderlens.info">clara.thewiderlens.info</a> · <a href="https://github.com/TheWiderLensInitiative/clara/releases/latest">Download the app</a></p>
 
 ---
 
