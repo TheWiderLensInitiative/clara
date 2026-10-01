@@ -123,9 +123,22 @@ if [ "$(/opt/clara/node/bin/node -p "require('/opt/clara/agent-browser/node_modu
     PATH="/opt/clara/node/bin:$PATH" npm install --prefix /opt/clara/agent-browser --no-package-lock --silent "agent-browser@$AGENT_BROWSER_VERSION"
 fi
 if [ ! -x /opt/clara/chrome/chrome ]; then
+    # Chrome's libraries. Ubuntu renamed some between releases (24.04 has the "t64" names, 26.04 dropped a few of them),
+    # so pick whichever name this system has instead of agent-browser's fixed 24.04 list.
+    PKGS=""
+    for p in libxcb-shm0 libx11-xcb1 libx11-6 libxcb1 libxext6 libxrandr2 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 \
+             libxi6 libgtk-3-0t64 libpangocairo-1.0-0 libpango-1.0-0t64 libatk1.0-0t64 libcairo-gobject2 libcairo2t64 \
+             libgdk-pixbuf-2.0-0 libxrender1 libasound2t64 libfreetype6 libfontconfig1 libdbus-1-3t64 libnss3 libnss3-tools \
+             libnspr4 libatk-bridge2.0-0t64 libdrm2 libxkbcommon0 libatspi2.0-0t64 libcups2t64 libxshmfence1 libgbm1 \
+             fonts-noto-color-emoji fonts-noto-cjk fonts-freefont-ttf; do
+        for name in "$p" "${p%t64}"; do
+            if apt-cache policy "$name" 2>/dev/null | grep -q 'Candidate: [0-9]'; then PKGS="$PKGS $name"; break; fi
+        done
+    done
+    sudo apt-get install -y -qq $PKGS >/dev/null
     TMPH=$(mktemp -d)
-    sudo env HOME="$TMPH" PATH="/opt/clara/node/bin:$PATH" /opt/clara/agent-browser/node_modules/.bin/agent-browser install --with-deps >/dev/null
-    CHROME=$(sudo find "$TMPH" -type f -name chrome -perm -u+x | head -1)
+    env HOME="$TMPH" PATH="/opt/clara/node/bin:$PATH" /opt/clara/agent-browser/node_modules/.bin/agent-browser install >/dev/null
+    CHROME=$(find "$TMPH" -type f -name chrome -perm -u+x | head -1)
     [ -n "$CHROME" ] || die "agent-browser didn't download its Chrome"
     sudo cp -a "$(dirname "$CHROME")" /opt/clara/chrome; sudo rm -rf "$TMPH"
 fi
