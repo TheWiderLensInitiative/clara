@@ -102,7 +102,9 @@ ok "user 'clara' (no password, no sudo, cannot log in)"
 # ---------------------------------------------------------------------------------------------------------------------
 say "Clara's programs in /opt/clara (Hermes agent, Node, browser)"
 sudo install -d -o "$ME" -g "$ME" -m 755 /opt/clara
-if [ ! -x /opt/clara/venv-hermes/bin/hermes ]; then
+sudo chown -R "$ME":"$ME" /opt/clara    # yours while installing; handed to root again below
+hermes_at() { git -C /opt/clara/hermes-agent rev-parse --short=7 HEAD 2>/dev/null; }
+if [ ! -x /opt/clara/venv-hermes/bin/hermes ] || [ "$(hermes_at)" != "$HERMES_REF" ]; then
     UV_PYTHON_INSTALL_DIR=/opt/clara/python "$UV" python install -q 3.12
     [ -d /opt/clara/hermes-agent/.git ] || git clone -q https://github.com/NousResearch/hermes-agent.git /opt/clara/hermes-agent
     git -C /opt/clara/hermes-agent fetch -q origin && git -C /opt/clara/hermes-agent checkout -q "$HERMES_REF"
@@ -110,13 +112,14 @@ if [ ! -x /opt/clara/venv-hermes/bin/hermes ]; then
     "$UV" pip install -q --python /opt/clara/venv-hermes/bin/python -e "/opt/clara/hermes-agent[all]" 2>/dev/null \
         || "$UV" pip install -q --python /opt/clara/venv-hermes/bin/python -e /opt/clara/hermes-agent
 fi
-ok "Hermes $(git -C /opt/clara/hermes-agent rev-parse --short HEAD)"
-if [ ! -x /opt/clara/node/bin/node ]; then
+ok "Hermes $(hermes_at)"
+if [ "$(/opt/clara/node/bin/node --version 2>/dev/null)" != "v$NODE_VERSION" ]; then
+    rm -rf /opt/clara/node
     curl -fsSL "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" | tar -xJ -C /opt/clara
     mv "/opt/clara/node-v$NODE_VERSION-linux-x64" /opt/clara/node
 fi
 ok "Node $(/opt/clara/node/bin/node --version)"
-if [ ! -x /opt/clara/agent-browser/node_modules/.bin/agent-browser ]; then
+if [ "$(/opt/clara/node/bin/node -p "require('/opt/clara/agent-browser/node_modules/agent-browser/package.json').version" 2>/dev/null)" != "$AGENT_BROWSER_VERSION" ]; then
     PATH="/opt/clara/node/bin:$PATH" npm install --prefix /opt/clara/agent-browser --no-package-lock --silent "agent-browser@$AGENT_BROWSER_VERSION"
 fi
 if [ ! -x /opt/clara/chrome/chrome ]; then
