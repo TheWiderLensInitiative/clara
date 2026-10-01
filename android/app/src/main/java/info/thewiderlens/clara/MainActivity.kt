@@ -144,7 +144,7 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
     LaunchedEffect(state.error) { state.error?.let { snack.showSnackbar(it); vm.clearError() } }
     LaunchedEffect(Unit) { vm.refreshUpcoming(); vm.refreshConnectors() }
     val wantScreen by MainActivity.openScreen.collectAsStateWithLifecycle()
-    LaunchedEffect(wantScreen) { if (wantScreen) { page = "screen"; MainActivity.openScreen.value = false } }
+    LaunchedEffect(wantScreen) { if (wantScreen) { page = "takeover"; MainActivity.openScreen.value = false } }
     BackHandler(enabled = page != null) { page = if (page == "hub" || page == "voice") null else "hub" }
     val back = { page = "hub" }
 
@@ -156,6 +156,7 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
                 "hub" -> AssistantHub(state, onOpen = { page = it }, onBack = { page = null })
                 "upcoming" -> UpcomingPage(state, vm::refreshUpcoming, vm::jobAction, back)
                 "screen" -> LiveScreenPage(state, api, back)
+                "takeover" -> LiveScreenPage(state, api, { page = null }, startInControl = true)
                 "updates" -> UpdatesPage(state, vm::refreshActivity, vm::answer, back)
                 "identity" -> IdentityPage(state, vm::refreshIdentity, vm::saveIdentity, back)
                 "connectors" -> info.thewiderlens.clara.ui.screens.ConnectorsPage(state, vm::refreshConnectors, vm::setConnectorClient, vm::setConnectorToken,
@@ -200,7 +201,7 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
         // consumeWindowInsets: the keyboard padding inside the chat must not add the tab bar's height again
         Box(Modifier.fillMaxSize().padding(pad).consumeWindowInsets(pad)) {
             when (tab) {
-                0 -> ChatScreen(state, vm::send, vm::stop, vm::answer, vm::newChat, vm::openConversation, vm::hideLive, onAssistant = { page = "hub" }, onWatch = { page = "screen" }, api = api,
+                0 -> ChatScreen(state, vm::send, vm::stop, vm::answer, vm::newChat, vm::openConversation, vm::hideLive, onAssistant = { page = "hub" }, onWatch = { page = "screen" }, onTakeOver = { page = "takeover" }, api = api,
                     onVault = { r, ok ->
                         if (!ok) vm.answerVault(r, false)
                         else (context as MainActivity).confirmIdentity("Let Clara sign in to ${r.name}?", r.site) { vm.answerVault(r, true) }

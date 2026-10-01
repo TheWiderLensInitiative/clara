@@ -3,6 +3,13 @@ package info.thewiderlens.clara.ui.screens
 import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -66,7 +73,7 @@ import org.json.JSONObject
  * While only watching, the Bridge drops all input, so a stray tap can never click anything.
  */
 @Composable
-fun LiveScreenPage(state: UiState, api: BridgeApi?, onBack: () -> Unit) {
+fun LiveScreenPage(state: UiState, api: BridgeApi?, onBack: () -> Unit, startInControl: Boolean = false) {
     var frame by remember { mutableStateOf<ImageBitmap?>(null) }
     var device by remember { mutableStateOf(1280f to 720f) }
     var online by remember { mutableStateOf(false) }
@@ -74,6 +81,7 @@ fun LiveScreenPage(state: UiState, api: BridgeApi?, onBack: () -> Unit) {
     var url by remember { mutableStateOf("") }
     var socket by remember { mutableStateOf<WebSocket?>(null) }
     var typed by remember { mutableStateOf("") }
+    var askedControl by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     DisposableEffect(api) {
@@ -100,7 +108,13 @@ fun LiveScreenPage(state: UiState, api: BridgeApi?, onBack: () -> Unit) {
                                 }
                                 webSocket.send("""{"type":"ack","seq":$seq}""")   // one frame in flight: never lags behind
                             }
-                            "online" -> { online = true; takeover = m.optBoolean("takeover") }
+                            "online" -> {
+                                online = true; takeover = m.optBoolean("takeover")
+                                if (startInControl && !takeover && !askedControl) {   // came from "Take over" on a help card or notification
+                                    askedControl = true
+                                    webSocket.send("""{"type":"takeover","on":true}""")
+                                }
+                            }
                             "offline" -> { online = false; frame = null }
                             "takeover" -> takeover = m.optBoolean("on")
                             "url" -> url = m.optString("url")
@@ -122,6 +136,14 @@ fun LiveScreenPage(state: UiState, api: BridgeApi?, onBack: () -> Unit) {
         val t = text?.let { ""","text":${JSONObject.quote(it)}""" } ?: ""
         send("""{"type":"input_keyboard","eventType":"keyDown","key":${JSONObject.quote(key)},"code":"$code","windowsVirtualKeyCode":$vk$t}""")
         send("""{"type":"input_keyboard","eventType":"keyUp","key":${JSONObject.quote(key)},"code":"$code","windowsVirtualKeyCode":$vk}""")
+    }
+
+    // In control: full screen, sideways, so the page is big enough to use.
+    if (takeover && online && frame != null) {
+        TakeoverView(frame!!, device, url, onMouse = { t, x, y, e -> mouse(t, x, y, e) }, onKey = { k, c, v, t -> key(k, c, v, t) }, onType = { text ->
+            text.forEach { c -> send("""{"type":"input_keyboard","eventType":"keyDown","key":${JSONObject.quote(c.toString())},"text":${JSONObject.quote(c.toString())}}""") }
+        }, onHandBack = { send("""{"type":"takeover","on":false}""") })
+        return
     }
 
     PageScaffold("Screen", onBack) {
@@ -215,6 +237,111 @@ fun LiveScreenPage(state: UiState, api: BridgeApi?, onBack: () -> Unit) {
                     GradientButton("Hand back to Clara", modifier = Modifier.fillMaxWidth()) { send("""{"type":"takeover","on":false}""") }
                 }
             }
+        }
+    }
+}
+
+
+/** Full-screen control of Clara's browser: sideways, pinch to zoom, one finger scrolls the page, tap to click. */
+@Composable
+private fun TakeoverView(
+    frame: ImageBitmap, device: Pair<Float, Float>, url: String,
+    onMouse: (String, Float, Float, String) -> Unit, onKey: (String, String, Int, String?) -> Unit,
+    onType: (String) -> Unit, onHandBack: () -> Unit,
+) {
+    val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
+    DisposableEffect(Unit) {
+        val before = activity?.requestedOrientation
+        activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        onDispose { activity?.requestedOrientation = before ?: android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
+    }
+    androidx.activity.compose.BackHandler { onHandBack() }   // Back = done: hand control back
+    var zoom by remember { mutableStateOf(1f) }
+    var pan by remember { mutableStateOf(Offset.Zero) }
+    var keyboard by remember { mutableStateOf(false) }
+    var typed by remember { mutableStateOf("") }
+    val (dw, dh) = device
+    Column(Modifier.fillMaxSize().background(Color.Black).systemBarsPadding().imePadding()) {
+        // slim control bar
+        Row(Modifier.fillMaxWidth().background(ClaraColors.Panel).padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(8.dp).clip(CircleShape).background(ClaraColors.Magenta))
+            Spacer(Modifier.width(6.dp))
+            Text(url.removePrefix("https://").removePrefix("www.").ifBlank { "You're in control" }, style = MaterialTheme.typography.labelMedium,
+                color = ClaraColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            androidx.compose.material3.TextButton(onClick = { keyboard = !keyboard }) { Text(if (keyboard) "Hide keyboard" else "⌨ Type", color = ClaraColors.Text) }
+            androidx.compose.material3.TextButton(onClick = { onKey("Backspace", "Backspace", 8, null) }) { Text("⌫", color = ClaraColors.Text) }
+            androidx.compose.material3.TextButton(onClick = { onKey("Enter", "Enter", 13, "\r") }) { Text("Enter", color = ClaraColors.Text) }
+            if (zoom > 1.01f) androidx.compose.material3.TextButton(onClick = { zoom = 1f; pan = Offset.Zero }) { Text("Fit", color = ClaraColors.Cyan) }
+            GradientButton("Hand back", modifier = Modifier.padding(start = 4.dp).width(130.dp)) { onHandBack() }
+        }
+        if (keyboard) {
+            Row(Modifier.fillMaxWidth().padding(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                TextField(
+                    typed, { typed = it }, placeholder = { Text("Type, then Send (goes into the page)") }, singleLine = true,
+                    modifier = Modifier.weight(1f).clip(RoundedCornerShape(14.dp)),
+                    colors = TextFieldDefaults.colors(focusedContainerColor = ClaraColors.Raised, unfocusedContainerColor = ClaraColors.Raised,
+                        focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
+                )
+                Spacer(Modifier.width(6.dp))
+                OutlinedButton(onClick = { onType(typed); typed = "" }, shape = RoundedCornerShape(14.dp)) { Text("Send", color = ClaraColors.Text) }
+            }
+        }
+        BoxWithConstraints(Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(0.dp))) {
+            val boxW = constraints.maxWidth.toFloat()
+            val boxH = constraints.maxHeight.toFloat()
+            val fit = minOf(boxW / dw, boxH / dh)                 // page px -> screen px at zoom 1
+            val left = (boxW - dw * fit) / 2f
+            fun pageOf(p: Offset): Pair<Float, Float> {          // screen point -> page (CSS) point
+                val c = (p - pan) / zoom
+                return ((c.x - left) / fit) to (c.y / fit)
+            }
+            Image(
+                frame, "Clara's browser", contentScale = ContentScale.FillBounds,
+                modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = zoom; scaleY = zoom; translationX = pan.x; translationY = pan.y
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
+                    }
+                    .padding(start = with(androidx.compose.ui.platform.LocalDensity.current) { left.toDp() })
+                    .size(with(androidx.compose.ui.platform.LocalDensity.current) { (dw * fit).toDp() },
+                          with(androidx.compose.ui.platform.LocalDensity.current) { (dh * fit).toDp() }),
+            )
+            Box(Modifier.fillMaxSize().pointerInput(dw, dh, fit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    var multi = false
+                    var dragged = 0f
+                    do {
+                        val ev = awaitPointerEvent()
+                        val pressed = ev.changes.count { it.pressed }
+                        if (pressed >= 2) {                       // two fingers: zoom and move the view
+                            multi = true
+                            val z = ev.calculateZoom()
+                            val c = ev.calculateCentroid()
+                            val newZoom = (zoom * z).coerceIn(1f, 4f)
+                            pan = (c - (c - pan) * (newZoom / zoom)) + ev.calculatePan()
+                            zoom = newZoom
+                            val maxX = 0f; val minX = boxW - boxW * zoom
+                            val maxY = 0f; val minY = boxH - boxH * zoom
+                            pan = Offset(pan.x.coerceIn(minX, maxX), pan.y.coerceIn(minY, maxY))
+                            ev.changes.forEach { it.consume() }
+                        } else if (!multi && pressed == 1) {      // one finger: scroll the page
+                            val ch = ev.changes.first { it.pressed }
+                            val d = ch.position - ch.previousPosition
+                            dragged += kotlin.math.abs(d.x) + kotlin.math.abs(d.y)
+                            if (dragged > viewConfiguration.touchSlop && (d.y != 0f || d.x != 0f)) {
+                                val (x, y) = pageOf(ch.position)
+                                onMouse("mouseWheel", x, y, ""","deltaX":${-d.x / (fit * zoom)},"deltaY":${-d.y / (fit * zoom)}""")
+                                ch.consume()
+                            }
+                        }
+                    } while (ev.changes.any { it.pressed })
+                    if (!multi && dragged <= viewConfiguration.touchSlop) {   // a tap: click there
+                        val (x, y) = pageOf(down.position)
+                        onMouse("mouseMoved", x, y, ""); onMouse("mousePressed", x, y, ""); onMouse("mouseReleased", x, y, "")
+                    }
+                }
+            })
         }
     }
 }

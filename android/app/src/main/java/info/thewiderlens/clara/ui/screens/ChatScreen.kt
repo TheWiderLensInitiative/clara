@@ -99,6 +99,7 @@ fun ChatScreen(
     onAssistant: () -> Unit,
     onWatch: () -> Unit = {},
     api: info.thewiderlens.clara.data.BridgeApi? = null,
+    onTakeOver: () -> Unit = onWatch,
     onVault: (info.thewiderlens.clara.data.VaultRequest, Boolean) -> Unit = { _, _ -> },
     onApi: (info.thewiderlens.clara.data.ApiRequest, String) -> Unit = { _, _ -> },
     onCloud: (info.thewiderlens.clara.data.CloudRequest, String) -> Unit = { _, _ -> },
@@ -222,7 +223,7 @@ fun ChatScreen(
                 LazyColumn(state = list, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), modifier = Modifier.fillMaxSize()) {
                     items(state.messages, key = { it.id }) { MessageBubble(it, loadImage, onOpenBrowser = onWatch) }
                     if (chips.isNotEmpty()) item("chips-" + lastMsg!!.id) { SuggestionChips(chips) { onSend(it) } }
-                    state.help?.let { h -> item("help-" + h.id) { info.thewiderlens.clara.ui.components.HelpCard(h.reason, onWatch) } }
+                    state.help?.let { h -> item("help-" + h.id) { info.thewiderlens.clara.ui.components.HelpCard(h.reason, onTakeOver) } }
                     items(pendingHere, key = { "a-" + it.id }) { a -> ApprovalCard(a) { onAnswer(a, it) } }
                     items(state.vaultRequests, key = { "v-" + it.id }) { r -> info.thewiderlens.clara.ui.components.VaultCard(r) { ok -> onVault(r, ok) } }
                     items(state.apiRequests, key = { "k-" + it.id }) { r -> info.thewiderlens.clara.ui.components.ApiRequestCard(r) { c -> onApi(r, c) } }
