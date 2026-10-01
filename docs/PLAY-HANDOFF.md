@@ -12,7 +12,7 @@ For the agent helping The Wider Lens Initiative Project publish the Clara app on
 | Icon 512×512, feature graphic 1024×500 | `fastlane/metadata/android/en-US/images/` |
 | 6 phone screenshots (1080×2160, 2:1 as Play requires) | `fastlane/metadata/android/en-US/images/phoneScreenshots/` |
 | Release notes per version | `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` |
-| Signed app bundle, version 1.3.0 (versionCode 6) | **not in git**: `~/Desktop/clara-release-files/Clara-1.3.0.aab` on the project owner's PC |
+| Signed app bundle, version 1.3.0 (versionCode 6) | **not in git**: `~/Desktop/TheWiderLens/release-files/Clara-1.3.0.aab` on the project owner's PC |
 | Privacy policy | `docs/PRIVACY.md` (Play needs a public URL; see task W1) |
 | Videos: promo, reviewer demo, foreground-service demo | `media/google-play/` (see "Videos" below) |
 
