@@ -145,7 +145,7 @@ private fun SetupGuide(onClose: () -> Unit) {
             )
             Spacer(Modifier.height(18.dp))
             GradientButton("Send to my computer", modifier = Modifier.fillMaxWidth()) {
-                val text = "Set up Clara, my private AI assistant, on this computer:\n$SETUP_URL\n\nOr run this in a terminal:\n$INSTALL_CMD"
+                val text = "Set up Clara, my private AI assistant, on this computer: https://clara.thewiderlens.info\n\nIn a terminal, run:\n$INSTALL_CMD\n\nStep-by-step guide: $SETUP_URL"
                 val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain")
                     .putExtra(android.content.Intent.EXTRA_SUBJECT, "Set up Clara on my computer")
                     .putExtra(android.content.Intent.EXTRA_TEXT, text)

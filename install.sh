@@ -238,7 +238,7 @@ CODE=$(cd "$REPO/bridge" && CLARA_DATA_DIR="$DATA" "$DATA/venv/bin/python" pair.
 cat <<EOF
 
   Get the Clara app: scan this with your phone's camera, or open
-  https://github.com/TheWiderLensInitiative/clara/releases/latest
+  https://clara.thewiderlens.info/#download
 
 EOF
 (cd "$REPO/bridge" && "$DATA/venv/bin/python" qr.py) | sed 's/^/  /'

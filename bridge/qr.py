@@ -4,7 +4,7 @@ import sys
 
 import qrcode
 
-APP_URL = os.environ.get("CLARA_APP_URL", "https://github.com/TheWiderLensInitiative/clara/releases/latest")
+APP_URL = os.environ.get("CLARA_APP_URL", "https://clara.thewiderlens.info/#download")
 
 
 def show(url: str = APP_URL) -> None:
