@@ -18,6 +18,7 @@ import info.thewiderlens.clara.ui.screens.AssistantHub
 import info.thewiderlens.clara.ui.components.ClaraIcons
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.activity.compose.BackHandler
 import android.content.Intent
 import android.os.Build
@@ -191,7 +192,8 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
             }
         },
     ) { pad ->
-        Box(Modifier.fillMaxSize().padding(pad)) {
+        // consumeWindowInsets: the keyboard padding inside the chat must not add the tab bar's height again
+        Box(Modifier.fillMaxSize().padding(pad).consumeWindowInsets(pad)) {
             when (tab) {
                 0 -> ChatScreen(state, vm::send, vm::stop, vm::answer, vm::newChat, vm::openConversation, vm::hideLive, onAssistant = { page = "hub" }, onWatch = { page = "screen" },
                     onVault = { r, ok ->

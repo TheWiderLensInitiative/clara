@@ -178,9 +178,11 @@ fun ChatScreen(
 
         // Stage: Clara herself, at the top of the chat, doing whatever she's doing
         val hasChat = state.messages.isNotEmpty() || state.working || state.vaultRequests.isNotEmpty() || state.apiRequests.isNotEmpty() || state.cloudRequests.isNotEmpty()
-        AnimatedVisibility(visible = hasChat && !keyboardOpen) {
+        AnimatedVisibility(visible = hasChat) {
             Column(Modifier.fillMaxWidth().padding(bottom = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                ClaraCharacter(mood, size = 118.dp)
+                // she stays while you type, just smaller, so the chat keeps its room
+                val size by androidx.compose.animation.core.animateDpAsState(if (keyboardOpen) 64.dp else 118.dp, label = "clara-size")
+                ClaraCharacter(mood, size = size)
                 Text(
                     when (mood) {
                         Mood.Waiting -> "Needs your OK"
