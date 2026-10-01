@@ -8,7 +8,6 @@ Free and open source. No subscription. Your chats, files and memories never leav
 <p align="center">
 <a href="https://github.com/TheWiderLensInitiative/clara/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/TheWiderLensInitiative/clara?color=8b5cf6"></a>
 <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-38e1ff"></a>
-<a href="https://github.com/TheWiderLensInitiative/clara/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/TheWiderLensInitiative/clara/total?color=f471d8"></a>
 <a href="https://huggingface.co/TheWiderLensInitiative/laya-for-clara"><img alt="Laya on Hugging Face" src="https://img.shields.io/badge/%F0%9F%A4%97-laya--for--clara-ffcc4d"></a>
 <a href="https://clara.thewiderlens.info/beta"><img alt="Beta testers wanted" src="https://img.shields.io/badge/beta-testers%20wanted-22c55e"></a>
 </p>
