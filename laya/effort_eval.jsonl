@@ -1,0 +1,40 @@
+{"text": "how much free disk space do I have?", "label": "quick"}
+{"text": "what's using the most memory on my PC?", "label": "quick"}
+{"text": "check my email", "label": "quick"}
+{"text": "any unread emails from Sam?", "label": "quick"}
+{"text": "what's on my calendar tomorrow?", "label": "quick"}
+{"text": "add dentist on friday at 3pm to my calendar", "label": "quick"}
+{"text": "turn on the kitchen light", "label": "quick"}
+{"text": "play some lofi on spotify", "label": "quick"}
+{"text": "what's the weather right now?", "label": "quick"}
+{"text": "text Sam on telegram that I'm running late", "label": "quick"}
+{"text": "what's the price of bitcoin?", "label": "quick"}
+{"text": "open youtube.com in the browser", "label": "quick"}
+{"text": "how many files are in my downloads folder?", "label": "quick"}
+{"text": "what time does the Walmart on main street close?", "label": "quick"}
+{"text": "who won the Lakers game last night?", "label": "quick"}
+{"text": "pause the music", "label": "quick"}
+{"text": "list my todoist tasks for today", "label": "quick"}
+{"text": "set the thermostat to 70", "label": "quick"}
+{"text": "show me my open github issues", "label": "quick"}
+{"text": "what's my IP address?", "label": "quick"}
+{"text": "find the best budget 24GB GPU", "label": "deep"}
+{"text": "compare the Pixel 10 and the Galaxy S26 for me and tell me which to buy", "label": "deep"}
+{"text": "plan a 3 day trip to Chicago on a budget", "label": "deep"}
+{"text": "clean up my downloads folder", "label": "deep"}
+{"text": "write a cover letter for a warehouse supervisor job using my resume", "label": "deep"}
+{"text": "go through my inbox and tell me which emails need a reply this week", "label": "deep"}
+{"text": "research the best way to start a small bakery business and make me a plan", "label": "deep"}
+{"text": "figure out why my PC has been slow lately", "label": "deep"}
+{"text": "find me a cheap flight to Atlanta next month and compare airlines", "label": "deep"}
+{"text": "summarize the pdf I just sent you", "label": "deep"}
+{"text": "organize my photos into folders by year", "label": "deep"}
+{"text": "make a weekly meal plan with a grocery list under $80", "label": "deep"}
+{"text": "look at my calendar and find the best time this week for a 2 hour workout, then book it", "label": "deep"}
+{"text": "draft a polite email to my landlord about the broken heater and the rent increase", "label": "deep"}
+{"text": "back up my important documents to dropbox and tell me what you backed up", "label": "deep"}
+{"text": "find three used cars under $12k near me and compare them", "label": "deep"}
+{"text": "go through my github repo and tell me what needs fixing", "label": "deep"}
+{"text": "research what laptop I should get for video editing under $1500", "label": "deep"}
+{"text": "set up a morning routine in home assistant for my lights and thermostat", "label": "deep"}
+{"text": "analyze my spending from this bank statement csv", "label": "deep"}

@@ -1,0 +1,23 @@
+# Hand-labeled Clara messages for measuring the front-of-stack router.
+EVAL = [
+    ("hey what's up", "chat"), ("good morning clara!", "chat"), ("thanks, that's perfect", "chat"),
+    ("what's the difference between a roth and traditional IRA?", "chat"), ("tell me a joke", "chat"),
+    ("how do I say thank you in japanese", "chat"), ("explain how vaccines work simply", "chat"),
+    ("what should I name my new puppy? she's a golden retriever", "chat"), ("I'm feeling kind of stressed today", "chat"),
+    ("what's 15% of 240", "chat"), ("can you help me write a birthday message for my mom", "chat"),
+    ("what does 'ternary' mean", "chat"), ("lol ok", "chat"),
+    ("find me the cheapest flight from Atlanta to Miami next friday", "task"), ("clean up my Downloads folder, delete anything older than 6 months", "task"),
+    ("check if there's a new version of the Hermes agent and install it", "task"), ("compare prices for a PS5 at Walmart and Best Buy", "task"),
+    ("what's the weather in Atlanta right now", "task"), ("look up reviews for the RTX 3090 FE and summarize them", "task"),
+    ("organize my photos folder by year", "task"), ("how much free disk space do I have", "task"),
+    ("open youtube and find a video on changing brake pads", "task"), ("write a python script that renames all my mp3 files and run it", "task"),
+    ("research the best budget 1000w psu and make me a comparison table", "task"), ("email my landlord that the sink is leaking", "task"),
+    ("book a table for 2 at a steakhouse near me saturday at 7", "task"), ("what's on the news today", "task"),
+    ("take a screenshot of my desktop and tell me what's open", "task"),
+    ("remind me to call mom at 6pm", "schedule"), ("every morning at 8 send me a summary of the weather and news", "schedule"),
+    ("remind me tomorrow to take out the trash", "schedule"), ("check the price of a 4090 every day and tell me if it drops under $2000", "schedule"),
+    ("every sunday night back up my documents folder", "schedule"), ("in 20 minutes remind me the laundry is done", "schedule"),
+    ("set a reminder for my dentist appointment on the 14th", "schedule"), ("each friday remind me to pay rent", "schedule"),
+    ("remind me to drink water every 2 hours", "schedule"), ("wake me up with a motivational quote at 7am weekdays", "schedule"),
+    ("cancel my 6pm reminder", "schedule"), ("what reminders do I have coming up", "schedule"),
+]

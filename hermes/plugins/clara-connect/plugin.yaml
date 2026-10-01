@@ -1,0 +1,4 @@
+name: clara-connect
+version: "0.1.0"
+description: "Call any API the user has saved a key for, through the Clara Bridge. Clara never sees the key: the Bridge adds it, only sends it to that service's own host, and scrubs it from responses."
+author: "Clara"

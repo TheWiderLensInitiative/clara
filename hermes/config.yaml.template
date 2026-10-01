@@ -1,0 +1,181 @@
+# Clara's agent (Hermes) configuration. install.sh fills in {{...}} and copies this to /var/lib/clara/hermes-home/config.yaml.
+model:
+  context_length: 102400
+  max_tokens: 16384
+  default: bonsai2-27b-pq2-v16_2
+  provider: custom
+  base_url: http://127.0.0.1:8080/v1
+  api_key: sk-local
+terminal:
+  backend: local
+  cwd: /var/lib/clara/workspace
+  timeout: 180
+  home_mode: auto
+  docker_mount_cwd_to_workspace: false
+  lifetime_seconds: 300
+  container_cpu: 1
+  container_memory: 5120
+  container_disk: 51200
+  container_persistent: true
+browser:
+  inactivity_timeout: 900
+tool_loop_guardrails:
+  warnings_enabled: true
+  hard_stop_enabled: false
+  warn_after:
+    exact_failure: 2
+    same_tool_failure: 3
+    idempotent_no_progress: 2
+  hard_stop_after:
+    exact_failure: 5
+    same_tool_failure: 8
+    idempotent_no_progress: 5
+compression:
+  enabled: true
+  threshold: 0.5
+  codex_gpt55_autoraise: true
+  target_ratio: 0.2
+  protect_last_n: 20
+  codex_app_server_auto: native
+  protect_first_n: 3
+prompt_caching:
+  cache_ttl: 5m
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+  memory_char_limit: 2200
+  user_char_limit: 1375
+  nudge_interval: 10
+  flush_min_turns: 6
+session_reset:
+  mode: both
+  idle_minutes: 1440
+  at_hour: 4
+max_concurrent_sessions: null
+group_sessions_per_user: true
+streaming:
+  enabled: true
+skills:
+  creation_nudge_interval: 15
+agent:
+  max_turns: 40
+  coding_context: false
+  verify_on_stop: false
+  verbose: false
+  reasoning_effort: medium
+  reasoning_overrides: {}
+  personalities:
+    clara: You are Clara, a warm, capable personal assistant running privately on
+      the user's own computer. Be concise and friendly. Before anything irreversible
+      (sending, deleting, buying, installing), explain what you're about to do.
+platform_toolsets:
+  api_server:
+  - hermes-api-server
+  - clara_vault
+  - clara_connect
+  - clara_cloud
+  cli:
+  - hermes-cli
+stt:
+  enabled: true
+  local:
+    model: base
+  openai:
+    model: whisper-1
+code_execution:
+  timeout: 300
+  max_tool_calls: 50
+delegation:
+  max_iterations: 50
+  base_url: http://127.0.0.1:8700/cloud/v1
+  api_key: {{LINK_TOKEN}}
+  model: anthropic/claude-opus-5.5
+  subagent_auto_approve: false
+display:
+  compact: false
+  file_mutation_verifier: false
+  tool_progress: all
+  cleanup_progress: false
+  interim_assistant_messages: true
+  long_running_notifications: true
+  busy_ack_detail: true
+  busy_input_mode: interrupt
+  background_process_notifications: all
+  bell_on_complete: false
+  show_reasoning: false
+  streaming: true
+  skin: default
+updates:
+  pre_update_backup: false
+  backup_keep: 5
+  non_interactive_local_changes: stash
+onboarding:
+  seen:
+    tool_progress_prompt: true
+web:
+  backend: searxng
+auxiliary:
+  vision:
+    provider: main
+    model: ''
+    timeout: 120
+    reasoning_effort: medium
+  web_extract:
+    provider: main
+    model: ''
+    timeout: 120
+    reasoning_effort: medium
+  compression:
+    provider: main
+    model: ''
+    timeout: 120
+    reasoning_effort: medium
+  session_search:
+    provider: main
+    model: ''
+    timeout: 120
+    reasoning_effort: medium
+  title_generation:
+    provider: main
+    model: ''
+    timeout: 120
+    reasoning_effort: medium
+approvals:
+  mode: manual
+  timeout: 1800
+  cron_mode: deny
+  deny:
+  - rm -rf ~
+  - rm -rf ~/
+  - rm -rf ~/ *
+  - '*rm -rf ~ *'
+  - '*rm -rf ~/ *'
+  - '*rm -rf ~;*'
+  - '*rm -rf $HOME*'
+  - '*rm -rf /'
+  - '*rm -rf / *'
+  - '*rm -rf /\**'
+  - '*mkfs*'
+  - '*dd if=*of=/dev/sd*'
+  - '*dd if=*of=/dev/nvme*'
+  - '*rm -rf /var/lib/clara'
+  - '*rm -rf /var/lib/clara/'
+  - '*rm -rf ~/hermes-home*'
+  - '*hermes-home*'
+plugins:
+  enabled:
+  - clara-cloud
+  - clara-connect
+  - clara-guardian
+  - clara-link
+  - clara-vault
+platforms:
+  api_server:
+    extra:
+      model_routes:
+        # quick tasks: same Bonsai, thinking off (the Bridge switches it off, see /bonsai/fast in bridge/app.py)
+        bonsai-fast:
+          model: bonsai2-27b-pq2-v16_2
+          provider: custom
+          base_url: http://127.0.0.1:8700/bonsai/fast/v1
+          api_key: {{LINK_TOKEN}}

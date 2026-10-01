@@ -1,0 +1,4 @@
+name: clara-cloud
+version: "0.1.0"
+description: "Cloud boost via the Clara Bridge (OpenRouter): generate images, check today's cloud spend, and suggest a daily budget to the user. The user controls models, approvals and caps from their phone."
+author: "Clara"

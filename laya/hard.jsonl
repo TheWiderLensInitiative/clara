@@ -1,0 +1,84 @@
+{"text": "is it gonna rain later", "label": "task"}
+{"text": "how's the traffic on 285 right now", "label": "task"}
+{"text": "did the falcons win last night", "label": "task"}
+{"text": "whats bitcoin at", "label": "task"}
+{"text": "any good movies playing tonight near me", "label": "task"}
+{"text": "what time does walmart close", "label": "task"}
+{"text": "is the 4090 back in stock anywhere", "label": "task"}
+{"text": "how much is gas around here", "label": "task"}
+{"text": "whats trending on twitter", "label": "task"}
+{"text": "how hot is my gpu running", "label": "task"}
+{"text": "is my computer running slow? check it", "label": "task"}
+{"text": "whats using all my ram", "label": "task"}
+{"text": "text my brother happy birthday", "label": "task"}
+{"text": "order more dog food", "label": "task"}
+{"text": "pay my phone bill", "label": "task"}
+{"text": "unsubscribe me from those spam emails", "label": "task"}
+{"text": "summarize my unread emails", "label": "task"}
+{"text": "find that pdf I downloaded yesterday about taxes", "label": "task"}
+{"text": "play some lofi on youtube", "label": "task"}
+{"text": "update my pc", "label": "task"}
+{"text": "fix my wifi its acting up", "label": "task"}
+{"text": "look up how to fix a leaky faucet and give me the steps", "label": "task"}
+{"text": "book me a haircut for saturday morning", "label": "task"}
+{"text": "cancel my netflix subscription", "label": "task"}
+{"text": "what's the price of eggs at kroger", "label": "task"}
+{"text": "search for cheap hotels in miami for next weekend", "label": "task"}
+{"text": "download the latest nvidia driver", "label": "task"}
+{"text": "turn this into a pdf and save it to my desktop", "label": "task"}
+{"text": "how do I fix a leaky faucet", "label": "chat"}
+{"text": "whats a good name for a fantasy football team", "label": "chat"}
+{"text": "why is the sky blue", "label": "chat"}
+{"text": "should I get a 3090 or a 4090", "label": "chat"}
+{"text": "what's a healthy breakfast", "label": "chat"}
+{"text": "convert 5 miles to km", "label": "chat"}
+{"text": "whats the capital of australia", "label": "chat"}
+{"text": "rewrite this to sound more professional: i cant make it tmrw sorry", "label": "chat"}
+{"text": "you're awesome clara", "label": "chat"}
+{"text": "ok", "label": "chat"}
+{"text": "nvm", "label": "chat"}
+{"text": "haha", "label": "chat"}
+{"text": "who are you", "label": "chat"}
+{"text": "what can you do", "label": "chat"}
+{"text": "how does a reminder app work", "label": "chat"}
+{"text": "what's the best way to remember to take my vitamins", "label": "chat"}
+{"text": "give me a workout plan for beginners", "label": "chat"}
+{"text": "help me plan a budget, I make 4k a month", "label": "chat"}
+{"text": "write a poem about my cat", "label": "chat"}
+{"text": "explain what a VPN does", "label": "chat"}
+{"text": "i cant sleep", "label": "chat"}
+{"text": "what year did the iphone come out", "label": "chat"}
+{"text": "whats 2 plus 2", "label": "chat"}
+{"text": "remind me", "label": "schedule"}
+{"text": "ping me in an hour", "label": "schedule"}
+{"text": "dont let me forget the meeting at 3", "label": "schedule"}
+{"text": "every morning tell me the weather", "label": "schedule"}
+{"text": "let me know when the ps6 gets announced", "label": "schedule"}
+{"text": "keep an eye on bitcoin and tell me if it drops below 50k", "label": "schedule"}
+{"text": "every night at 11 clean my downloads folder", "label": "schedule"}
+{"text": "check my email every hour and tell me if anything important comes in", "label": "schedule"}
+{"text": "snooze that reminder 10 minutes", "label": "schedule"}
+{"text": "move my gym reminder to 6am", "label": "schedule"}
+{"text": "delete all my reminders", "label": "schedule"}
+{"text": "what do I have scheduled for tomorrow", "label": "schedule"}
+{"text": "stop the daily news summary", "label": "schedule"}
+{"text": "set a timer for 15 minutes", "label": "schedule"}
+{"text": "wake me up at 6", "label": "schedule"}
+{"text": "on the first of every month remind me to pay the car note", "label": "schedule"}
+{"text": "at 5pm text my wife that I'm leaving work", "label": "schedule"}
+{"text": "weekly on mondays send me my calendar for the week", "label": "schedule"}
+{"text": "pause all my scheduled jobs", "label": "schedule"}
+{"text": "remember that my favorite color is purple", "label": "task"}
+{"text": "please remember I'm allergic to peanuts", "label": "task"}
+{"text": "don't forget my wife's birthday is june 3rd", "label": "task"}
+{"text": "keep in mind I work nights", "label": "task"}
+{"text": "make a note that I drive a honda civic", "label": "task"}
+{"text": "forget what I said about my job", "label": "task"}
+{"text": "what do you remember about me", "label": "task"}
+{"text": "generate an image of a robot watering a bonsai", "label": "task"}
+{"text": "draw me a cat wearing sunglasses", "label": "task"}
+{"text": "make a logo for my bakery", "label": "task"}
+{"text": "design a new look for your character", "label": "task"}
+{"text": "write a python script that renames my photos by date", "label": "task"}
+{"text": "build me a simple website for my barbershop", "label": "task"}
+{"text": "fix the bug in this code", "label": "task"}

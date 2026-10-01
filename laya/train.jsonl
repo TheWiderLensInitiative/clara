@@ -1,0 +1,1259 @@
+{"text": "What is the recommended amount of sleep for an adult to ensure optimal physical recovery and mental well-being?", "label": "chat"}
+{"text": "Could you please provide a definition of what an automatic transmission is for someone who is just starting to learn about cars?", "label": "chat"}
+{"text": "can u grab the top 100 billboard songs from right now and put 'em in a csv for me?", "label": "task"}
+{"text": "what's a healthy breakfast", "label": "chat"}
+{"text": "Find the nearest gas station to my current GPS location and display it in the car's navigation app.", "label": "task"}
+{"text": "Find the highest-rated online tutoring service for calculus and open their booking page in the browser", "label": "task"}
+{"text": "Is there a reminder set for me to submit the science project by next Tuesday?", "label": "schedule"}
+{"text": "Can you open my calendar and find an opening between 2 and 4 PM tomorrow to add a 30-minute stand-up with the design team?", "label": "task"}
+{"text": "money is fake", "label": "chat"}
+{"text": "Help me write a polite message to cancel a recent order", "label": "chat"}
+{"text": "Do you have any tips for staying motivated during a fitness plateau?", "label": "chat"}
+{"text": "How's your day?", "label": "chat"}
+{"text": "Please run a terminal command to check the server's disk usage and alert me if it exceeds 90% capacity.", "label": "task"}
+{"text": "Find used car listings", "label": "task"}
+{"text": "download and install that new productivity app i mentioned yesterday and open it up", "label": "task"}
+{"text": "every morning tell me the weather", "label": "schedule"}
+{"text": "What are some common mistakes people make when buying a first-time apartment and how can I avoid them?", "label": "chat"}
+{"text": "Dad's birthday", "label": "chat"}
+{"text": "wake me up at 6", "label": "schedule"}
+{"text": "Do you have any active reminders set to tell me when the automated code review for my TypeScript project is complete?", "label": "schedule"}
+{"text": "I'm looking for a good way to organize my closet; could you share a few popular methods that people use to keep things tidy?", "label": "chat"}
+{"text": "i think i am the weird one in my family because i still call my grandparents every saturday", "label": "chat"}
+{"text": "set a timer for 15 minutes", "label": "schedule"}
+{"text": "Please look up the current stock price of Apple Inc. and tell me if it's up or down from yesterday.", "label": "task"}
+{"text": "hey i just realized i have been folding towels wrong this whole year why do we do it that way anyway", "label": "chat"}
+{"text": "What are the current attendance numbers and ticket prices for the home games this season?", "label": "task"}
+{"text": "do you have any funny car puns i could tell my coworkers at the shop today", "label": "chat"}
+{"text": "can you open the browser, go to the npm registry page for that lodash dependency i'm using, and check if there are any open security advisories for it? also check the current version price if it's paid", "label": "task"}
+{"text": "Give me a short script for asking the HOA board if we can paint the front doors a bolder color.", "label": "chat"}
+{"text": "list all my upcoming scheduled jobs for the car, i'm trying to plan out my garage days", "label": "schedule"}
+{"text": "Find cheapest car insurance", "label": "task"}
+{"text": "i feel so guilty for not walking my hamster enough, he just looks at me with those tiny eyes", "label": "chat"}
+{"text": "Look up today's sales on running shoes from Nike, Adidas, and New Balance and tell me the best deal.", "label": "task"}
+{"text": "discount code ideas", "label": "chat"}
+{"text": "Install the latest version of the family calendar app on the tablet and sync it with my phone's calendar.", "label": "task"}
+{"text": "i cant sleep", "label": "chat"}
+{"text": "any good movies playing tonight near me", "label": "task"}
+{"text": "Do you have any reminders scheduled for my yoga session this weekend?", "label": "schedule"}
+{"text": "What's the most common injury type for soccer goalkeepers?", "label": "chat"}
+{"text": "Could you download the latest release notes from the GitHub repository for Project Alpha and save them to my Desktop?", "label": "task"}
+{"text": "Please list all the future scheduled jobs related to watching live sports or reading morning news.", "label": "schedule"}
+{"text": "set a timer for 30 min im gonna need it before my flight checkin", "label": "schedule"}
+{"text": "weekly on mondays send me my calendar for the week", "label": "schedule"}
+{"text": "search the web for the latest stable version of node and if it's different from what i have, update it and tell me what changed", "label": "task"}
+{"text": "I need you to book a taxi for us from the airport to the hotel when we land this afternoon and send the confirmation to my phone.", "label": "task"}
+{"text": "Timer 20 minutes focus", "label": "schedule"}
+{"text": "Cancel work dinner", "label": "schedule"}
+{"text": "unsubscribe me from those spam emails", "label": "task"}
+{"text": "what does it actually mean when aunts say im growing up too fast lol", "label": "chat"}
+{"text": "Buy running shoes", "label": "task"}
+{"text": "Search chemistry labs", "label": "task"}
+{"text": "pull up the terminal and run the deployment script for the staging environment", "label": "task"}
+{"text": "Schedule a weekly reminder every Sunday at ten am to plan the family meal for the week", "label": "schedule"}
+{"text": "hey ai, every friday remind me to plan dinner with the in-laws, i keep forgetting", "label": "schedule"}
+{"text": "Would you be able to change my existing alarm from 7:00 AM to 6:30 AM to help me catch up on my morning commute?", "label": "schedule"}
+{"text": "i need help writing a polite email to decline the extra shift without sounding rude", "label": "chat"}
+{"text": "Can you explain the concept of a 'couch potato' in the context of modern streaming habits?", "label": "chat"}
+{"text": "What's the best way to clean grime off grout without scrubbing my hands raw?", "label": "chat"}
+{"text": "Every day at nine pm check if there's anything to wash for the kids and tell me", "label": "schedule"}
+{"text": "How much sleep is actually recommended for optimal recovery?", "label": "chat"}
+{"text": "Remind me every Sunday at 6pm to stock the pantry", "label": "schedule"}
+{"text": "Do you think the new CEO's strategy will actually boost stock prices?", "label": "chat"}
+{"text": "Get current MLB scores", "label": "task"}
+{"text": "Do you have a scheduled job to notify me tomorrow when my router firmware updates?", "label": "schedule"}
+{"text": "install nodejs", "label": "task"}
+{"text": "remind me to fill up gas every friday", "label": "schedule"}
+{"text": "why does 0.1 + 0.2 not equal 0.3 in python ?!", "label": "chat"}
+{"text": "every night remind me to pick a new album to listen to before bed", "label": "schedule"}
+{"text": "email my producer the bounces of the last 3 tracks i tagged as 'final' in my music folder", "label": "task"}
+{"text": "check if my order from amazon arrived", "label": "task"}
+{"text": "Is there a way to make a quick salsa without using a food processor?", "label": "chat"}
+{"text": "Please change my existing weekly car wash reminder from Saturday to Sunday, and move the time to 11 AM.", "label": "schedule"}
+{"text": "Do you have any recurring scheduled tasks set up to ping me every Monday morning with a summary of my open pull requests?", "label": "schedule"}
+{"text": "If you had to give me one piece of advice for keeping a Windows PC running smoothly, what would it be?", "label": "chat"}
+{"text": "Search fresh produce", "label": "task"}
+{"text": "open my email inbox and filter out all the messages from the accounting firm i have been ignoring", "label": "task"}
+{"text": "Can you find a plumber near my address that has good reviews and is available to come in today?", "label": "task"}
+{"text": "Look up the price of the brand new air purifier I was eyeing on Amazon and add it to my cart", "label": "task"}
+{"text": "Set a 45-minute timer for the oven preheat", "label": "schedule"}
+{"text": "Can you search for the current stock price of NVIDIA and give me a brief market analysis?", "label": "task"}
+{"text": "cancel the reminder to pick up the car from the dealer", "label": "schedule"}
+{"text": "open the browser and find a live stream of the beethoven symphony no five being performed at the london philharmonic right now", "label": "task"}
+{"text": "find me a used book of game of thrones on ebay", "label": "task"}
+{"text": "pay my phone bill", "label": "task"}
+{"text": "every night at 11 clean my downloads folder", "label": "schedule"}
+{"text": "write a poem about my cat", "label": "chat"}
+{"text": "Can you open the browser, search for the latest industry trends in AI automation, and save the top three articles to my 'Research' folder?", "label": "task"}
+{"text": "change my car wash appointment to 3pm", "label": "task"}
+{"text": "Do dogs actually know their own name?", "label": "chat"}
+{"text": "Explain the difference between codependency and being supportive in a relationship.", "label": "chat"}
+{"text": "remind me every friday at five pm to wash the car", "label": "schedule"}
+{"text": "Find a reliable babysitter from the verified list in the app and request a quote for $20/hour.", "label": "task"}
+{"text": "ok", "label": "chat"}
+{"text": "Find 3 recipes for a quick pasta dinner using ingredients I have on hand", "label": "chat"}
+{"text": "Search for and download the latest version of the Blender software installer for me.", "label": "task"}
+{"text": "stop the daily news summary", "label": "schedule"}
+{"text": "Track package now", "label": "task"}
+{"text": "That was quite the joke you made earlier about the dust bunnies; it certainly made my day.", "label": "chat"}
+{"text": "whats a good name for a fantasy football team", "label": "chat"}
+{"text": "Hey, how do I start a home workout routine if I'm a complete beginner?", "label": "chat"}
+{"text": "Family drama again?", "label": "chat"}
+{"text": "Open the family group chat and send a message to everyone that dinner is ready at 7 PM.", "label": "task"}
+{"text": "remind me to ask taylor out every friday", "label": "schedule"}
+{"text": "What's the quickest way to reduce back pain from standing too much?", "label": "chat"}
+{"text": "hey remind me to queue up a ranked match in 45 min", "label": "schedule"}
+{"text": "How do I know when garlic is burnt and not just cooked?", "label": "chat"}
+{"text": "Who is the current world No. 1 in men's tennis?", "label": "chat"}
+{"text": "set a timer for 20 mins, i'm making pasta for the kids and i gotta keep an eye out", "label": "schedule"}
+{"text": "What's the math on how much paper towels a family of four uses per month if they go through 2 per day each?", "label": "chat"}
+{"text": "remind me every friday night to text grandma goodnight", "label": "schedule"}
+{"text": "Can you install the new offline maps application on my phone so I can navigate Tokyo without using data?", "label": "task"}
+{"text": "find that pdf I downloaded yesterday about taxes", "label": "task"}
+{"text": "put a reminder in 15 mins to pack my bag", "label": "schedule"}
+{"text": "how does a reminder app work", "label": "chat"}
+{"text": "remind me every saturday morning to check the coolant level in the truck, it's always low somehow", "label": "schedule"}
+{"text": "Can you check if the Microsoft Teams meeting we have at 3 PM is still on the calendar, and reschedule it for next Tuesday if it's been canceled?", "label": "task"}
+{"text": "Get weather forecast", "label": "task"}
+{"text": "Run a terminal command to check if my smart fridge's app is installed, and if not, download it from the App Store.", "label": "task"}
+{"text": "my friend thinks i'm too nice in relationships and keeps telling me i should set stricter boundaries with my boyfriend but i don't know how to do that without sounding rude", "label": "chat"}
+{"text": "Do you know the general definition of a 'stopover' in the context of international airline travel?", "label": "chat"}
+{"text": "can u explain to me like i'm 5 how streaming algorithms actually pick what to show me next?", "label": "chat"}
+{"text": "haha", "label": "chat"}
+{"text": "Can you set a reminder to check the engine oil on my sedan every 5,000 miles?", "label": "schedule"}
+{"text": "Look up the latest news on school closures in our city and if there are any, send an email to the school administration to confirm the status.", "label": "task"}
+{"text": "thx you for helping me figure out what that rattle in my engine was last time i just really appreciate it", "label": "chat"}
+{"text": "Give me a quick history of jazz in the 1940s.", "label": "chat"}
+{"text": "Could you cancel the recurring alarm I set for every Wednesday evening to check for new anime episodes?", "label": "schedule"}
+{"text": "Why do people think 'The Matrix' is such an influential movie for its visual style and philosophy?", "label": "chat"}
+{"text": "What's the ideal amount of protein I need for muscle recovery?", "label": "chat"}
+{"text": "I'm feeling super frustrated because the team lost in the final minute again.", "label": "chat"}
+{"text": "turn this into a pdf and save it to my desktop", "label": "task"}
+{"text": "Could you please schedule a recurring task every Tuesday at 5 PM to take a photo of my parrot?", "label": "schedule"}
+{"text": "Do you think the graphics in the latest AAA release are worth the high price tag for a console player?", "label": "chat"}
+{"text": "Remind me every Friday at 5 PM to calculate my net worth", "label": "schedule"}
+{"text": "hey, every saturday morning remind me to water the plants the old man likes in the corner", "label": "schedule"}
+{"text": "cheapest coffee beans", "label": "task"}
+{"text": "i told my boyfriend i need space for a few days and he got really upset and now i feel like i messed up even though i just wanted to process my own thoughts alone", "label": "chat"}
+{"text": "help me brainstorm some catchy names for my new car detailing business i want something that sounds fast and clean", "label": "chat"}
+{"text": "remind me to buy that game every friday for the next 3 months", "label": "schedule"}
+{"text": "search for cheap hotels in miami for next weekend", "label": "task"}
+{"text": "Could you look up the current weather forecast for Chicago and let me know if I need to bring an umbrella for my client meeting?", "label": "task"}
+{"text": "look up the latest sports betting odds for the world cup final", "label": "task"}
+{"text": "rewrite this to sound more professional: i cant make it tmrw sorry", "label": "chat"}
+{"text": "search best dumbbells", "label": "task"}
+{"text": "what is the etymology or origin of the word horsepower and why is it even named that way for an engine", "label": "chat"}
+{"text": "Do you think a microfiber cloth is better than a standard sponge for wiping down these kitchen counters?", "label": "chat"}
+{"text": "Would you mind changing my recurring weekly shopping list reminder to occur on Thursdays instead of Mondays?", "label": "schedule"}
+{"text": "Why family?", "label": "chat"}
+{"text": "i dont have the lab today cancel the 9am reminder", "label": "schedule"}
+{"text": "Change the time of my mom's dinner appointment from six to seven pm", "label": "schedule"}
+{"text": "Calculate the total points if a player makes 10 free throws and 4 three-pointers.", "label": "chat"}
+{"text": "Thanks for last time helping me figure out that weird clicking sound coming from my furnace.", "label": "chat"}
+{"text": "im so tired after scrubbing the bathroom floor can you just be there for me for a second", "label": "chat"}
+{"text": "i hate doing dishes so much i just wanna cry lol", "label": "chat"}
+{"text": "Change my laundry reminder to every Tuesday instead of Monday", "label": "schedule"}
+{"text": "Hey can you check the weather right now I need to know if I should bring the laundry back inside before it starts pouring", "label": "task"}
+{"text": "cancel the alarm for coffee with sarah", "label": "schedule"}
+{"text": "Define 'synergy' in a business context and give a practical example.", "label": "chat"}
+{"text": "I've been feeling a bit frustrated lately because my PC keeps freezing, but I'm not sure if it's the hardware or just too many apps running at once.", "label": "chat"}
+{"text": "Run the unit tests and show me the results", "label": "task"}
+{"text": "Look up the current exchange rate for USD to GBP and send it in a message to my travel partner.", "label": "task"}
+{"text": "Remind submit report", "label": "schedule"}
+{"text": "best time to buy gold", "label": "chat"}
+{"text": "How do I make pasta?", "label": "chat"}
+{"text": "What's the best time of year to buy a new laptop for the best price", "label": "chat"}
+{"text": "update my pc", "label": "task"}
+{"text": "what is the current score in the nba game between the celtics and the bucks right now", "label": "task"}
+{"text": "Could you define what a 'caloric surplus' is and explain how it naturally affects body fat storage over time?", "label": "chat"}
+{"text": "give me a workout plan for beginners", "label": "chat"}
+{"text": "convert 5 miles to km", "label": "chat"}
+{"text": "Would you list all the upcoming scheduled jobs related to grocery shopping and bill payments?", "label": "schedule"}
+{"text": "How do I politely decline a new task when I'm already at capacity?", "label": "chat"}
+{"text": "Find open courses", "label": "task"}
+{"text": "Remind text wife", "label": "schedule"}
+{"text": "check my email every hour and tell me if anything important comes in", "label": "schedule"}
+{"text": "hello coder", "label": "chat"}
+{"text": "list all my gaming reminders for this week so i can see if anything's messed up", "label": "schedule"}
+{"text": "Book a conference room for tomorrow from 10:00 AM to 11:30 AM and send out an email to the team with the meeting link and a 5-minute agenda.", "label": "task"}
+{"text": "What are the current prices for a 256GB Samsung SSD on the web, and which site has free shipping?", "label": "task"}
+{"text": "Schedule a timer for 30 minutes to start a mixdown session right now.", "label": "schedule"}
+{"text": "Can you set a daily timer of 15 minutes every morning to remind me to read a bedtime story?", "label": "schedule"}
+{"text": "Would you mind creating an alarm for 7:30 AM tomorrow to remind me to preheat my car in the morning?", "label": "schedule"}
+{"text": "Would you be able to schedule a daily reminder to check for any new discounts on my favorite electronics store?", "label": "schedule"}
+{"text": "change the anniversary reminder to 7pm", "label": "schedule"}
+{"text": "can u help me name my new kitten? she has white paws and is a little chaotic", "label": "chat"}
+{"text": "hey can you pull up the latest scores for the nfl playoff game that just ended", "label": "task"}
+{"text": "what's the best way to remember to take my vitamins", "label": "chat"}
+{"text": "turn this into a pdf and save it to my desktop", "label": "task"}
+{"text": "What's a souffl\u00e9?", "label": "chat"}
+{"text": "cancel that 'download new game' job i already have it on the disk", "label": "schedule"}
+{"text": "Are there any pending alarms set for when my software build server completes its nightly test run?", "label": "schedule"}
+{"text": "dude, i just npm installed that weird package and it's eating all my memory, can you kill the process and check what's actually running in the terminal?", "label": "task"}
+{"text": "Search for the current prices of these three specific brands of diapers and buy the cheapest one for delivery tomorrow morning.", "label": "task"}
+{"text": "tysomuch for helpin with that laundry thing yesterday", "label": "chat"}
+{"text": "open my email and find the ticket confirmation i got this morning", "label": "task"}
+{"text": "Can you explain the difference between a walk-off hit and a grand slam in baseball?", "label": "chat"}
+{"text": "Can you set a daily reminder to drink eight glasses of water?", "label": "schedule"}
+{"text": "Cancel the reminder for Dad's birthday gift shopping on Friday", "label": "schedule"}
+{"text": "Create a recurring event for Sunday 10 AM to review my weekly music playlist.", "label": "schedule"}
+{"text": "List future plans", "label": "schedule"}
+{"text": "What alarms are set for checking the car's fluid levels this quarter?", "label": "schedule"}
+{"text": "search for cheap hotels in miami for next weekend", "label": "task"}
+{"text": "remind me to cancel the concert ticket if the band changes", "label": "schedule"}
+{"text": "change my 5pm bill pay to 4pm", "label": "schedule"}
+{"text": "summarize my unread emails", "label": "task"}
+{"text": "What's the difference between a kitten and a cat?", "label": "chat"}
+{"text": "what does the term decluttering actually mean like is it just throwing stuff away or something else", "label": "chat"}
+{"text": "Check if there's a last-minute price drop on the new basketball shoes I was looking at on Amazon earlier.", "label": "task"}
+{"text": "Define syncopation.", "label": "chat"}
+{"text": "Hey, how's it going? I just finished a fun road trip in my sports car and I was wondering if you could recommend some good spots in the mountains to visit next time.", "label": "chat"}
+{"text": "Cancel the recurring weekly job that transfers money to savings", "label": "schedule"}
+{"text": "Email my professor", "label": "task"}
+{"text": "Run a terminal command to check if there's a free update available for my video game emulator.", "label": "task"}
+{"text": "Get today's sports scores", "label": "task"}
+{"text": "Can you create a timer for 30 minutes after I get home to remind me to check the car's fuel level?", "label": "schedule"}
+{"text": "Could you cancel the reminder you set for the chemistry lab submission on Friday?", "label": "schedule"}
+{"text": "Please email my manager a draft of the quarterly report using the attached PDF and CC the finance team.", "label": "task"}
+{"text": "Open the online store and purchase two pairs of running shoes for me and one for my brother, using the gift card in my wallet.", "label": "task"}
+{"text": "fix my wifi its acting up", "label": "task"}
+{"text": "I would like to schedule a weekly timer every Sunday at 4:00 PM to start the pasta making session for the whole family.", "label": "schedule"}
+{"text": "Is there a reminder scheduled for every Friday afternoon to do laundry for the kids?", "label": "schedule"}
+{"text": "hey, set a reminder for me to stream that new Marvel series tonight at 8, cause i keep forgetting", "label": "schedule"}
+{"text": "I'm overthinking a text my ex sent last night. Help me analyze it.", "label": "chat"}
+{"text": "Can you pull up the latest breaking sports scores from this morning's games right now?", "label": "task"}
+{"text": "Could you cancel the alarm set for next Tuesday at 7 AM for the parent-teacher conference?", "label": "schedule"}
+{"text": "look up how to fix a leaky faucet and give me the steps", "label": "task"}
+{"text": "Brainstorm five catchy names for a new internal team dedicated to process automation.", "label": "chat"}
+{"text": "Find me the lowest shipping cost for a standing desk from my top three retailers and add it to my cart.", "label": "task"}
+{"text": "Reschedule cleaning service", "label": "task"}
+{"text": "thanks a lot for helping me earlier that saved my whole weekend", "label": "chat"}
+{"text": "I would like to change my Sunday deep cleaning alarm from 10 AM to 2 PM.", "label": "schedule"}
+{"text": "Set a daily reminder at 7am to take out the trash", "label": "schedule"}
+{"text": "Can you schedule a recurring alarm every Wednesday at 5 PM to remind me to pack the kids' school bags?", "label": "schedule"}
+{"text": "search for the most recent news on the new president signing the sports bill", "label": "task"}
+{"text": "what do I have scheduled for tomorrow", "label": "schedule"}
+{"text": "remind me to order the birthday cake online tonight at seven", "label": "schedule"}
+{"text": "search the web for current gas prices near downtown and tell me where its the cheapest", "label": "task"}
+{"text": "Could you list all the upcoming alarms and reminders scheduled for this weekend for our family events?", "label": "schedule"}
+{"text": "yo set a timer for 15 min i think the oil is still hot and i'm gonna check the dipstick", "label": "schedule"}
+{"text": "cancel my reminder to buy the birthday gift on saturday", "label": "schedule"}
+{"text": "help me plan a budget, I make 4k a month", "label": "chat"}
+{"text": "let me know when the ps6 gets announced", "label": "schedule"}
+{"text": "any good movies playing tonight near me", "label": "task"}
+{"text": "download the latest nvidia driver", "label": "task"}
+{"text": "What does it mean if someone says 'I need space'?", "label": "chat"}
+{"text": "Could you cancel the timer I set for 15 minutes for my presentation practice this evening?", "label": "schedule"}
+{"text": "Please look up the current price of a 10kg bag of coffee on Amazon and compare it with two other major retailers.", "label": "task"}
+{"text": "Hey remind me to pick up Maya from school tomorrow at two o'clock", "label": "schedule"}
+{"text": "what times do i have to pick up the kids this week", "label": "schedule"}
+{"text": "Please book me a table for dinner in New York for next Friday evening for two, using my credit card on file.", "label": "task"}
+{"text": "write a haiku", "label": "chat"}
+{"text": "ok", "label": "chat"}
+{"text": "add a recurring reminder to check savings every month", "label": "schedule"}
+{"text": "remind me to ask the professor about the grade", "label": "schedule"}
+{"text": "find that pdf I downloaded yesterday about taxes", "label": "task"}
+{"text": "can you nudge me every night at 10pm to read a book to the little ones?", "label": "schedule"}
+{"text": "What's the difference between a 'box office hit' and a 'critical darling' in film?", "label": "chat"}
+{"text": "i am honestly so stressed out about that deadline tomorrow at the office", "label": "chat"}
+{"text": "Find a local wine shop open now, check if they have Pinot Noir in stock, and send my wife an email with the store address.", "label": "task"}
+{"text": "hey how was your day i just finished vacuuming the living room and i feel so accomplished", "label": "chat"}
+{"text": "Would you be able to open the browser and pull up the latest sports headlines from ESPN for me to read?", "label": "task"}
+{"text": "im trying to pack like 2 weeks in a carry on, help me not look like a tourist", "label": "chat"}
+{"text": "look up knee pain", "label": "task"}
+{"text": "Search local waste", "label": "task"}
+{"text": "Could you explain the difference between a mop and a broom in terms of which areas they are best suited for?", "label": "chat"}
+{"text": "did the falcons win last night", "label": "task"}
+{"text": "Miss grandma", "label": "chat"}
+{"text": "Create an alarm for Saturday at 8am to clean the gutters", "label": "schedule"}
+{"text": "Schedule standup 9am", "label": "schedule"}
+{"text": "How do you usually decide which brand of wireless earbuds to buy if you have a limited budget?", "label": "chat"}
+{"text": "2+2 equals", "label": "chat"}
+{"text": "how do i calculate the overtime pay if i worked 2 hours and 15 minutes extra at the end of the week", "label": "chat"}
+{"text": "I need to buy tickets for the evening play; could you search the theater's website and find out the current ticket prices?", "label": "task"}
+{"text": "I'm feeling a bit anxious about flying in a small plane for the first time; do you have any tips on how to manage that fear?", "label": "chat"}
+{"text": "Please check if there are any new patches for my laptop's BIOS and install the latest version.", "label": "task"}
+{"text": "is my computer running slow? check it", "label": "task"}
+{"text": "Set laundry timer", "label": "schedule"}
+{"text": "Could you please set a daily reminder at 8 AM to feed my cat, Whiskers?", "label": "schedule"}
+{"text": "Could you please give me a brief explanation of how the body's energy systems change during a 30-minute jog?", "label": "chat"}
+{"text": "change the 'check streaming service sales' reminder from every monday to every friday", "label": "schedule"}
+{"text": "Print syllabus PDF", "label": "task"}
+{"text": "Change my Tuesday evening jam session reminder from 7 PM to 8 PM.", "label": "schedule"}
+{"text": "help me plan a budget, I make 4k a month", "label": "chat"}
+{"text": "Can you list all the future shopping-related alarms and reminders I have currently scheduled?", "label": "schedule"}
+{"text": "Open the terminal and install the latest version of LaTeX distribution now", "label": "task"}
+{"text": "Write a short tweet praising the last minute goal in the football final.", "label": "chat"}
+{"text": "can you put the air fryer on my cart at walmart", "label": "task"}
+{"text": "Could you please create a recurring reminder every Friday at 3 PM to review my weekly project report?", "label": "schedule"}
+{"text": "change my alarm to 6:15 am so i can listen to the news playlist", "label": "schedule"}
+{"text": "cancel the alarm i set for last night to check the tire pressure", "label": "schedule"}
+{"text": "Could you please explain the difference between a gas engine and an electric motor in simple terms?", "label": "chat"}
+{"text": "Check local traffic now", "label": "task"}
+{"text": "Would you be able to list all the future scheduled jobs I have for the end of this month related to my upcoming deadline submissions?", "label": "schedule"}
+{"text": "Opinion: synth good?", "label": "chat"}
+{"text": "yo schedule a 1 hour timer so i can listen to my playlist while i'm waiting for that exhaust part to arrive", "label": "schedule"}
+{"text": "What future scheduled jobs do I have for the final review sessions next month?", "label": "schedule"}
+{"text": "Can you explain what exactly is a 'frame data' in fighting games for someone who's just starting out?", "label": "chat"}
+{"text": "is it gonna rain later", "label": "task"}
+{"text": "pause all my scheduled jobs", "label": "schedule"}
+{"text": "unsubscribe me from those spam emails", "label": "task"}
+{"text": "What are the latest prices for propane tanks at local hardware stores near me?", "label": "task"}
+{"text": "Open my browser, search for the latest news about the release of Kendrick Lamar's new album, and summarize the top three headlines.", "label": "task"}
+{"text": "Can you search the web for the cheapest available flight from New York to London next month and show me the top results?", "label": "task"}
+{"text": "search news for the latest fed interest rate decision and what it means for the stock market", "label": "task"}
+{"text": "Search the internet for the current rate of the EUR/USD exchange rate, then update the 'Exchange Rates' spreadsheet with today's data.", "label": "task"}
+{"text": "search spotify for the top ten albums released this month and make me a playlist called new releases", "label": "task"}
+{"text": "Please list the upcoming scheduled tasks related to my upcoming concert season, including any reminders for ticket renewals or venue changes.", "label": "schedule"}
+{"text": "move my gym reminder to 6am", "label": "schedule"}
+{"text": "lol delete that daily 6am 'log in' reminder i'm not a robot anymore", "label": "schedule"}
+{"text": "change the time on my mom's med reminder from 6pm to 8pm, she's being stubborn", "label": "schedule"}
+{"text": "hey u know why my python code keeps throwing index errors rite", "label": "chat"}
+{"text": "my mom is so weird she made me a care package for no reason just because it rained", "label": "chat"}
+{"text": "can you cancel that alarm i set for the concert start? i'm not going anymore lol", "label": "schedule"}
+{"text": "hey what's the set time for the Coachella main stage tonight? check the official site", "label": "task"}
+{"text": "hey what do you think about using baking soda for the fridge do you ever use it yourself", "label": "chat"}
+{"text": "remind me to pick up milk and eggs after work on thursday", "label": "schedule"}
+{"text": "wait so like, mathematically speaking, is it possible for a movie to have a perfect 100% score on every single review site? or is that just a lie?", "label": "chat"}
+{"text": "open my email and find that invoice from last week i sent, then save a copy to my downloads", "label": "task"}
+{"text": "I've always admired vintage cars, so do you have any opinions on the most iconic designs from the 1960s?", "label": "chat"}
+{"text": "what's the price of eggs at kroger", "label": "task"}
+{"text": "What is your opinion on whether the latest open-world game's main story is worth the 60-hour grind?", "label": "chat"}
+{"text": "Install the latest version of Git and verify the installation", "label": "task"}
+{"text": "stop the daily news summary", "label": "schedule"}
+{"text": "How many square feet of carpet do I need if my living room is 15 by 20?", "label": "chat"}
+{"text": "set a reminder to pick up jess at 3 to pick up jess at 3pm", "label": "schedule"}
+{"text": "search the web for the best cashback credit card rates right now and list top 3", "label": "task"}
+{"text": "Check the current stock and price of the Sony WH-1000XM5 headphones on my preferred shopping sites.", "label": "task"}
+{"text": "I want you to look up the current price of a 3-year-old Honda Civic in my area on CarMax and AutoTrader.", "label": "task"}
+{"text": "What's the definition of a 'spoiler' and why is it considered rude to share them with others?", "label": "chat"}
+{"text": "set alarm to wake me up in 30 mins for the patch", "label": "schedule"}
+{"text": "Good morning! I'm just waking up and feeling inspired for my upcoming trip to Japan; do you have any general recommendations for first-time visitors?", "label": "chat"}
+{"text": "what's a healthy breakfast", "label": "chat"}
+{"text": "Run the Python script in my Scripts folder that generates the dataset for my data science project", "label": "task"}
+{"text": "what's the best way to remember to take my vitamins", "label": "chat"}
+{"text": "Is it better to buy groceries in bulk to save money or just stick to what I need for the week to avoid waste?", "label": "chat"}
+{"text": "how to save money", "label": "chat"}
+{"text": "lol my cat just knocked a whole cup off the counter and i cant believe i got the dishes done", "label": "chat"}
+{"text": "Could you please search the web for the current stock prices of AAPL and TSLA to help me update my spreadsheet?", "label": "task"}
+{"text": "help me plan a budget, I make 4k a month", "label": "chat"}
+{"text": "run disk cleanup", "label": "task"}
+{"text": "yo download that new Kendrick album to my downloads folder like rn", "label": "task"}
+{"text": "Show local deals", "label": "task"}
+{"text": "Can you put a timer for twenty minutes for my daughter's bath right now", "label": "schedule"}
+{"text": "whats bitcoin at", "label": "task"}
+{"text": "Run a command-line script to back up the local development environment folder to the external SSD, then send me an email confirmation with the backup timestamp and file count.", "label": "task"}
+{"text": "change my daily gta login reminder to 9am not 930", "label": "schedule"}
+{"text": "Install Docker if it is not already present", "label": "task"}
+{"text": "Get live score update", "label": "task"}
+{"text": "Can you look up the current box office scores for the weekend and tell me which film is winning?", "label": "task"}
+{"text": "Please search the web for the current weather in Tokyo right now and tell me what I should pack for my upcoming trip.", "label": "task"}
+{"text": "how much is gas around here", "label": "task"}
+{"text": "I just beat that level, and I honestly feel like I'm going to cry from the relief!", "label": "chat"}
+{"text": "Please change the time of my 5 AM gym alarm to 4:30 AM.", "label": "schedule"}
+{"text": "list all my shopping reminders for next week", "label": "schedule"}
+{"text": "Please cancel the recurring daily reminder to water the plants, as we are going on vacation next week.", "label": "schedule"}
+{"text": "How do I add a recurring weekly alarm every Sunday night at 8 PM to plan the week's family calendar?", "label": "schedule"}
+{"text": "fix my bug", "label": "task"}
+{"text": "Look up soccer fixtures today", "label": "task"}
+{"text": "how do i tell my sister i dont want to be her babysitter anymore im 22", "label": "chat"}
+{"text": "whats a good name for a fantasy football team", "label": "chat"}
+{"text": "Do you think I should take a multivitamin to fill the gaps in my diet?", "label": "chat"}
+{"text": "i'm trying to figure out if i'm really in love with my partner or if i'm just so comfortable with them that it's hard to tell the difference", "label": "chat"}
+{"text": "Check if there's a current coupon for 20% off at Target that applies to my shopping cart.", "label": "task"}
+{"text": "Could you create a timer for 30 minutes to remind me to go pick up the online order I placed yesterday?", "label": "schedule"}
+{"text": "what's a good way to bring up the fact that i need more quality time with my girlfriend without making it sound like i'm accusing her of not caring about me", "label": "chat"}
+{"text": "Would you mind creating a daily timer for 30 minutes to remind me to play with my kitten at 4 PM?", "label": "schedule"}
+{"text": "Find nearest gas station", "label": "task"}
+{"text": "yo set a timer for 20 min i wanna play a bit before my shift starts brb", "label": "schedule"}
+{"text": "I need to change the existing timer set for the soup to 45 minutes instead of 30 minutes because the recipe requires more time.", "label": "schedule"}
+{"text": "Can you list all upcoming timers set for charging my electric car?", "label": "schedule"}
+{"text": "move my gym reminder to 6am", "label": "schedule"}
+{"text": "set a reminder for tomorrow at nine to change my oil on the truck", "label": "schedule"}
+{"text": "add those blue jeans to the cart", "label": "task"}
+{"text": "Fetch breaking sports headlines", "label": "task"}
+{"text": "Would you mind creating a recurring reminder every Tuesday and Thursday at 12:00 PM to take a short walking break at work?", "label": "schedule"}
+{"text": "Could you search the news for the latest earnings report from Microsoft and summarize the key points into a doc in my 'Work' directory?", "label": "task"}
+{"text": "Reschedule sync 4pm", "label": "schedule"}
+{"text": "check cpu temperature", "label": "task"}
+{"text": "I need you to check my recent bank account statements for any unauthorized transactions in the last 30 days.", "label": "task"}
+{"text": "convert 5 miles to km", "label": "chat"}
+{"text": "hey, can you set a reminder for tomorrow at 9am to pick up the kids from soccer practice?", "label": "schedule"}
+{"text": "What's the NBA result", "label": "task"}
+{"text": "find me a flight to san francisco for next tuesday and show me the options", "label": "task"}
+{"text": "I need to install Python 3.11 on my system, can you run the necessary commands?", "label": "task"}
+{"text": "remind me to wash the car every sunday", "label": "schedule"}
+{"text": "add a reminder to buy the coffee beans on friday before i leave for work", "label": "schedule"}
+{"text": "Open the app store and show me the top-rated new VR headsets on sale right now.", "label": "task"}
+{"text": "look up how to fix a leaky faucet and give me the steps", "label": "task"}
+{"text": "add a alarm for 6am on monday so i dont miss the school play", "label": "schedule"}
+{"text": "what time does walmart close", "label": "task"}
+{"text": "do you know the difference between a kpi and an okr because someone in the standup mixed them up", "label": "chat"}
+{"text": "what do I have scheduled for tomorrow", "label": "schedule"}
+{"text": "Can you set a daily reminder for me to check my son's homework folder every evening at 6 PM?", "label": "schedule"}
+{"text": "Open a browser, find the nearest sushi restaurant that is open right now, and check its live Google reviews.", "label": "task"}
+{"text": "How many scheduled jobs do I have for inspecting the brake pads in the next month?", "label": "schedule"}
+{"text": "open the email app and reply to john saying i will be late because my music app crashed again and then unsubscribe from the weekly newsletter", "label": "task"}
+{"text": "can you book me two tickets to tomorrow evening game at the stadium", "label": "task"}
+{"text": "whats the capital of australia", "label": "chat"}
+{"text": "what does inflation mean", "label": "chat"}
+{"text": "Write a short poem about a rainy night and a vinyl record.", "label": "chat"}
+{"text": "set a repeating alarm for every saturday at 9am to check patch notes", "label": "schedule"}
+{"text": "why is the sky blue", "label": "chat"}
+{"text": "change my alarm from 5am to 6am so i have more time to pack for the trip", "label": "schedule"}
+{"text": "what's on my schedule for watching new episodes of that anime this week?", "label": "schedule"}
+{"text": "i cant sleep", "label": "chat"}
+{"text": "Could you schedule a daily reminder to wipe down the dash every morning?", "label": "schedule"}
+{"text": "Can you set a one-time alarm for Saturday morning at 10:30 AM to remind my son to finish his school project before the afternoon gathering?", "label": "schedule"}
+{"text": "Would it be possible to list all the timers and alarms I have set for chore completion this week?", "label": "schedule"}
+{"text": "Please list all the scheduled chores and alarms you currently have for my home maintenance tasks.", "label": "schedule"}
+{"text": "check my email every hour and tell me if anything important comes in", "label": "schedule"}
+{"text": "Would you be able to change the time of my dog's medication alarm to 6 PM instead of 6 AM?", "label": "schedule"}
+{"text": "Please search for the current exchange rate from USD to Japanese Yen and let me know how much I should withdraw from the ATM.", "label": "task"}
+{"text": "Book AC repair", "label": "task"}
+{"text": "Download the 2023 AP Statistics study guide PDF from the College Board website and save it to my Documents folder", "label": "task"}
+{"text": "Check library hours", "label": "task"}
+{"text": "Can you create a one-time alarm for 9 AM tomorrow to remind me to vet check my turtle?", "label": "schedule"}
+{"text": "is the 4090 back in stock anywhere", "label": "task"}
+{"text": "unsubscribe me from those spam emails", "label": "task"}
+{"text": "remind me to log in to gta v every morning at 9", "label": "schedule"}
+{"text": "set a reminder to take the laundry to the laundromat at 2pm", "label": "schedule"}
+{"text": "hey omg my mom just sent me another family group text thread i cant even read it", "label": "chat"}
+{"text": "Can you list all the future scheduled tasks I have regarding my car maintenance for the next month?", "label": "schedule"}
+{"text": "haha", "label": "chat"}
+{"text": "wait what is a plot hole??", "label": "chat"}
+{"text": "can you tell me a joke about dating apps because i'm so done with seeing the same boring bios every single time i open that app", "label": "chat"}
+{"text": "scheduled reminder for dinner with mom on saturday", "label": "schedule"}
+{"text": "whats the deal with tipping in thailand?? dont wanna be rude but dont wanna overpay either", "label": "chat"}
+{"text": "I'm thinking of starting a home workout routine; could you brainstorm a few ideas for a 15-minute full-body session using no equipment?", "label": "chat"}
+{"text": "how much is gas around here", "label": "task"}
+{"text": "hey man what is the difference between a turbocharged engine and a supercharged one basically", "label": "chat"}
+{"text": "at 5pm text my wife that I'm leaving work", "label": "schedule"}
+{"text": "how does a reminder app work", "label": "chat"}
+{"text": "is my computer running slow? check it", "label": "task"}
+{"text": "what are some good names for a new houseplant i want to name it something funny", "label": "chat"}
+{"text": "Could you please explain the cultural etiquette around tipping in various countries I might be visiting this year?", "label": "chat"}
+{"text": "Every day check inbox", "label": "schedule"}
+{"text": "install that new beatmaking plugin on my mac, i'll download the dls later", "label": "task"}
+{"text": "remind me to check the babysitter app for saturday", "label": "schedule"}
+{"text": "feeling frustrated", "label": "chat"}
+{"text": "What is the current price of that specific brand of vacuum cleaner on the major retail websites?", "label": "task"}
+{"text": "find latest driver", "label": "task"}
+{"text": "search the web for the latest reviews of the new nintendo switch 2 game called rhythm master and find the first review that is more than four stars", "label": "task"}
+{"text": "Add a two hour alarm for the soccer practice starting at four", "label": "schedule"}
+{"text": "Could you create a recurring timer that goes off every hour during my running route?", "label": "schedule"}
+{"text": "Can you check if there is a scheduled power outage in my area this evening?", "label": "task"}
+{"text": "look up the latest tech news headlines and read me the top five stories", "label": "task"}
+{"text": "how do I fix a leaky faucet", "label": "chat"}
+{"text": "play some lofi on youtube", "label": "task"}
+{"text": "remind me to transfer 100 to savings after work", "label": "schedule"}
+{"text": "Please check the current weather in London and if it is suitable for an outdoor football match this evening.", "label": "task"}
+{"text": "lol did u know that the first movie was silent??", "label": "chat"}
+{"text": "remind me every sunday at noon to check my luggage fee for the upcoming cruise", "label": "schedule"}
+{"text": "weekly on mondays send me my calendar for the week", "label": "schedule"}
+{"text": "anyone else feel like they are the middle child by accident i feel like im the sandwich", "label": "chat"}
+{"text": "Can you set a future scheduled job to alert me if my hard drive's SMART status degrades below 50%?", "label": "schedule"}
+{"text": "Cancel anniversary alarm", "label": "schedule"}
+{"text": "Please create a daily reminder at 9:15 AM to check in with my project manager on the current status of the ongoing task.", "label": "schedule"}
+{"text": "Joke about drummer.", "label": "chat"}
+{"text": "Please search for the latest reviews on the new release in cinemas and summarize the critics' opinions for me.", "label": "task"}
+{"text": "Search for the current price of organic chicken breasts at nearby grocery stores and compare them.", "label": "task"}
+{"text": "Open the terminal and run the update command for my home server since it has been lagging all week", "label": "task"}
+{"text": "whats the difference between a movie and a film?? im being pretentious tonight", "label": "chat"}
+{"text": "What does a minor chord sound like emotionally?", "label": "chat"}
+{"text": "what time does walmart close", "label": "task"}
+{"text": "you're awesome clara", "label": "chat"}
+{"text": "list all my car service reminders", "label": "schedule"}
+{"text": "Define what 'syncopation' means in a simple sentence.", "label": "chat"}
+{"text": "Remind call mom", "label": "schedule"}
+{"text": "Sister's birthday", "label": "chat"}
+{"text": "hey i want to write a little poem about how much i love coming home to a clean house can you help me with a few lines", "label": "chat"}
+{"text": "open the browser and find me the cheapest vinyl of that Daft Punk album online, don't buy it just show me", "label": "task"}
+{"text": "I would like you to find the current ticket prices for next weekend's F1 Grand Prix in Monaco and show them to me.", "label": "task"}
+{"text": "my dad just asked for the family recipe for his favorite pasta and i cant remember the ingredients", "label": "chat"}
+{"text": "Can you schedule a check-in to remind me to take my daily multivitamins every morning?", "label": "schedule"}
+{"text": "what's the price of eggs at kroger", "label": "task"}
+{"text": "Could you look up the latest news about the upcoming typhoon season and see how it might affect my flight to Osaka?", "label": "task"}
+{"text": "Can you set a daily reminder at 8 AM to check if my Windows updates have finished?", "label": "schedule"}
+{"text": "lol what's the funniest thing you've ever read online? i need a laugh rn", "label": "chat"}
+{"text": "pause all my scheduled jobs", "label": "schedule"}
+{"text": "yo what's the diff between a mop and a broom again lmao im an idiot", "label": "chat"}
+{"text": "If you could only watch one type of TV series for the rest of your life, would you pick reality TV or sci-fi, and what's your reasoning?", "label": "chat"}
+{"text": "explain to me like im 5 why cats purr and what it means for them", "label": "chat"}
+{"text": "i need a timer for 2 mins to check my bank balance", "label": "schedule"}
+{"text": "what alarms do i have for this week", "label": "schedule"}
+{"text": "give me a workout plan for beginners", "label": "chat"}
+{"text": "change my friday night raid alarm to 8pm instead of 830", "label": "schedule"}
+{"text": "I really don't understand why people complain about the difficulty of this particular boss fight in the new Zelda game.", "label": "chat"}
+{"text": "lmao i lost my passport again and i feel like i need a hug rn", "label": "chat"}
+{"text": "Explain minor key.", "label": "chat"}
+{"text": "dont let me forget the meeting at 3", "label": "schedule"}
+{"text": "remind me to send the invoice to john tmmr", "label": "schedule"}
+{"text": "Look up the latest version of VS Code on the web, and if there's an update, please install it and restart the app.", "label": "task"}
+{"text": "Install the latest version of a PDF viewer on my laptop so I can read my itinerary.", "label": "task"}
+{"text": "cancel the alarm i put for the 7am breakfast for the whole fam, i'm sleeping in", "label": "schedule"}
+{"text": "I'd love your opinion on whether it's better to drink water before, during, or after a workout session for optimal hydration?", "label": "chat"}
+{"text": "Thanks a lot for the help with my gaming setup, I feel much more organized now. Have a great day!", "label": "chat"}
+{"text": "how hot is my gpu running", "label": "task"}
+{"text": "I'm stressed about missing my quarterly deadline. Can you help me prioritize my remaining tasks?", "label": "chat"}
+{"text": "what size to buy", "label": "chat"}
+{"text": "change my oil change reminder from next week to two weeks from today", "label": "schedule"}
+{"text": "any tips for keeping my code clean when its getting messy", "label": "chat"}
+{"text": "Compile the project and fix any syntax errors", "label": "task"}
+{"text": "check the ticket prices for the Beyonc\u00e9 tour on the web and see if my card would get us a VIP upgrade", "label": "task"}
+{"text": "How to tune guitar?", "label": "chat"}
+{"text": "Check my email inbox for any urgent client replies today, extract the file attachments, and move them into the project backup drive on the network.", "label": "task"}
+{"text": "what s a good movie to watch for the rain today??", "label": "chat"}
+{"text": "define compound interest", "label": "chat"}
+{"text": "What's the most underrated movie from the last decade and why do you think it didn't get more attention?", "label": "chat"}
+{"text": "my cat thinks she's a god and i think she's the funniest thing ever", "label": "chat"}
+{"text": "change the weekly grocery run to thursday afternoons", "label": "schedule"}
+{"text": "open the browser and find the most recent breaking news about the earthquake in japan", "label": "task"}
+{"text": "Please run the `npm install` command in the terminal for the project in /Users/dev/react-app, then start the local server.", "label": "task"}
+{"text": "Search for open job postings in the university's computer science department and open the top 3 results", "label": "task"}
+{"text": "I'm looking for some advice on whether I should buy a hybrid car or a traditional gas car for my daily commute.", "label": "chat"}
+{"text": "i dont know how to act with my extended family during holidays it feels so forced sometimes", "label": "chat"}
+{"text": "can you tell me a joke about cleaning i need a laugh after mopping for an hour", "label": "chat"}
+{"text": "Create a timer for 30 minutes to do my monthly budget review", "label": "schedule"}
+{"text": "What should I look for when buying running shoes", "label": "chat"}
+{"text": "How much sugar do I usually need to caramelize for one standard onion?", "label": "chat"}
+{"text": "Are there any future scheduled jobs set to run the automated unit tests for my Python project tonight?", "label": "schedule"}
+{"text": "Order pizza now", "label": "task"}
+{"text": "Open the web browser and find the latest news articles about the FIFA World Cup qualifying matches.", "label": "task"}
+{"text": "ok find me a pair of black running shoes under 50 bucks", "label": "task"}
+{"text": "nvm", "label": "chat"}
+{"text": "What is the mathematical formula to calculate the total distance if I'm planning a multi-leg trip with different time zones, just for my own curiosity?", "label": "chat"}
+{"text": "play some lofi on youtube", "label": "task"}
+{"text": "stop the daily news summary", "label": "schedule"}
+{"text": "Who's aunt?", "label": "chat"}
+{"text": "What's 4/4 time?", "label": "chat"}
+{"text": "set a timer for 15 minutes", "label": "schedule"}
+{"text": "if my car is using about ten gallons a week to get to work and my gas is five bucks a gallon how much is that for a month of just commuting", "label": "chat"}
+{"text": "remind me tomorrow at nine am to check if the meat is back in stock", "label": "schedule"}
+{"text": "does it actually rain in london like every single day or is that just a myth??", "label": "chat"}
+{"text": "Give me a quick list of what supplies I need to deep-clean a kitchen sink.", "label": "chat"}
+{"text": "Can you create a recurring reminder for me every Friday at 4 PM to ask if I need to deploy the latest build to production?", "label": "schedule"}
+{"text": "I'm trying to decide whether to book a guided tour or explore independently in Rome, so could you outline the main pros and cons of each approach?", "label": "chat"}
+{"text": "list every recurring job related to checking new releases", "label": "schedule"}
+{"text": "Please add a recurring alarm every Friday at 4:45 PM to remind me to top up my car's windshield washer fluid.", "label": "schedule"}
+{"text": "Install food app", "label": "task"}
+{"text": "Search for the best-rated air purifier under $200 and add it to my wishlist", "label": "task"}
+{"text": "Clone the repo from GitHub into the ~/dev folder", "label": "task"}
+{"text": "Could you cancel the alarm I set for last week regarding the battery replacement, as it has already been completed?", "label": "schedule"}
+{"text": "Search for tickets to the upcoming Beyonc\u00e9 concert in London and book two VIP seats for June 15th.", "label": "task"}
+{"text": "brb my dog is stealing my slippers again, why does he do that??", "label": "chat"}
+{"text": "Set a recurring alarm every Sunday at 8 PM to reconcile my bank accounts", "label": "schedule"}
+{"text": "I would like to reschedule my appointment reminder for the tire rotation from 9:00 AM to 9:30 AM today.", "label": "schedule"}
+{"text": "did the falcons win last night", "label": "task"}
+{"text": "turn this into a pdf and save it to my desktop", "label": "task"}
+{"text": "What are some safe things to freeze raw meat for later?", "label": "chat"}
+{"text": "delete all my reminders", "label": "schedule"}
+{"text": "every day at 11am tell me if there is a new hw posted", "label": "schedule"}
+{"text": "How do I list all the scheduled jobs for my weekend homework?", "label": "schedule"}
+{"text": "Could you please check the latest breaking news regarding the EU summit and summarize the key points for me?", "label": "task"}
+{"text": "What's the cheapest option for a pair of Nike Air Max 270s in size 10 available today?", "label": "task"}
+{"text": "What's a good joke or pun that uses the word 'streaming'?", "label": "chat"}
+{"text": "Can you check the current local weather to decide if I should wash the car outside today?", "label": "task"}
+{"text": "I'd like to change the daily 'check build logs' alert from 8 AM to 10 AM; can you update that for me?", "label": "schedule"}
+{"text": "Do you have an opinion on whether sequels are usually better or worse than the original films?", "label": "chat"}
+{"text": "I need you to create a one-time reminder for tomorrow at 3:30 PM to review the breaking news about the NBA finals.", "label": "schedule"}
+{"text": "Please list all the future scheduled jobs related to my upcoming theater performances.", "label": "schedule"}
+{"text": "text my brother happy birthday", "label": "task"}
+{"text": "whats on my schedule for paying bills this week", "label": "schedule"}
+{"text": "explain what a VPN does", "label": "chat"}
+{"text": "should I get a 3090 or a 4090", "label": "chat"}
+{"text": "cancel the reminder to update drivers tomorrow", "label": "schedule"}
+{"text": "I would like to cancel the alarm set for tomorrow at 8:00 AM for the family breakfast as we decided to go out for brunch instead.", "label": "schedule"}
+{"text": "pay my phone bill", "label": "task"}
+{"text": "book me a haircut for saturday morning", "label": "task"}
+{"text": "Could you create a future scheduled task to remind me to buy birthday gifts for my niece in three weeks?", "label": "schedule"}
+{"text": "Run npm install in the current directory", "label": "task"}
+{"text": "Search for local moving companies near me and pull up their reviews for the one with the best ratings", "label": "task"}
+{"text": "schedule a tire pressure check every month", "label": "schedule"}
+{"text": "remind me every sunday at noon to check the undercarriage for any rust spots, just tell me when the time hits", "label": "schedule"}
+{"text": "cancel the reminder for the rental car pickup in paris", "label": "schedule"}
+{"text": "What's the current weather in my city, and is it good enough for outdoor gaming?", "label": "task"}
+{"text": "yo, clone that golang repo into ~/workspace, cd into it, and run go build. if it complains about missing modules, just go mod tidy and build again", "label": "task"}
+{"text": "how hot is my gpu running", "label": "task"}
+{"text": "Explain the difference between major and minor scales in a few words.", "label": "chat"}
+{"text": "list all upcoming travel reminders i have this month", "label": "schedule"}
+{"text": "Remind me to check for coupons on my favorite coffee subscription", "label": "schedule"}
+{"text": "Check the current ticket prices for the Coachella 2024 general admission on the official website and show me the available dates.", "label": "task"}
+{"text": "What's the best way to stretch after sitting at my desk all day?", "label": "chat"}
+{"text": "Hey! I'm stuck on a puzzle in that classic platformer. Could you give me a hint without spoiling the ending?", "label": "chat"}
+{"text": "delete all my reminders", "label": "schedule"}
+{"text": "Could you please set a reminder for tomorrow morning at 7:00 AM to remind my husband to take the baby to his first pediatrician checkup?", "label": "schedule"}
+{"text": "Open the browser and search for the latest update on the Apple Silicon M4 chip release date, then save the top news article's link to my work notes folder.", "label": "task"}
+{"text": "Remind me to buy a new phone case", "label": "schedule"}
+{"text": "set timer for 45 min to finish my raid", "label": "schedule"}
+{"text": "Move date Tuesday", "label": "schedule"}
+{"text": "set a timer to remind me to call my mom after work", "label": "schedule"}
+{"text": "set a timer for ten minutes to cool down after I get out of the hot car", "label": "schedule"}
+{"text": "Search the web for the current registration deadlines for next semester's courses", "label": "task"}
+{"text": "book me a table for 8 at that jazz bar for saturday night and send me the confirmation in the cal", "label": "task"}
+{"text": "Give me a funny one-liner about cats stealing socks.", "label": "chat"}
+{"text": "remind me to buy tickets for the festival next month, i keep almost forgetting about it", "label": "schedule"}
+{"text": "I'd like you to find a movie streaming app to download and install on my computer so I can watch a film tonight.", "label": "task"}
+{"text": "I'd like to schedule a daily check at noon to see if the stock market news has affected any sports team owners' businesses.", "label": "schedule"}
+{"text": "thanks buddy i just put all the laundry away finally the basket is empty", "label": "chat"}
+{"text": "Could you change the time of my reminder to wash the car on Saturdays from 10 AM to 2 PM?", "label": "schedule"}
+{"text": "give me a workout plan for beginners", "label": "chat"}
+{"text": "Set an alarm for seven am every day so I don't miss the school bus pickup", "label": "schedule"}
+{"text": "what year did the iphone come out", "label": "chat"}
+{"text": "what do you think the real reason they are pushing that new software rollout is", "label": "chat"}
+{"text": "Play the high-energy playlist I saved last week and increase the volume to 70%. Then open my email and send that tracklist to my producer.", "label": "task"}
+{"text": "explain what a VPN does", "label": "chat"}
+{"text": "do u think the new season is gonna be cancelled?? i hope not", "label": "chat"}
+{"text": "Book me two premium seats to the Lakers game on Sunday at 7 PM and show me the confirmation.", "label": "task"}
+{"text": "change my alarm for the gas station run from 4:45 to 5:00, i wanna finish my coffee first", "label": "schedule"}
+{"text": "Who was the first artist to release a double album, and what was it?", "label": "chat"}
+{"text": "who are you", "label": "chat"}
+{"text": "I'd like to change the time of my weekly movie night reminder from Thursday to Friday at 6 PM.", "label": "schedule"}
+{"text": "joke about code", "label": "chat"}
+{"text": "update my pc", "label": "task"}
+{"text": "Could you find the latest news regarding the central bank interest rate decision and summarize the key points?", "label": "task"}
+{"text": "Set a 15-minute timer for when the chicken starts cooking.", "label": "schedule"}
+{"text": "Please check the current stock price of Apple (AAPL) on the web and save the result to the notes file in my 'Finance' folder.", "label": "task"}
+{"text": "What reminders do I have scheduled for troubleshooting my new graphics card drivers?", "label": "schedule"}
+{"text": "Explain the difference between Agile and Waterfall project management to me like I'm five.", "label": "chat"}
+{"text": "hey omg just booked a trip to tokyo, any tips for the subway??", "label": "chat"}
+{"text": "List all the reminders I have for this week", "label": "schedule"}
+{"text": "book me a cab from my current location to downtown because i need to go in person to deposit cash", "label": "task"}
+{"text": "hey i just had the worst fight with my sister again she says i never visit enough but i'm just so tired after work every night and i feel guilty for not being there more", "label": "chat"}
+{"text": "Remind me every day at 1 PM to check my music production software updates.", "label": "schedule"}
+{"text": "Run a disk cleanup on C: and remove temporary files", "label": "task"}
+{"text": "Search for a discounted code for the new Pro Tools 2024 upgrade and apply it to my account so I can purchase it now.", "label": "task"}
+{"text": "lol i just wrote a function and it takes 10 mins to compile wtf", "label": "chat"}
+{"text": "Would you mind changing the time of my weekly laundry alarm from Saturday morning to Sunday afternoon?", "label": "schedule"}
+{"text": "Change my savings transfer reminder from the 1st to the 15th of every month", "label": "schedule"}
+{"text": "set a timer for 15 minutes", "label": "schedule"}
+{"text": "set an alarm for tonight at eight to pay the car insurance bill", "label": "schedule"}
+{"text": "Latest breaking sports news", "label": "task"}
+{"text": "every morning tell me the weather", "label": "schedule"}
+{"text": "Search the web for the best deal on a 4K TV right now and show me the live prices from major retailers.", "label": "task"}
+{"text": "Find calculus homework", "label": "task"}
+{"text": "Check the current weather and air quality outside", "label": "task"}
+{"text": "What is the current weather forecast for New York, and could you add a calendar reminder to take my lunch outside at 1 PM today?", "label": "task"}
+{"text": "Could you please set a reminder for me to buy some milk and eggs at the grocery store on Saturday morning?", "label": "schedule"}
+{"text": "book me a haircut for saturday morning", "label": "task"}
+{"text": "what's on sale", "label": "task"}
+{"text": "ok so my docker compose file is throwing a container restart loop on the db service, can you pull the logs and figure out what's bugging the ports?", "label": "task"}
+{"text": "my cat keeps knocking stuff off shelves how do i stop it", "label": "chat"}
+{"text": "Could you set a one-time reminder for tomorrow at 10:00 AM to send the quarterly budget update to the finance team?", "label": "schedule"}
+{"text": "im so bored i want to watch something but im scared its bad??", "label": "chat"}
+{"text": "What's a polite way to tell my friends I'm seeing someone new?", "label": "chat"}
+{"text": "cancel the 3pm reminder to buy those brake pads i decided to do it myself this weekend", "label": "schedule"}
+{"text": "what's on my calendar this weekend? i wanna know if i'm free for co-op night", "label": "schedule"}
+{"text": "what's the deal with dogs sniffing everything? i just wanna know", "label": "chat"}
+{"text": "list all the car maintenance reminders i have for this month", "label": "schedule"}
+{"text": "I'm trying to write a short story about a cyberpunk character, could you brainstorm some cool weapon names for me?", "label": "chat"}
+{"text": "Could you please check the current flight prices to Tokyo from my home airport for next month and set up an alert if any drop by 10 percent?", "label": "task"}
+{"text": "Could you find the current live score of the Champions League final and notify me if the score changes?", "label": "task"}
+{"text": "Set the thermostat to 68 degrees", "label": "task"}
+{"text": "ha ha did you see the way the manager got his tie all crooked during that presentation", "label": "chat"}
+{"text": "Joke about chefs please.", "label": "chat"}
+{"text": "Remind me to return the blue jacket I bought last week", "label": "schedule"}
+{"text": "Can you find and add the address of my hotel in Tokyo to the navigation app on my phone right now?", "label": "task"}
+{"text": "snooze that reminder 10 minutes", "label": "schedule"}
+{"text": "on the first of every month remind me to pay the car note", "label": "schedule"}
+{"text": "Is there a scheduled reminder for my physiotherapy appointment tomorrow at 2 PM?", "label": "schedule"}
+{"text": "yo check if my crypto wallet got a transaction pending and if so pull the tx hash", "label": "task"}
+{"text": "what do I have scheduled for tomorrow", "label": "schedule"}
+{"text": "set an alarm to ping me when i'm online for 3 hours i need to take a break fr", "label": "schedule"}
+{"text": "download the latest nvidia driver", "label": "task"}
+{"text": "whats using all my ram", "label": "task"}
+{"text": "Why do you think Marvel movies have become so popular globally compared to other superhero franchises?", "label": "chat"}
+{"text": "Ha ha.", "label": "chat"}
+{"text": "Schedule a one-time reminder for 10 AM on the 15th to pay the car loan", "label": "schedule"}
+{"text": "Buy battery replacements", "label": "task"}
+{"text": "cancel the alarm i set for saturdays breakfast", "label": "schedule"}
+{"text": "can you explain what passive aggression means to me because my coworker is doing that to me again", "label": "chat"}
+{"text": "put a 5 min timer on my phone to stop listening to that song", "label": "schedule"}
+{"text": "i was trying to figure out how much time it takes to scrub the entire kitchen if it takes four minutes per counter how long for six counters", "label": "chat"}
+{"text": "Can you look up the latest news about the new transfer window in the Premier League and list the top five confirmed deals?", "label": "task"}
+{"text": "check the weather forecast for tomorrow evening so i know if i need an umbrella for the client dinner", "label": "task"}
+{"text": "Please list all the recurring tasks and scheduled jobs you have set for pet care.", "label": "schedule"}
+{"text": "Please add a recurring reminder every Monday and Wednesday at 9 AM to review the weekend's top sports results.", "label": "schedule"}
+{"text": "write a poem about my cat", "label": "chat"}
+{"text": "quick question what temp do i set the oven for a pizza", "label": "chat"}
+{"text": "why is this hard", "label": "chat"}
+{"text": "idk if i should book the cheap hotel near the airport or the cute boutique one downtown, help", "label": "chat"}
+{"text": "Could you please explain the difference between cardiorespiratory endurance and muscular endurance in simple terms for a beginner?", "label": "chat"}
+{"text": "remind me to text my bf before bed tonight", "label": "schedule"}
+{"text": "Check my calendar and send a reminder email to my study group about tomorrow's meeting at 3 PM", "label": "task"}
+{"text": "remind me", "label": "schedule"}
+{"text": "I have a small math problem: if I need 25 minutes to vacuum the whole house and I can do it four times a month, how many total minutes do I spend vacuuming per year?", "label": "chat"}
+{"text": "can u recommend a tv show for my girlfriend?? she likes mystery stuff", "label": "chat"}
+{"text": "List all the future reminders I have for my nutrition tracking tasks.", "label": "schedule"}
+{"text": "change the timer from 30 mins to 45 mins, i need a bit more time for this video game", "label": "schedule"}
+{"text": "what year did the iphone come out", "label": "chat"}
+{"text": "Check water pressure", "label": "task"}
+{"text": "cancel my netflix subscription", "label": "task"}
+{"text": "Can you check the current price of the latest iPhone and find the best deal on Amazon?", "label": "task"}
+{"text": "how's the traffic on 285 right now", "label": "task"}
+{"text": "Help me brainstorm some creative names for my new golden retriever puppy.", "label": "chat"}
+{"text": "Remind me to buy fresh spinach for dinner tomorrow at 3 PM.", "label": "schedule"}
+{"text": "Remind me to call my sister back tomorrow.", "label": "schedule"}
+{"text": "Would you mind sharing a short definition of what a solid-state drive actually is without using too much jargon?", "label": "chat"}
+{"text": "Find plumber today", "label": "task"}
+{"text": "Can you check the current availability and price for a moving company to help me move my sofa this weekend?", "label": "task"}
+{"text": "Check the live weather in London and if it is raining, find the nearest 3 taxi stands near Heathrow Airport and open a map of them.", "label": "task"}
+{"text": "Open the browser, navigate to the company's project management tool, and set the status of the 'Data Migration' task to 'In Progress' with my name as the assignee.", "label": "task"}
+{"text": "Book restaurant table", "label": "task"}
+{"text": "Open the grocery app and add milk and eggs to my shopping cart", "label": "task"}
+{"text": "is it gonna rain later", "label": "task"}
+{"text": "What are all the reminders I have scheduled for car maintenance this week?", "label": "schedule"}
+{"text": "I need to book a flight to Seattle for next Thursday; can you check the cheapest available options on Expedia?", "label": "task"}
+{"text": "Why is the weather so bad during the championship game?", "label": "chat"}
+{"text": "Add to cart", "label": "task"}
+{"text": "Can you find me a flight and hotel package for a weekend in Tokyo and show me the current total price?", "label": "task"}
+{"text": "keep an eye on bitcoin and tell me if it drops below 50k", "label": "schedule"}
+{"text": "where to buy socks", "label": "task"}
+{"text": "Cancel Tuesday meeting", "label": "schedule"}
+{"text": "I need you to search for the latest news on the Federal Reserve's interest rate decision so I can brief the team later today.", "label": "task"}
+{"text": "remind me", "label": "schedule"}
+{"text": "why are banks closed", "label": "chat"}
+{"text": "how does a reminder app work", "label": "chat"}
+{"text": "12 plus 3 equals?", "label": "chat"}
+{"text": "List project deadlines", "label": "schedule"}
+{"text": "how do i get that musty smell out of my sofa i cant seem to find where it is coming from", "label": "chat"}
+{"text": "Do you think it's worth the extra money to invest in a high-end GPU if I only plan to play casual indie games at home?", "label": "chat"}
+{"text": "why is the sky blue", "label": "chat"}
+{"text": "Check the status of my airline reservation number 4X-9921 and email me the ticket details if it is confirmed.", "label": "task"}
+{"text": "how do loans work", "label": "chat"}
+{"text": "Define 'tumble dry low' and 'hang dry' so I know which setting to use on my delicates.", "label": "chat"}
+{"text": "I'm feeling a bit bored and want to chat; what do you think makes a good plot twist in a thriller?", "label": "chat"}
+{"text": "I feel a bit overwhelmed by all the conflicting diet advice online; could you share some general principles for maintaining a healthy weight without strict restriction?", "label": "chat"}
+{"text": "Is it safe to drink pre-workout coffee before a morning workout?", "label": "chat"}
+{"text": "Do I have any future alarms set to remind me to pick up the car from the auto repair shop?", "label": "schedule"}
+{"text": "Thanks for this.", "label": "chat"}
+{"text": "I would like you to open my email and reply to the hotel confirmation asking if they can accommodate a late check-out.", "label": "task"}
+{"text": "on the first of every month remind me to pay the car note", "label": "schedule"}
+{"text": "I'd appreciate it if you could set a reminder every Monday at noon to check if any new documentaries are available on my preferred streaming platform.", "label": "schedule"}
+{"text": "haha", "label": "chat"}
+{"text": "i swear every true crime podcast just makes me want to check my locks before bed, idk why but im scared now", "label": "chat"}
+{"text": "Please search for the latest news on the new Apple hardware release and summarize the features for me.", "label": "task"}
+{"text": "whats a good name for a fantasy football team", "label": "chat"}
+{"text": "Can you schedule a recurring timer to study Spanish for 30 minutes every evening?", "label": "schedule"}
+{"text": "Look up car prices", "label": "task"}
+{"text": "every saturday at 10am check my flight status to tokyo and let me know if its on time", "label": "schedule"}
+{"text": "book me a haircut for saturday morning", "label": "task"}
+{"text": "Would you be able to create a recurring alarm for every Saturday morning at 9 AM to remind me to prepare the family breakfast?", "label": "schedule"}
+{"text": "Book library room", "label": "task"}
+{"text": "I'm feeling nostalgic, recommend some songs that sound like 1990s summer.", "label": "chat"}
+{"text": "cancel my netflix subscription", "label": "task"}
+{"text": "What's the difference between semolina and couscous, and which one should I use for a side dish?", "label": "chat"}
+{"text": "Please check if there's a new release of that video game I pre-ordered and let me know if I need to download an update.", "label": "task"}
+{"text": "install python3 on this machine if it's not already there so i can run that script", "label": "task"}
+{"text": "good gift ideas", "label": "chat"}
+{"text": "Open the browser and search for 'open flights to Paris under $500' for next month and add any results found to my spreadsheet.", "label": "task"}
+{"text": "Can you set a one-time timer for 30 minutes so I remember to take out the trash bin?", "label": "schedule"}
+{"text": "whats trending on twitter", "label": "task"}
+{"text": "nvm", "label": "chat"}
+{"text": "Can you create a timer for 45 minutes to count down until my movie starts at 7:30?", "label": "schedule"}
+{"text": "set alarm for 10 minutes i got 5 mins of steam free time", "label": "schedule"}
+{"text": "Please search the web for the latest breaking news on space exploration and save the top article to my bookmarks folder.", "label": "task"}
+{"text": "what can you do", "label": "chat"}
+{"text": "every morning tell me the weather", "label": "schedule"}
+{"text": "Check the status of my laundry in the front office", "label": "task"}
+{"text": "Suggest three gift ideas for a 30-year-old who loves gardening", "label": "chat"}
+{"text": "play some lofi on youtube", "label": "task"}
+{"text": "What's the mathematical formula for calculating overtime pay with double time after 8 hours a day?", "label": "chat"}
+{"text": "Can you explain the different types of sunglasses protection levels like UV400?", "label": "chat"}
+{"text": "Please list all the reminders you have scheduled for me for next week related to my client meetings.", "label": "schedule"}
+{"text": "how do I fix a leaky faucet", "label": "chat"}
+{"text": "What is your opinion on whether a laptop is a better choice than a desktop for general productivity these days?", "label": "chat"}
+{"text": "Can you open my browser and search for the latest prices on a 16GB RAM stick?", "label": "task"}
+{"text": "Set a daily reminder at 8:00 PM to practice scales on the piano.", "label": "schedule"}
+{"text": "Look up the current price of 16GB of RAM and compare it across retailers", "label": "task"}
+{"text": "Find a live stream of the Berlin Electronic Music Festival on the internet and download the stream file to my Videos directory.", "label": "task"}
+{"text": "can you explain to me like im five why electric cars have less vibration when you are driving them", "label": "chat"}
+{"text": "check water intake", "label": "task"}
+{"text": "Order garbage bags", "label": "task"}
+{"text": "how's the traffic on 285 right now", "label": "task"}
+{"text": "what can you do", "label": "chat"}
+{"text": "Calculate if it's safe to feed my 50-pound labrador 200 calories of treats per week.", "label": "chat"}
+{"text": "Thank you so much for the previous tips on stretching; I really appreciate how helpful your gentle suggestions for posture were.", "label": "chat"}
+{"text": "I'm feeling really anxious about my partner's silence tonight.", "label": "chat"}
+{"text": "Thank you very much for helping me troubleshoot that issue last week; it really made my day easier.", "label": "chat"}
+{"text": "python or java", "label": "chat"}
+{"text": "Search for and compare prices on a 14-inch MacBook Pro between Best Buy, Apple, and B&H right now.", "label": "task"}
+{"text": "Please add a recurring alarm every Friday at 5:00 PM so I don't forget to start cooking the family roast for dinner.", "label": "schedule"}
+{"text": "ping me in an hour", "label": "schedule"}
+{"text": "Create a recurring reminder on the first Sunday of each month to inventory the pantry.", "label": "schedule"}
+{"text": "can u explain what a lambda is im still confused", "label": "chat"}
+{"text": "Book mechanic for today", "label": "task"}
+{"text": "move my gym reminder to 6am", "label": "schedule"}
+{"text": "Please list all the future scheduled jobs for picking up my niece from school.", "label": "schedule"}
+{"text": "Is it normal to feel less passionate about my long-distance relationship?", "label": "chat"}
+{"text": "at 5pm text my wife that I'm leaving work", "label": "schedule"}
+{"text": "How much food should I give my 10-pound chihuahua in a day?", "label": "chat"}
+{"text": "Thanks so much for the cleaning tips you suggested last week; I managed to get the kitchen spotless.", "label": "chat"}
+{"text": "can we move tomorrows dinner with the inlaws to 8 instead of 7", "label": "schedule"}
+{"text": "list all my scheduled appointments for the mechanic this quarter", "label": "schedule"}
+{"text": "what's the price of that iphone 15 pro today", "label": "task"}
+{"text": "search the web for the latest updates on the space x rocket launch failure", "label": "task"}
+{"text": "Can you look up the current CPU benchmark scores for the Ryzen 7 5800X and compare it to the 7900X?", "label": "task"}
+{"text": "summarize my unread emails", "label": "task"}
+{"text": "what's the difference between a layover and a connection bro its killing me", "label": "chat"}
+{"text": "i just got dumped after like three months and i keep replaying that one argument in my head wondering if i could have said something different to change the whole outcome", "label": "chat"}
+{"text": "Do you have any suggestions for a fun and low-impact way to start exercising if you have a bad knee that gets sore easily?", "label": "chat"}
+{"text": "how's the traffic on 285 right now", "label": "task"}
+{"text": "fix my wifi its acting up", "label": "task"}
+{"text": "Look up the current weather forecast for the client site in Chicago and add it to the site visit prep document in the shared cloud drive.", "label": "task"}
+{"text": "go to amazon and check if that gpu i was looking at went on sale today", "label": "task"}
+{"text": "Tell me a joke about someone who keeps forgetting where they put the keys in the house.", "label": "chat"}
+{"text": "whats the capital of australia", "label": "chat"}
+{"text": "what is a budget", "label": "chat"}
+{"text": "Cancel the alarm I set to check my crypto portfolio daily at noon", "label": "schedule"}
+{"text": "any good apps for splitting bills with a group when you travel?", "label": "chat"}
+{"text": "Can you create an alarm that goes off in 20 minutes to remind me to start my reading?", "label": "schedule"}
+{"text": "how much is a dollar", "label": "chat"}
+{"text": "I just discovered my favorite artist of all time is back with a new album, thank you for always pointing me to the deep cuts before.", "label": "chat"}
+{"text": "How do I remove a stubborn coffee ring from a granite countertop?", "label": "chat"}
+{"text": "Check the current weather and set my alarm for 6am", "label": "task"}
+{"text": "Remind me to buy new clothes for the family Christmas pictures next month", "label": "schedule"}
+{"text": "Please cancel my reminder to purchase new cleaning supplies, as I found a better deal online.", "label": "schedule"}
+{"text": "i cant sleep", "label": "chat"}
+{"text": "I need to cancel the recurring alarm for my evening grocery list check-in.", "label": "schedule"}
+{"text": "did the falcons win last night", "label": "task"}
+{"text": "should I get a 3090 or a 4090", "label": "chat"}
+{"text": "you're awesome clara", "label": "chat"}
+{"text": "how do i get my cat to stop biting my ankles? it's been a week and i'm tired", "label": "chat"}
+{"text": "check my email every hour and tell me if anything important comes in", "label": "schedule"}
+{"text": "let me know when the ps6 gets announced", "label": "schedule"}
+{"text": "Push the latest changes to the main branch", "label": "task"}
+{"text": "Check if Windows is up to date and apply all pending updates", "label": "task"}
+{"text": "Could you please set a daily reminder at 7 AM to check the dishwasher and load it with dirty dishes?", "label": "schedule"}
+{"text": "check the current stock price of the sp500 and also what was the latest news about the gracie music label from today", "label": "task"}
+{"text": "Open the terminal and run a memory diagnostic test", "label": "task"}
+{"text": "Do you have any funny stories or jokes about cars that you could share with me today?", "label": "chat"}
+{"text": "Set study reminder", "label": "schedule"}
+{"text": "Clear the cache in my web browser and restart the Chrome browser application", "label": "task"}
+{"text": "check internet speed", "label": "task"}
+{"text": "Check price drop", "label": "task"}
+{"text": "Do you think it's worth paying a premium for a leather backpack or can a good synthetic one last just as long?", "label": "chat"}
+{"text": "compare prices for this phone between target and best buy", "label": "task"}
+{"text": "wake me up at 6", "label": "schedule"}
+{"text": "Search the web for the best drivers for my NVIDIA GPU today", "label": "task"}
+{"text": "check the live weather in tokyo right now for me", "label": "task"}
+{"text": "Set couple date", "label": "schedule"}
+{"text": "I need to cancel all upcoming reminders related to my annual vehicle inspection for this year.", "label": "schedule"}
+{"text": "Draft a polite follow-up email to a stakeholder who hasn't replied to my proposal in three weeks.", "label": "chat"}
+{"text": "Check weather for game", "label": "task"}
+{"text": "at 5pm text my wife that I'm leaving work", "label": "schedule"}
+{"text": "what can you do", "label": "chat"}
+{"text": "what year did the iphone come out", "label": "chat"}
+{"text": "Can you find the current live scores for the NBA games happening right now and display them on the screen?", "label": "task"}
+{"text": "Remind me review PR", "label": "schedule"}
+{"text": "Find a live tutorial on how to make sushi rolls on YouTube, open it, and start the video in full screen mode.", "label": "task"}
+{"text": "Search the web for the current price of a hotel in Tokyo for the next 3 nights and save the 3 cheapest options to my notes app.", "label": "task"}
+{"text": "Set anniversary timer", "label": "schedule"}
+{"text": "you're awesome clara", "label": "chat"}
+{"text": "Thank you very much for all the helpful tips you gave me about car maintenance earlier today.", "label": "chat"}
+{"text": "Please search the web for the latest streaming prices for that new Marvel movie and compare them across platforms.", "label": "task"}
+{"text": "Look up the nearest open hardware store that sells drywall", "label": "task"}
+{"text": "I'm wondering if you could help me brainstorm some creative names for my new classic car restoration project.", "label": "chat"}
+{"text": "Can you check my unread emails for anything from the 'Marketing' team, and pull up the latest invoice PDF for me?", "label": "task"}
+{"text": "What's the difference between a dehumidifier and an air purifier in a basement?", "label": "chat"}
+{"text": "buddy pull up my current bank balance in the app and screenshot it", "label": "task"}
+{"text": "What is the best discount code for the dishwasher detergent I need to buy on Amazon right now?", "label": "task"}
+{"text": "Book a repair appointment for my laptop at the local Apple store", "label": "task"}
+{"text": "Are there any recurring alarms set to remind me to reboot my gaming PC after the latest driver patch?", "label": "schedule"}
+{"text": "show me the current prices for a pair of nba jersey jerseys on amazon", "label": "task"}
+{"text": "Can you change my recurring reminder to stock up on pantry essentials from every Sunday to every Tuesday?", "label": "schedule"}
+{"text": "my local database is throwing a connection refused error, can you check if postgres is even running in the background, and if not, just start the service and reconnect the app?", "label": "task"}
+{"text": "text my brother happy birthday", "label": "task"}
+{"text": "List all my scheduled recording sessions for this month.", "label": "schedule"}
+{"text": "How do you tell if a song is in 4/4 or 3/4 time by just listening?", "label": "chat"}
+{"text": "Download the latest album by Taylor Swift from my Spotify playlist and save it to my Music folder on the desktop.", "label": "task"}
+{"text": "Grumpy again?", "label": "chat"}
+{"text": "weekly on mondays send me my calendar for the week", "label": "schedule"}
+{"text": "what time does walmart close", "label": "task"}
+{"text": "is it normal to feel really anxious before a first date with someone new and does that usually go away once you actually sit down and talk or does it stay with you for a long time", "label": "chat"}
+{"text": "Gift card balance", "label": "task"}
+{"text": "Check my email for the invoice from the electricity company and tell me the total amount due", "label": "task"}
+{"text": "open the terminal and install the latest version of foobar2000 for my listening session", "label": "task"}
+{"text": "Open my browser and find the latest news on the new iPhone release", "label": "task"}
+{"text": "convert 5 miles to km", "label": "chat"}
+{"text": "Please check my calendar and book the online masterclass I signed up for this Friday.", "label": "task"}
+{"text": "I'm feeling really overwhelmed with all the dishes, so could you offer some words of encouragement to help me start?", "label": "chat"}
+{"text": "text my brother happy birthday", "label": "task"}
+{"text": "What's the secret to getting a really crispy skin on roasted chicken?", "label": "chat"}
+{"text": "If I'm making a tomato soup, should I salt the tomatoes while they're still in the can or wait until they're blended?", "label": "chat"}
+{"text": "ping me in an hour", "label": "schedule"}
+{"text": "Change my recurring grocery list reminder from every Monday to every Tuesday.", "label": "schedule"}
+{"text": "Please search for the most recent stock price of Tesla and send it to my email as a quick update.", "label": "task"}
+{"text": "What's the current weather in New York so I can decide whether to watch the movie outside or inside?", "label": "task"}
+{"text": "Schedule a recurring job to check my fridge temperature every day at 8 AM and notify me if it's below 40F.", "label": "schedule"}
+{"text": "ok", "label": "chat"}
+{"text": "Reserve test drive", "label": "task"}
+{"text": "hey omg i dont know what to do about the mildew in the shower", "label": "chat"}
+{"text": "Move my Sunday grocery list reminder to Monday at 9am", "label": "schedule"}
+{"text": "Could you please check the live box office rankings for today and show me the top five movies?", "label": "task"}
+{"text": "Please cancel all future scheduled jobs related to cleaning the bathroom.", "label": "schedule"}
+{"text": "Open the smart home app and set the thermostat to 68 degrees for the bedroom while I set up the kids' bed.", "label": "task"}
+{"text": "List all my upcoming reminders related to grocery shopping and meal prep.", "label": "schedule"}
+{"text": "Remind me to check the final score of the league cup match later.", "label": "schedule"}
+{"text": "Help me write a sweet apology note for my husband after our argument.", "label": "chat"}
+{"text": "i need a laptop for work, what are the top rated ones right now", "label": "task"}
+{"text": "Remind me every Saturday morning to check if the sourdough starter is bubbling.", "label": "schedule"}
+{"text": "Please install the latest version of Python on my local machine to ensure my development environment is up to date.", "label": "task"}
+{"text": "i just bought a vintage Mustang and its making this weird clicking noise when i turn the steering wheel what could be wrong with it", "label": "chat"}
+{"text": "Remind me to order vinyl records from my favorite local shop every Friday at 9 AM.", "label": "schedule"}
+{"text": "order more dog food", "label": "task"}
+{"text": "Explain why rabbits chew on furniture.", "label": "chat"}
+{"text": "Explain how to safely mix bleach and ammonia, or tell me why you're not supposed to do it.", "label": "chat"}
+{"text": "What's the difference between a cast iron and a carbon steel frying pan for everyday cooking?", "label": "chat"}
+{"text": "Check the price of a new mechanical keyboard for my coding setup and add it to my online shopping cart", "label": "task"}
+{"text": "pull up my last 3 months of bank statement pdf and find all transactions over 50 bucks", "label": "task"}
+{"text": "is the 4090 back in stock anywhere", "label": "task"}
+{"text": "how much does gas cost at the station near me", "label": "task"}
+{"text": "Do you have any alarms set for my 9:15 AM math class tomorrow?", "label": "schedule"}
+{"text": "what is recursion", "label": "chat"}
+{"text": "Check power bill", "label": "task"}
+{"text": "whats 2 plus 2", "label": "chat"}
+{"text": "Could you please explain the difference between a RAM stick and a hard drive in simple terms?", "label": "chat"}
+{"text": "Please add a recurring alarm every Saturday at 7 PM to remind me to start watching my new series, so I don't miss the first episode.", "label": "schedule"}
+{"text": "who are you", "label": "chat"}
+{"text": "set an alarm for 9am to take the car in", "label": "schedule"}
+{"text": "Download HVAC manual", "label": "task"}
+{"text": "Look up the current stock prices for Nike and Adidas and compare their performance from the last month.", "label": "task"}
+{"text": "Please search for online credit card applications that offer a sign-up bonus this quarter and list their terms.", "label": "task"}
+{"text": "Find a nearby grocery store that is open late and see if they have the brand of detergent I usually buy", "label": "task"}
+{"text": "Write a recipe idea.", "label": "chat"}
+{"text": "snooze that reminder 10 minutes", "label": "schedule"}
+{"text": "omg thank you so much for that tip about the treats, my puppy is so cute now", "label": "chat"}
+{"text": "search for cheap hotels in miami for next weekend", "label": "task"}
+{"text": "remind me in 2 hours to text my sis about picking up the baby at the weekend", "label": "schedule"}
+{"text": "How do I write a polite but firm note to a neighbor about their dog's mess in the community garden?", "label": "chat"}
+{"text": "bro what's the best way to describe a character who's super lazy but thinks they're actually a genius?", "label": "chat"}
+{"text": "how to return item", "label": "chat"}
+{"text": "I feel a bit frustrated when my car keeps making a weird noise, so could you explain what that might mean?", "label": "chat"}
+{"text": "Can you look up the current weather in my city and suggest a nearby venue that has an outdoor movie screening this evening?", "label": "task"}
+{"text": "Open the terminal and run the command to install the latest version of Audacity on this machine.", "label": "task"}
+{"text": "Order status", "label": "task"}
+{"text": "Please check if the streaming service I subscribed to has any new episodes of my favorite show available today.", "label": "task"}
+{"text": "gimme 10 names for a band that sounds like a weird indie metal act from the 2000s", "label": "chat"}
+{"text": "Explain the basic steps for pressure washing a deck without damaging the wood grain.", "label": "chat"}
+{"text": "check blood pressure", "label": "task"}
+{"text": "wake me up at 6", "label": "schedule"}
+{"text": "set a timer for 10 mins for my oil change", "label": "schedule"}
+{"text": "Can you draft an email to the client about the delayed delivery and send it via Outlook once I review it?", "label": "task"}
+{"text": "what is it called when everyone in your family acts like they are always right", "label": "chat"}
+{"text": "remind me", "label": "schedule"}
+{"text": "can u list all my flights and hotel bookings for the next two weeks", "label": "task"}
+{"text": "rewrite this to sound more professional: i cant make it tmrw sorry", "label": "chat"}
+{"text": "Would you be able to add a recurring weekly job that fetches and summarizes top news stories every Friday at 5 PM?", "label": "schedule"}
+{"text": "I'm feeling really sad since I lost my pet hamster last week, can you tell me some uplifting facts about animals?", "label": "chat"}
+{"text": "whats the capital of australia", "label": "chat"}
+{"text": "Please search for a nearby grocery store that is open late and has the laundry detergent I need in stock.", "label": "task"}
+{"text": "If I were to have only one day in Paris, what would you suggest is the most iconic itinerary to cover?", "label": "chat"}
+{"text": "Set an alarm for 20 minutes from now to remind me to stretch.", "label": "schedule"}
+{"text": "Can you change the scheduled news briefing from 7 AM to 6:15 AM starting next week?", "label": "schedule"}
+{"text": "Change deadline Friday", "label": "schedule"}
+{"text": "Do you think it's better to buy a used car that's a few years old or a brand new one with a higher initial cost?", "label": "chat"}
+{"text": "Can you create a one-time alarm for the start of the Super Bowl broadcast at 7:00 PM tonight?", "label": "schedule"}
+{"text": "Set meal reminder", "label": "schedule"}
+{"text": "list my upcoming relationship meetups", "label": "schedule"}
+{"text": "why do people get so mad when a sequel is actually good? its not like they get a refund if the first one sucks", "label": "chat"}
+{"text": "Turn on the smart lights in the garage so I can see where the toolbox is and start organizing", "label": "task"}
+{"text": "Can you check the current utility bill rates from my local water provider and see if they've increased this month?", "label": "task"}
+{"text": "Cancel this order", "label": "task"}
+{"text": "add a daily reminder to check tire temp", "label": "schedule"}
+{"text": "set a timer for 10 min before the new track drops", "label": "schedule"}
+{"text": "i dont get why people like the ending of the last book??", "label": "chat"}
+{"text": "what's the price of eggs at kroger", "label": "task"}
+{"text": "yo what's the deal with jet lag anyway, im always so fried after flights", "label": "chat"}
+{"text": "Could you please set a daily reminder at 8 AM to check my car's tire pressure before I start my work shift?", "label": "schedule"}
+{"text": "Do you have a timer scheduled to go off in 45 minutes to remind me to take a break from debugging the React app?", "label": "schedule"}
+{"text": "thanks bro i really appreciate you listening to my vent about the quarterly reports", "label": "chat"}
+{"text": "Find local vegan", "label": "task"}
+{"text": "cancel the friday study group alarm", "label": "schedule"}
+{"text": "book gym session", "label": "task"}
+{"text": "rewrite this to sound more professional: i cant make it tmrw sorry", "label": "chat"}
+{"text": "search for cheap flights to nyc next friday", "label": "task"}
+{"text": "what do you think about when you say that a relationship needs constant communication does that actually hold true for long distance couples or is that just something people say to feel better", "label": "chat"}
+{"text": "What's the best way to compare different phone plans before I go to the store and sign up?", "label": "chat"}
+{"text": "how do I fix a leaky faucet", "label": "chat"}
+{"text": "run the terminal and see what's using my music storage space, delete anything over 10gb", "label": "task"}
+{"text": "set a recurring alarm for every monday at 8am so i can remember to wash the wheels", "label": "schedule"}
+{"text": "what alarms are on right now? i feel like i set one for the bath time and i'm not finding it", "label": "schedule"}
+{"text": "what do you think is the best car to buy for a family of four on a tight budget right now", "label": "chat"}
+{"text": "i think my parrot is smarter than my roommate, and that's saying something", "label": "chat"}
+{"text": "pause all my scheduled jobs", "label": "schedule"}
+{"text": "I'm trying to come up with a name for my new house plant; do you have any creative suggestions that sound cozy?", "label": "chat"}
+{"text": "set a recurring alarm every morning at 7 for my running route around the hotel", "label": "schedule"}
+{"text": "Please install and run a disk cleanup tool on my computer to free up space.", "label": "task"}
+{"text": "check wifi password", "label": "task"}
+{"text": "What's the best way to stop my dog from eating houseplants?", "label": "chat"}
+{"text": "remind me to book an oil change in two weeks", "label": "schedule"}
+{"text": "every night at 11 clean my downloads folder", "label": "schedule"}
+{"text": "Open my notes app, read my grocery list, and if I have more than three items, place them as a cart order with my preferred delivery app.", "label": "task"}
+{"text": "Please find the operating hours for the recycling center in my city so I know when I can drop off batteries.", "label": "task"}
+{"text": "Cancel the alarm I set for 6 AM to attend the indie music festival.", "label": "schedule"}
+{"text": "Can you set a daily reminder for me to review my history notes at 8 PM?", "label": "schedule"}
+{"text": "Search for current prices of 32GB of RAM for desktop builds, compare the top three vendors, and create a spreadsheet comparing the costs and shipping times.", "label": "task"}
+{"text": "Good morning, could you give me a friendly reminder about the laundry I started yesterday?", "label": "schedule"}
+{"text": "Look up the current stock levels for olive oil, salt, and pepper, and if any are low, add them to my Amazon shopping cart.", "label": "task"}
+{"text": "delete all my reminders", "label": "schedule"}
+{"text": "Thank you so much for helping me figure out the currency exchange rates earlier, I really appreciate the quick summary.", "label": "chat"}
+{"text": "ok download the latest album by Kendrick Lamar and play it from the first track", "label": "task"}
+{"text": "what's the best way to remember to take my vitamins", "label": "chat"}
+{"text": "List all recurring chores scheduled for this week", "label": "schedule"}
+{"text": "how much is gas around here", "label": "task"}
+{"text": "Would you mind canceling the alarm I set for next Tuesday at 10 AM for the concert I'm attending?", "label": "schedule"}
+{"text": "pull up spotify and make a playlist called 'workout' with all the heavy bass songs i listened to this week", "label": "task"}
+{"text": "Please cancel my alarm for the morning meditation I set for last week.", "label": "schedule"}
+{"text": "find local running clubs", "label": "task"}
+{"text": "Check fuel prices", "label": "task"}
+{"text": "whats using all my ram", "label": "task"}
+{"text": "I'm hungry right now.", "label": "chat"}
+{"text": "update my pc", "label": "task"}
+{"text": "open terminal", "label": "task"}
+{"text": "set an alarm to pay my credit card by 10am", "label": "schedule"}
+{"text": "hey change my alarm from 6 am to 5:30 tomorrow i gotta be there early for that engine swap", "label": "schedule"}
+{"text": "can you spin up a new branch from develop, clone the repo in ~/devs, and run the unit tests? just need those to pass before i merge", "label": "task"}
+{"text": "whats 2 plus 2", "label": "chat"}
+{"text": "Please search the web for the best discounted train tickets for the Shinkansen from Tokyo to Kyoto for two people.", "label": "task"}
+{"text": "can u list out all the reminders i've got for this week? my brain is fried", "label": "schedule"}
+{"text": "Schedule a weekly check on the pool filter every Thursday at 5pm", "label": "schedule"}
+{"text": "list all my music-related alarms for this week", "label": "schedule"}
+{"text": "If I'm shopping for a new mattress, what are the main factors I should look at before making a purchase?", "label": "chat"}
+{"text": "check stock price of TSLA and AAPL right this second and compare to yesterday", "label": "task"}
+{"text": "Check the live traffic conditions to my neighbor's house", "label": "task"}
+{"text": "Update my sports feed", "label": "task"}
+{"text": "ping me in an hour", "label": "schedule"}
+{"text": "Search for the latest sports news headlines and open the article with the most engagement.", "label": "task"}
+{"text": "Why do people say 'think outside the box' in creative briefs, and is it actually effective?", "label": "chat"}
+{"text": "Please modify the existing recurring reminder every Wednesday at 6:00 PM to call my mother-in-law so it now goes off at 7:30 PM instead.", "label": "schedule"}
+{"text": "I've been hearing a lot about overpacking, so could you give me a general definition of 'capsule wardrobe' principles as applied to travel?", "label": "chat"}
+{"text": "Tell me a joke about the local baseball team missing their home run.", "label": "chat"}
+{"text": "change my 8am alarm to 7:45", "label": "schedule"}
+{"text": "Cancel the alarm that was set for the souffl\u00e9 to come out of the oven.", "label": "schedule"}
+{"text": "my code works on my machine but not on mine lol help", "label": "chat"}
+{"text": "Please cancel the existing alarm I have for the Monday morning football match kickoff.", "label": "schedule"}
+{"text": "Look up the current weather in my city and check if there's an umbrella-friendly time for my 2 PM outdoor interview", "label": "task"}
+{"text": "Search for real-time flight delays at JFK Airport and notify me if my incoming flight is delayed by more than 30 minutes.", "label": "task"}
+{"text": "i feel like my git history is a complete disaster omg", "label": "chat"}
+{"text": "can you tell me if i should throw away this old sponge or clean it again", "label": "chat"}
+{"text": "Find the latest version of Node.js and install it", "label": "task"}
+{"text": "list up all my movie night plans for the next two weeks, i wanna see what's booked", "label": "schedule"}
+{"text": "keep an eye on bitcoin and tell me if it drops below 50k", "label": "schedule"}
+{"text": "Give me three conversation starters for my new girlfriend.", "label": "chat"}
+{"text": "Best jazz pianist?", "label": "chat"}
+{"text": "im stuck on the memo for the team update and i have no ideas how to structure it so please brainstorm a few angles with me", "label": "chat"}
+{"text": "let me know when the ps6 gets announced", "label": "schedule"}
+{"text": "is this a scam", "label": "chat"}
+{"text": "Can you list all the timers I've set to back up my tech files to the NAS?", "label": "schedule"}
+{"text": "open my calendar and block off the next two hours so nobody schedules a meeting on me", "label": "task"}
+{"text": "can you list all my alarms for monday", "label": "schedule"}
+{"text": "Find the last email from my plumber and reply confirming the appointment", "label": "task"}
+{"text": "Open cooking timer", "label": "task"}
+{"text": "I need to change my existing daily 3 PM timer for the 'debugging sprint' session; can you move it to 2 PM instead?", "label": "schedule"}
+{"text": "cancel the reminder about updating my spotify playlists", "label": "schedule"}
+{"text": "u know when you've watched a movie like 10 times and you remember every single line? that's me with the Shawshank Redemption fr", "label": "chat"}
+{"text": "Could you change the reminder for the Monday stand-up meeting from 8:45 AM to 9:00 AM to align with the new team schedule?", "label": "schedule"}
+{"text": "Look up wine pair", "label": "task"}
+{"text": "Could you please look up the current scores of the championship game and notify me when it ends?", "label": "task"}
+{"text": "Schedule a 45-minute break at 1 PM tomorrow to listen to classical music.", "label": "schedule"}
+{"text": "Run a terminal command to install the latest version of Docker Desktop on this machine and verify the installation by printing the version number.", "label": "task"}
+{"text": "download the latest nvidia driver", "label": "task"}
+{"text": "Set an alarm for 45 minutes from now to check the lasagna in the oven.", "label": "schedule"}
+{"text": "cancel the recurring alarm for my podcast listening, i'm bored of it", "label": "schedule"}
+{"text": "can you remind me to pick up my new controller at 5? i keep forgetting and i'm stressed", "label": "schedule"}
+{"text": "im so stressed about my visa application, what do you even need in the document list?", "label": "chat"}
+{"text": "pay my phone bill", "label": "task"}
+{"text": "Find cheapest store", "label": "task"}
+{"text": "I'm curious if you could calculate how much gas I might save by switching from a less fuel-efficient vehicle to a newer model.", "label": "chat"}
+{"text": "Send an email to my friend telling him I need to reschedule our football watch party to next week because of the playoff changes.", "label": "task"}
+{"text": "Delete all unread emails from the past month and archive them", "label": "task"}
+{"text": "set an alarm for 2am to listen to the new album drop, i promise i'll only be up 10 mins", "label": "schedule"}
+{"text": "omg i cant stop rewatching that s1 episode 3 of the show u mentioned??", "label": "chat"}
+{"text": "what's a healthy breakfast", "label": "chat"}
+{"text": "Book a non-refundable flight from LAX to JFK for next Tuesday morning and email the confirmation to my personal address.", "label": "task"}
+{"text": "I'd like to schedule a recurring reminder every Tuesday at 6 PM to book an oil change appointment for next week.", "label": "schedule"}
+{"text": "explain what a VPN does", "label": "chat"}
+{"text": "cancel my netflix subscription", "label": "task"}
+{"text": "Can you open the browser and find me tickets for tonight's local jazz concert?", "label": "task"}
+{"text": "Check the weather forecast for our camping spot tomorrow and if it's going to rain, find an indoor activity for the kids instead.", "label": "task"}
+{"text": "whats trending on twitter", "label": "task"}
+{"text": "What are the pros and cons of online vs. in-store shopping", "label": "chat"}
+{"text": "Give me three examples of professional small talk for a virtual office morning standup.", "label": "chat"}
+{"text": "Check the status of my GitHub pull requests", "label": "task"}
+{"text": "dont let me forget the meeting at 3", "label": "schedule"}
+{"text": "Hi there, could you help me understand why the loot system in this new RPG feels so random to me?", "label": "chat"}
+{"text": "Check grocery prices", "label": "task"}
+{"text": "Remind me to call the vet about my cat's limping tomorrow.", "label": "schedule"}
+{"text": "Could you set a one-time timer for 15 minutes so I can wait for my car's engine to warm up properly?", "label": "schedule"}
+{"text": "quick question does json store booleans as true or 1 in js", "label": "chat"}
+{"text": "Open my email and draft a reply to my friend about meeting up for the new arcade game.", "label": "task"}
+{"text": "check today's calories", "label": "task"}
+{"text": "Can you search the web for the best deals on a 4K monitor and send me the links?", "label": "task"}
+{"text": "Please search the news for any major updates on the NBA finals and summarize the top three stories.", "label": "task"}
+{"text": "Can you cancel the recurring weekly reminder you have set for me to clean up my Git repository history?", "label": "schedule"}
+{"text": "Open the terminal and execute the build script for the Q3 client project, then email me a summary of any compilation errors if they occur.", "label": "task"}
+{"text": "look up the setlist for the beyonce world tour last night in london and send me the full song list to my phone", "label": "task"}
+{"text": "set a timer for 40 mins so i dont forget to turn off the pasta water", "label": "schedule"}
+{"text": "update my relationship check in to every sunday", "label": "schedule"}
+{"text": "How do I change the time of my existing 7 AM alarm for Monday's exam?", "label": "schedule"}
+{"text": "Can you help me brainstorm some creative names for a small software project I'm working on that manages password storage?", "label": "chat"}
+{"text": "why do people always say you have to be yourself in a relationship when i honestly feel like i have to put on a whole different personality just to make them happy", "label": "chat"}
+{"text": "change my game night from thursdays to fridays 7pm starting next week", "label": "schedule"}
+{"text": "find yoga near me", "label": "task"}
+{"text": "Alarm 8:30 tomorrow", "label": "schedule"}
+{"text": "yo my cat just knocked over my water again, im literally screaming lol", "label": "chat"}
+{"text": "ping 192.168.1.1", "label": "task"}
+{"text": "Open the terminal and run the script to download the latest version of the city maps for offline use on my tablet.", "label": "task"}
+{"text": "Cancel tomorrow's 9am dishwasher loading timer", "label": "schedule"}
+{"text": "Please check the stock market news from the past hour to see if there are any major developments affecting the tech sector.", "label": "task"}
+{"text": "I'm thinking about getting a new coffee grinder for my home setup, do you recommend a burr grinder over a blade grinder?", "label": "chat"}
+{"text": "Check the local weather forecast and, if it is raining, suggest the best nearby cozy cafes serving warm soups.", "label": "task"}
+{"text": "nvm", "label": "chat"}
+{"text": "is my computer running slow? check it", "label": "task"}
+{"text": "Remind me in 10 minutes to take the lasagna out of the oven.", "label": "schedule"}
+{"text": "Search for a 15-minute microwave risotto recipe, display the instructions on my screen, and set a 15-minute timer.", "label": "task"}
+{"text": "How do I change the recurring reminder for my daughter's piano practice from 4 PM to 3 PM this week?", "label": "schedule"}
+{"text": "Could you please check the current exchange rates and convert $500 USD to EUR for my upcoming trip?", "label": "task"}
+{"text": "I just got a new monitor, and I was wondering if you could explain how I should adjust the settings to avoid eye strain?", "label": "chat"}
+{"text": "remind me to text jake back every thursday night", "label": "schedule"}
+{"text": "download the latest firmware for my sonos speaker and make sure it is connected to the network", "label": "task"}
+{"text": "hey, i need you to open the terminal and run the lint script on the frontend folder, fix any of those error codes you find, and show me the diff", "label": "task"}
+{"text": "is bitcoin a currency", "label": "chat"}
+{"text": "Could you please set a daily reminder at 8 AM to check the latest sports headlines and read them to me?", "label": "schedule"}
+{"text": "Can you create a reminder for me to check the washing machine cycle every day at 6 PM?", "label": "schedule"}
+{"text": "Look up the current scores of the college baseball game and if we are winning, send a notification to the family group chat.", "label": "task"}
+{"text": "what's the difference between a list and a tuple again?", "label": "chat"}
+{"text": "Could you please set a daily reminder at 8 AM to check for new trailers for the sci-fi movie I've been following?", "label": "schedule"}
+{"text": "Are there any recurring family reminders scheduled for this weekend?", "label": "schedule"}
+{"text": "I have a lot of fresh basil; what's the best way to preserve it for later use?", "label": "chat"}
+{"text": "on the first of every month remind me to pay the car note", "label": "schedule"}
+{"text": "how hot is my gpu running", "label": "task"}
+{"text": "I'm not very competitive, so what are some calming benefits of practicing yoga compared to high-intensity interval training?", "label": "chat"}
+{"text": "Please look up the latest news about water main repairs in my neighborhood so I know when to expect service.", "label": "task"}
+{"text": "whats trending on twitter", "label": "task"}
+{"text": "Tell me a joke about a drummer who quit the band.", "label": "chat"}
+{"text": "change the alarm for the pharmacy visit from two pm to five pm", "label": "schedule"}
+{"text": "Please change the frequency of my goldfish tank cleaning reminder from weekly to bi-weekly.", "label": "schedule"}
+{"text": "Set a 10-minute timer to water the plants", "label": "schedule"}
+{"text": "Find out the current price of the new Daft Punk record at Amazon and add it to my shopping cart if it's under $30.", "label": "task"}
+{"text": "every night at 11 clean my downloads folder", "label": "schedule"}
+{"text": "dont let me forget the meeting at 3", "label": "schedule"}
+{"text": "Can you explain the difference between cardio and strength training?", "label": "chat"}
+{"text": "can you send an email to my whole team asking for the final draft of the proposal by tomorrow morning", "label": "task"}
+{"text": "is the 4090 back in stock anywhere", "label": "task"}
+{"text": "i feel really anxious every time i drive at night on the highway do you think that is normal for a lot of people", "label": "chat"}
+{"text": "list all my gaming schedule items for this week", "label": "schedule"}
+{"text": "What are the pros and cons of installing a smart doorbell in a rental apartment where I can't drill holes?", "label": "chat"}
+{"text": "Open a terminal window in the current project root", "label": "task"}
+{"text": "set a timer for 30 mins i need to study", "label": "schedule"}
+{"text": "summarize my unread emails", "label": "task"}
+{"text": "Look up recall alerts", "label": "task"}
+{"text": "Buy textbooks now", "label": "task"}
+{"text": "cancel the brake pad check reminder", "label": "schedule"}
+{"text": "What's the best way to handle a rude client who keeps changing the scope of my project?", "label": "chat"}
+{"text": "best running shoe", "label": "chat"}
+{"text": "why is the sky blue", "label": "chat"}
+{"text": "order more dog food", "label": "task"}
+{"text": "Set an alarm for 3:30 AM to start listening to the new jazz album.", "label": "schedule"}
+{"text": "is it gonna rain later", "label": "task"}
+{"text": "list all my upcoming payments and invoices", "label": "task"}
+{"text": "I'm looking to book tickets for the upcoming concert at the local arena; could you search for available seats and let me know the prices?", "label": "task"}
+{"text": "whats 2 plus 2", "label": "chat"}
+{"text": "check my git remote status, if the staging branch is behind main, fast-forward it, and then push to origin so i can deploy", "label": "task"}
+{"text": "yo what's the deal with that new Stranger Things spinoff, is it actually good or nah?", "label": "chat"}
+{"text": "remind me every saturday morning to check the headlights on the sedan", "label": "schedule"}
+{"text": "Is it true that overclocking a processor is something most people should avoid due to the risk of damaging it?", "label": "chat"}
+{"text": "whats bitcoin at", "label": "task"}
+{"text": "Schedule an alarm for 1 PM tomorrow to review my credit card statement", "label": "schedule"}
+{"text": "change my recurring grocery run reminder from saturday to sunday afternoon", "label": "schedule"}
+{"text": "whats bitcoin at", "label": "task"}
+{"text": "keep an eye on bitcoin and tell me if it drops below 50k", "label": "schedule"}
+{"text": "remind me to turn in the history essay tonite", "label": "schedule"}
+{"text": "Could you create a recurring schedule to remind me to water the indoor plants every Tuesday and Thursday evening?", "label": "schedule"}
+{"text": "Book me a table for the pop-up art exhibition opening at 8 PM tonight.", "label": "task"}
+{"text": "im thinking of repainting the hallway what colors go together?", "label": "chat"}
+{"text": "Use a browser to search for the highest-rated vegan pizza delivery service near me and open their ordering page.", "label": "task"}
+{"text": "remind me to play my vinyls every sundae night", "label": "schedule"}
+{"text": "Search the web for the closest hardware store that has those specific washers and nuts I need and give me directions", "label": "task"}
+{"text": "Compare Amazon price", "label": "task"}
+{"text": "What reminders do I currently have set for my weight loss goal progress?", "label": "schedule"}
+{"text": "remind me to call the hotel in nyc tomorrow at 9am to book the room", "label": "schedule"}
+{"text": "What's the best way to make scrambled eggs without getting them rubbery?", "label": "chat"}
+{"text": "Thanks, that riff.", "label": "chat"}
+{"text": "thanks a lot", "label": "chat"}
+{"text": "whats using all my ram", "label": "task"}
+{"text": "find that pdf I downloaded yesterday about taxes", "label": "task"}
+{"text": "Could you break down the basic strategy for managing resources in a standard strategy game?", "label": "chat"}
+{"text": "what is the current ticket price for the taylor swift tour at madison square garden and can you check if there are any seats available in the front row", "label": "task"}
+{"text": "Please add a one-time alarm for 2 hours from now to remind me to review the code I just pushed to the staging environment.", "label": "schedule"}
+{"text": "Could you cancel the upcoming alarm set for purchasing a new running shoe, since I have decided to wait for sales?", "label": "schedule"}
+{"text": "Please change my weekly streaming service price update alert to only send notifications when I'm at home.", "label": "schedule"}
+{"text": "Turn off the smart lights in the kitchen", "label": "task"}
+{"text": "any good movies playing tonight near me", "label": "task"}
+{"text": "Can you cancel the recurring reminder to check tire pressure every Friday?", "label": "schedule"}
+{"text": "set an alarm for when my favorite podcast ends", "label": "schedule"}
+{"text": "What's the safest way to handle a leaking pipe in my apartment before the plumber arrives?", "label": "chat"}
+{"text": "Set a daily reminder at 9 AM to check my stock portfolio", "label": "schedule"}
+{"text": "can you list every reminder i've got for this week? i feel like i forgot about that tire rotation", "label": "schedule"}
+{"text": "Check exam times", "label": "task"}
+{"text": "Search recipe", "label": "task"}
+{"text": "Turn the smart thermostat up to seventy because I just got home and it is freezing in here", "label": "task"}
+{"text": "Search for the latest release notes for React 19 online", "label": "task"}
+{"text": "is it ok to leave a wet towel in the dryer or is that bad", "label": "chat"}
+{"text": "Could you set a timer for 30 minutes to help me focus on reading today's major sports reports?", "label": "schedule"}
+{"text": "I'd really appreciate your advice on the most efficient way to fold towels so they fit into a small drawer without taking up too much space.", "label": "chat"}
+{"text": "hey what do you think about this new meeting thing they brought up at work", "label": "chat"}
+{"text": "Can you set a daily reminder at 9 AM to check if my CI/CD pipeline on GitHub is still failing on the main branch?", "label": "schedule"}
+{"text": "who are you", "label": "chat"}
+{"text": "how do you get that weird smell out of the fridge", "label": "chat"}
+{"text": "Check the local weather in Tokyo; if it's raining, cancel my outdoor recording session and reschedule it for next Tuesday.", "label": "task"}
+{"text": "Do you like garlic?", "label": "chat"}
+{"text": "set a daily reminder every night at 10pm to check if the sequel drops yet, i'm so anxious", "label": "schedule"}
+{"text": "list all my dates for this week", "label": "schedule"}
+{"text": "Could you cancel the timer that was set to stop my virtual machine after 2 hours?", "label": "schedule"}
+{"text": "fix my wifi its acting up", "label": "task"}
+{"text": "I need you to open my calendar and book a table for dinner at that French restaurant in Paris for us next Saturday at 8 PM.", "label": "task"}
+{"text": "set workout reminder", "label": "schedule"}
+{"text": "Cancel wedding rehearsal", "label": "schedule"}
+{"text": "im so cringe right now just saw my old high school friend at a concert and they totally ignored me lol", "label": "chat"}
+{"text": "What's the best way to pack fragile items for a moving box", "label": "chat"}
+{"text": "schedule a timer for thirty minutes so i remember to pick up the dry cleaning", "label": "schedule"}
+{"text": "ok open the browser and pull up the latest Q3 financial reports from the company portal", "label": "task"}
+{"text": "Mom's birthday soon", "label": "chat"}
+{"text": "order more dog food", "label": "task"}
+{"text": "download python 3.12", "label": "task"}
+{"text": "Please set an alarm for 9:00 AM tomorrow to remind me to buy the birthday flowers for my colleague.", "label": "schedule"}
+{"text": "Suggest a few birthday gift ideas for my sister who loves tech", "label": "chat"}
+{"text": "should I get a 3090 or a 4090", "label": "chat"}
+{"text": "I'd appreciate it if you could set a recurring alarm every Sunday at 10 AM to remind me to buy treats for my hamster.", "label": "schedule"}
+{"text": "What reminders do I have scheduled for this week's study sessions?", "label": "schedule"}
+{"text": "Could you please cancel the alarm that was set for 5:00 PM to finish the draft document before the client call?", "label": "schedule"}
+{"text": "cancel my alarm for paying taxes", "label": "schedule"}
+{"text": "I'd like you to search for a good deal on concert merchandise online and find me a link to purchase it.", "label": "task"}
+{"text": "snooze that reminder 10 minutes", "label": "schedule"}
+{"text": "I'd like to cancel the reminder you set for grooming my rabbit last week.", "label": "schedule"}
+{"text": "find protein snacks", "label": "task"}
+{"text": "Can you give me a quick recipe for a 15-minute pasta dish using what's usually in my pantry?", "label": "chat"}
+{"text": "what is the best way to get a stubborn stain out of a carpet without buying chemicals", "label": "chat"}
+{"text": "What's a good way to break up with someone if we're already moving in together?", "label": "chat"}
+{"text": "look up how to fix a leaky faucet and give me the steps", "label": "task"}
+{"text": "set a reminder for every monday at ten am to check the grocery list online", "label": "schedule"}
+{"text": "yo, push that latest commit to main and tag v1.2.0 real quick before i forget", "label": "task"}
+{"text": "my little bro wont stop asking why i dont have a brother so i dont know wht to say", "label": "chat"}
+{"text": "Why do my knees hurt when I climb stairs after a long run?", "label": "chat"}
+{"text": "Check my email for any new messages about software updates from Microsoft and summarize them.", "label": "task"}
+{"text": "Open my calendar and find the next free slot on Saturday to book the plumber for the kitchen sink leak", "label": "task"}
+{"text": "Can you list all the future scheduled reminders for pet supplies that are due this month?", "label": "schedule"}
+{"text": "Who wrote Bohemian Rhapsody?", "label": "chat"}
+{"text": "Find NFL standings now", "label": "task"}
+{"text": "Check the current weather forecast for tomorrow evening and let me know if it's going to be too cold for the outdoor game.", "label": "task"}
+{"text": "set a reminder to pay my rent every 1st month", "label": "schedule"}
+{"text": "remind me to check in online 3 hours before my flight to dubai", "label": "schedule"}
+{"text": "Find the nearest pediatrician in the neighborhood with an emergency slot for tonight and call them to make an appointment for my 5-year-old.", "label": "task"}
+{"text": "open file explorer", "label": "task"}
+{"text": "Why does salt work?", "label": "chat"}
+{"text": "Go to the corporate IT portal, download the updated security patch for the antivirus software, and schedule the installation to run during the next 30-minute maintenance window.", "label": "task"}
+{"text": "any good comedy shows for a tuesday night?? keep it under 30 mins per ep", "label": "chat"}
+{"text": "write a poem about my cat", "label": "chat"}
+{"text": "Can you explain what 'visa-free travel' typically means and what are some common requirements for travelers to maintain their status?", "label": "chat"}

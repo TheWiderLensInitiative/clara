@@ -1,0 +1,22 @@
+Clara
+Copyright 2026 The Wider Lens Initiative Project
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Clara builds on these projects (downloaded by install.sh, not included in this repository unless noted):
+
+- Hermes Agent, by Nous Research — MIT License — https://github.com/NousResearch/hermes-agent
+- Bonsai 2 27B and the Bonsai demo / llama.cpp fork, by PrismML — Apache-2.0 — https://github.com/PrismML-Eng/Bonsai-demo
+  (Bonsai 2 27B is based on Qwen; llama.cpp is MIT-licensed)
+- Laya, by ConvAI Innovations — Apache-2.0 — https://huggingface.co/convaiinnovations/laya
+  (Clara's router "laya-for-clara" is a fine-tune of Laya, also Apache-2.0)
+- ModernBERT, by Answer.AI — Apache-2.0
+- Kokoro TTS (82M), by hexgrad — Apache-2.0; kokoro-onnx by thewh1teagle — MIT
+- agent-browser, by Vercel Labs — Apache-2.0
+- SearXNG — AGPL-3.0 (run unmodified as a separate Docker container)
+- Google Fonts: Poppins, Anton, Bebas Neue — SIL Open Font License 1.1
+- Brand logos in android/app/src/main/res/drawable/ic_brand_*.xml: Simple Icons (CC0 1.0) and the companies' own
+  published logos (Google, Slack, Microsoft). Logos are trademarks of their owners and are used only to show which
+  service a connector talks to.
+
+Clara is an independent project. It is not affiliated with, or endorsed by, any of the companies or services above.

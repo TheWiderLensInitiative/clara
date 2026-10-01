@@ -1,0 +1,9 @@
+// Let the person who installed Clara start, stop and restart her services without a password (the `clara` command).
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.systemd1.manage-units" && subject.user == "@USER@") {
+        var unit = action.lookup("unit");
+        if (unit == "clara-model.service" || unit == "clara-bridge.service" || unit == "clara-hermes.service") {
+            return polkit.Result.YES;
+        }
+    }
+});

@@ -1,0 +1,18 @@
+# Clara Bridge: the phone app's server, Laya router, approvals, voice, video, connectors. Runs as @USER@ (CPU only).
+[Unit]
+Description=Clara Bridge (phone API, Laya router, approvals)
+After=network.target clara-model.service
+
+[Service]
+User=@USER@
+# member of the clara group from the first start, without logging out and back in
+SupplementaryGroups=clara
+WorkingDirectory=@REPO@/bridge
+Environment=CUDA_VISIBLE_DEVICES=
+Environment=CLARA_DATA_DIR=@DATA@ HERMES_HOME=/var/lib/clara/hermes-home CLARA_WORKSPACE=/var/lib/clara/workspace CLARA_STATE_DIR=/srv/clara-state
+ExecStart=@DATA@/venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port 8700
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

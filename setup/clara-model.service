@@ -1,0 +1,16 @@
+# Clara's brain: Bonsai 2 27B on llama-server (PrismML fork), on the GPU. Runs as @USER@.
+[Unit]
+Description=Clara model: Bonsai 2 27B (llama-server, 100K context, 4-bit KV cache)
+After=network.target
+
+[Service]
+User=@USER@
+WorkingDirectory=@BONSAI_DIR@
+Environment=BONSAI_KV4=1 BONSAI_CTX=102400 AGENT_REASONING_BUDGET=4096
+# two slots sharing one KV cache: slot 0 keeps the agent's long prompt warm, slot 1 serves quick chat (see bridge/app.py CHAT_SLOT)
+ExecStart=/bin/sh @BONSAI_DIR@/scripts/start_agent_server.sh --chat-template-kwargs '{"reasoning_effort":"medium"}' --parallel 2 --kv-unified
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

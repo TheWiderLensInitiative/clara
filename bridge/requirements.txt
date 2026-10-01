@@ -1,0 +1,17 @@
+# Clara Bridge (runs on the CPU; the GPU stays with Bonsai). Install torch from the CPU index first, see install.sh.
+fastapi==0.141.1
+uvicorn==0.54.0
+httpx==0.28.1
+websockets==17.1
+pydantic==2.13.5
+cryptography==50.0.1
+laya==0.3.21
+transformers==5.17.0
+huggingface-hub==1.33.0
+safetensors==0.8.0
+numpy==2.5.3
+pillow==12.3.0
+kokoro-onnx==0.6.1
+onnxruntime==1.30.0
+soundfile==0.14.0
+imageio-ffmpeg==0.6.0

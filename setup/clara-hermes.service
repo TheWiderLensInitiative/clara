@@ -1,0 +1,39 @@
+# Clara's agent (Hermes), running as her own Linux user in a sandbox: her own computer.
+[Unit]
+Description=Clara agent (Hermes), sandboxed as the clara user
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User=clara
+Group=clara
+UMask=0007
+WorkingDirectory=/var/lib/clara/workspace
+Environment=HOME=/var/lib/clara
+Environment=SHELL=/bin/bash
+Environment=HERMES_HOME=/var/lib/clara/hermes-home
+Environment=HERMES_SKIP_CHMOD=1
+Environment=PATH=/opt/clara/agent-browser/node_modules/.bin:/opt/clara/node/bin:/opt/clara/venv-hermes/bin:/usr/local/bin:/usr/bin:/bin
+Environment=AGENT_BROWSER_EXECUTABLE_PATH=/opt/clara/chrome/chrome
+Environment=AGENT_BROWSER_STREAM_PORT=9223 AGENT_BROWSER_STREAM_QUALITY=60 AGENT_BROWSER_STREAM_MAX_WIDTH=1280
+ExecStart=/opt/clara/venv-hermes/bin/hermes gateway
+Restart=on-failure
+RestartSec=5
+
+# Sandbox: your /home is invisible to her, the system is read-only, she can never gain privileges.
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/clara
+PrivateTmp=yes
+NoNewPrivileges=yes
+RestrictSUIDSGID=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

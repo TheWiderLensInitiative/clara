@@ -1,0 +1,27 @@
+# never commit private data: it lives in ~/.local/share/clara (database, keys, tokens, models)
+*.db
+*.db-*
+*.key
+link_token
+identity.json
+*.jks
+keystore.properties
+.env
+
+# build output and caches
+android/**/build/
+android/.gradle/
+android/.kotlin/
+android/local.properties
+android/.idea/
+*.apk
+__pycache__/
+*.pyc
+.venv*/
+*.log
+
+# models are downloaded, not committed
+*.safetensors
+*.gguf
+*.onnx
+voices-*.bin

@@ -1,0 +1,4 @@
+name: clara-vault
+version: "0.1.0"
+description: "Sign in to websites with the user's saved logins without Clara ever seeing a password. Credentials live in agent-browser's encrypted auth vault; Clara only knows login names."
+author: "Clara"

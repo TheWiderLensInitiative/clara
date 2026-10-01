@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Plain HTTP is allowed so the phone can reach the Bridge on home Wi-Fi during development.
+     Remote access (Tailscale / Cloudflare) will use HTTPS; tighten this once that is in place. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

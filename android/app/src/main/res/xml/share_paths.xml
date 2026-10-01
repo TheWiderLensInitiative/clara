@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Videos Clara made are cached here before playing; sharing hands them to TikTok, Instagram, Photos… -->
+<paths>
+    <cache-path name="videos" path="." />
+</paths>

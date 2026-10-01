@@ -1,0 +1,4 @@
+name: clara-link
+version: "0.1.0"
+description: "Pushes fired reminders / scheduled-job results from Clara's private home to the Clara Bridge, which delivers them to the user's phone."
+author: "Clara"

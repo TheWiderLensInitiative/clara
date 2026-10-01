@@ -1,0 +1,6 @@
+name: clara-guardian
+version: "0.1.0"
+description: "Clara's Guardian: approval rules on top of Hermes's dangerous-command gate. Blocks self-tampering; escalates sudo, installs, deletes, sending, remote access and writes outside Clara's workspace to the human approval gate (phone)."
+author: "Clara"
+hooks:
+  - pre_tool_call
