@@ -237,6 +237,13 @@ LAN=$(ip route get 1.1.1.1 2>/dev/null | awk '{for (i=1;i<=NF;i++) if ($i=="src"
 CODE=$(cd "$REPO/bridge" && CLARA_DATA_DIR="$DATA" "$DATA/venv/bin/python" pair.py | awk '{print $3}')
 cat <<EOF
 
+  Get the Clara app: scan this with your phone's camera, or open
+  https://github.com/TheWiderLensInitiative/clara/releases/latest
+
+EOF
+(cd "$REPO/bridge" && "$DATA/venv/bin/python" qr.py) | sed 's/^/  /'
+cat <<EOF
+
   ┌──────────────────────────────────────────────────────────────┐
   │  Clara is installed.                                         │
   │                                                              │
@@ -245,6 +252,7 @@ cat <<EOF
   │      Pairing code:      ${CODE}   (valid 10 minutes)
   │                                                              │
   │  New code any time:  clara pair                              │
+  │  Show the app's QR code again:  clara app                    │
   │  Use Clara away from home:  sudo sh setup/tailscale.sh       │
   └──────────────────────────────────────────────────────────────┘
 EOF

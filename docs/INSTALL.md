@@ -25,13 +25,14 @@ Run it as your normal user; it asks for your password once. It:
 6. starts a private SearXNG search engine (Docker, only reachable from this PC)
 7. sets up the Bridge, Clara's voice (Kokoro) and the Laya router in `~/.local/share/clara`
 8. installs three services that start at boot: `clara-model`, `clara-hermes`, `clara-bridge`
-9. prints the computer address and a pairing code
+9. shows a QR code for the phone app, the computer address and a pairing code
 
 Running it again is safe. `clara update` pulls the latest code and refreshes everything except your data.
 
 ## 3. Connect your phone
 
-Install the Clara app (from the project's website or the GitHub release). Open it, enter the **computer address**
+Scan the QR code the installer showed with your phone's camera (or run `clara app` to see it again) to get the Clara
+app, or download it from the project's website or the GitHub release. Open it, enter the **computer address**
 (e.g. `192.168.1.20:8700`) and the **pairing code**. Lost the code? Run `clara pair` for a new one (valid 10 minutes).
 
 ## 4. Optional extras
@@ -48,6 +49,7 @@ Install the Clara app (from the project's website or the GitHub release). Open i
 ```
 clara status            are the three services running, and is she healthy?
 clara pair              new pairing code       clara pair list / clara pair revoke <id>
+clara app               QR code to download the phone app
 clara logs bridge       last log lines (also: model, agent)
 clara restart           restart everything     clara update     update to the latest version
 ```

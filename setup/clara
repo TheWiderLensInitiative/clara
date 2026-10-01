@@ -1,5 +1,5 @@
 #!/bin/sh
-# clara start|stop|restart|status|logs [model|agent|bridge]|pair [list|revoke <id>]|update
+# clara start|stop|restart|status|logs [model|agent|bridge]|pair [list|revoke <id>]|app|update
 REPO="@REPO@"; DATA="@DATA@"
 UNITS="clara-model clara-bridge clara-hermes"
 case "$1" in
@@ -8,6 +8,9 @@ case "$1" in
           printf "health         "; curl -s -m 5 localhost:8700/v1/health || echo "Bridge not answering"; echo ;;
   logs) case "${2:-bridge}" in agent|hermes) journalctl -u clara-hermes -n 60 --no-pager ;; *) journalctl -u "clara-${2:-bridge}" -n 60 --no-pager ;; esac ;;
   pair) cd "$REPO/bridge" && CLARA_DATA_DIR="$DATA" "$DATA/venv/bin/python" pair.py "$2" "$3" ;;
+  app) echo "Get the Clara app: scan with your phone's camera, or open"
+       echo "https://github.com/TheWiderLensInitiative/clara/releases/latest"; echo
+       cd "$REPO/bridge" && "$DATA/venv/bin/python" qr.py ;;
   update) cd "$REPO" && git pull --ff-only && sh "$REPO/install.sh" --update ;;
-  *) echo "usage: clara start|stop|restart|status|logs [model|agent|bridge]|pair [list|revoke <id>]|update" ;;
+  *) echo "usage: clara start|stop|restart|status|logs [model|agent|bridge]|pair [list|revoke <id>]|app|update" ;;
 esac
