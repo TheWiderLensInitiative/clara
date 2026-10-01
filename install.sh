@@ -59,13 +59,13 @@ sudo -v || die "sudo is needed for the system parts."
 if [ "$UPDATE" = 0 ]; then
 say "System packages"
 sudo apt-get update -qq
-sudo apt-get install -y -qq git curl ca-certificates python3 docker.io acl >/dev/null
+sudo apt-get install -y -qq git curl ca-certificates python3 docker.io acl libgomp1 >/dev/null
 sudo systemctl enable --now docker >/dev/null 2>&1 || true
 if ! command -v uv >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/uv" ]; then
     curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null
 fi
 UV="$(command -v uv || echo "$HOME/.local/bin/uv")"
-ok "git, curl, docker, uv"
+ok "git, curl, docker, OpenMP, uv"
 
 # ---------------------------------------------------------------------------------------------------------------------
 say "Bonsai 2 27B (the model, ~12 GB download)"
@@ -74,6 +74,7 @@ cd "$BONSAI_DIR"
 [ -x bin/cuda/llama-server ] || sh scripts/download_binaries.sh
 [ -x .venv/bin/python ] || "$UV" venv -q --python 3.12 .venv
 "$UV" pip install -q --python .venv/bin/python huggingface-hub
+warn "If it asks for a Hugging Face token, just press Enter: Bonsai is public."
 BONSAI_FAMILY=bonsai2 BONSAI_MODEL=27B sh scripts/download_models.sh
 if ! LD_LIBRARY_PATH="$BONSAI_DIR/bin/cuda" ldd bin/cuda/llama-server | grep -q "libcudart.so.12 => /"; then
     # the prebuilt binaries use the CUDA 12 runtime; newer drivers ship CUDA 13 only, so bring the CUDA 12 libraries along
