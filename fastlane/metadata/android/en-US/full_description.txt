@@ -1,0 +1,29 @@
+Clara is a personal AI assistant that runs entirely on your own computer. This app is how you talk to her from your phone.
+
+⚠️ Clara needs your own PC: Linux (Ubuntu 24.04 or newer) with an NVIDIA graphics card that has 12 GB of memory or more. Set it up first with the free installer at clara.thewiderlens.info, then pair this app with the code it shows. The app does nothing on its own.
+
+WHY CLARA
+Most AI assistants run in someone else's cloud. Clara runs on hardware you own. Her brain (the Bonsai 2 27B model), her agent (Hermes) and her memory all live on your PC, and your chats, files and memories never leave it.
+
+WHAT SHE CAN DO
+• Chat with an animated character who shows what she's doing: typing, browsing, thinking
+• Do real tasks on her own sandboxed computer: research the web, organize files, run code, use a browser you can watch and take over
+• Reminders and scheduled jobs, delivered to your phone
+• Voice mode: talk hands-free, and she answers with a natural voice generated on your PC
+• Send her photos and documents; she sees and reads them
+• Goals, check-ins and a morning note with suggestions
+• Connect your accounts: Gmail, Google Calendar, Outlook, Spotify, Notion, Todoist, GitHub, Slack, Discord, Telegram, Dropbox, Home Assistant and YouTube
+• Make pictures, videos, social posts and ads (optional, through your own OpenRouter account)
+• Restyle her look just by asking
+
+YOU STAY IN CONTROL
+• Sending, deleting, buying, installing and anything risky asks you on your phone first, with a full preview
+• Website passwords stay on your phone, protected by your fingerprint. Clara can use a saved login for one sign-in without ever seeing it
+• Cloud help is off by default. If you turn it on, every task asks first, with daily and monthly spending caps
+• No accounts with us, no ads, no analytics, no tracking
+
+USE HER ANYWHERE
+At home over Wi-Fi, or anywhere privately through Tailscale. The app switches automatically.
+
+FREE AND OPEN SOURCE
+Clara is free, open source (Apache-2.0) and made by The Wider Lens Initiative Project. Code, installer and docs: github.com/TheWiderLensInitiative/clara

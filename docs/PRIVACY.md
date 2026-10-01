@@ -35,3 +35,31 @@ and the PC never stores it.
 Clara runs as her own Linux user in a sandbox: she can't see your home folder, can't use sudo, and her safety rules
 (**Guardian**) are files she can read but not modify. Sending, deleting, buying, installing, network and admin actions
 ask you on your phone first. Emails she reads are treated as untrusted: instructions inside them are ignored.
+
+## The Clara phone app
+
+The app talks **only to your own PC** (your Clara Bridge), over your home Wi-Fi or your private Tailscale network. It
+contains no analytics, ads, crash reporting or tracking libraries, and it never contacts the Clara project or any server of
+ours: we don't run any.
+
+| On your phone | Why | Where it goes |
+|---|---|---|
+| Your PC's address and the pairing token | to reach your Clara | stays on the phone (app storage) |
+| Saved website logins (vault) | so Clara can sign in without seeing them | stays on the phone, encrypted with the Android keystore; one login is sealed for your PC only when you approve a sign-in |
+| Messages, photos and files you send | to talk to Clara | your PC only |
+| Microphone (voice mode, dictation) | to hear you | the phone's own speech recognizer turns speech into text; the text goes to your PC |
+| Notifications | replies, reminders, approval requests | shown on the phone |
+| Your OpenRouter key, if you add one | cloud boost | your PC, which stores it encrypted |
+
+Temporary voice clips and previews live in the app's cache and are deleted by Android as needed. Uninstalling the app
+removes everything it stored on the phone. Data on your PC is yours to keep or delete (`~/.local/share/clara`).
+
+Children: Clara is not directed at children under 13.
+
+Changes to this policy are published in this file, with history at
+https://github.com/TheWiderLensInitiative/clara/commits/main/docs/PRIVACY.md
+
+## Contact
+
+The Wider Lens Initiative Project: questions and requests at https://github.com/TheWiderLensInitiative/clara/issues
+(security problems: see [SECURITY.md](../SECURITY.md)).
