@@ -263,19 +263,28 @@ def build(name, scenes, layout, clips, out_dir, tmp):
     ass = os.path.join(tmp, f"{name}.ass")
     captions(words_at, layout, ass)
     out = os.path.join(out_dir, f"{name}.mp4")
-    common = ["-c:v", "libx264", "-crf", "19", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
-              "-ar", "48000", "-shortest", "-movflags", "+faststart", out]
-    vf = f"subtitles={ass}:fontsdir={pv.FONTS}"
+    # Three separate steps. Doing captions and the audio mix in one ffmpeg graph made it drop chunks of audio
+    # (the "skips"), so: captions onto the picture, the sound on its own, then join them without re-encoding the video.
+    captioned = os.path.join(tmp, f"{name}-captioned.mp4")
+    run(["-i", silent, "-vf", f"subtitles={ass}:fontsdir={pv.FONTS}", "-an",
+         "-c:v", "libx264", "-crf", "19", "-preset", "medium", "-pix_fmt", "yuv420p", captioned])
+    mixed = os.path.join(tmp, f"{name}-mix.wav")
     if music:
         # music under the voice, ducked while Clara speaks (sidechain), faded at both ends, then loudness for social
-        fc = (f"[2:a]aresample=48000,aformat=channel_layouts=stereo,atrim=0:{total:.2f},asetpts=PTS-STARTPTS,"
+        fc = (f"[1:a]aresample=48000,aformat=channel_layouts=stereo,atrim=0:{total:.2f},asetpts=PTS-STARTPTS,"
               f"afade=t=in:d=0.8,afade=t=out:st={max(0, total - 2.5):.2f}:d=2.5,volume=0.55[m];"
-              f"[1:a]aresample=48000,aformat=channel_layouts=stereo,asplit=2[v1][v2];"
+              f"[0:a]aresample=48000,aformat=channel_layouts=stereo,asplit=2[v1][v2];"
               f"[m][v1]sidechaincompress=threshold=0.02:ratio=8:attack=15:release=450:makeup=1[md];"
-              f"[md][v2]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11[a];[0:v]{vf}[v]")
-        run(["-i", silent, "-i", wav, "-i", music, "-filter_complex", fc, "-map", "[v]", "-map", "[a]", *common])
+              f"[md][v2]amix=inputs=2:normalize=0:duration=first,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]")
+        run(["-i", wav, "-i", music, "-filter_complex", fc, "-map", "[a]", "-c:a", "pcm_s16le", mixed])
     else:
-        run(["-i", silent, "-i", wav, "-vf", vf, "-map", "0:v", "-map", "1:a", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", *common])
+        run(["-i", wav, "-af", "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000", "-c:a", "pcm_s16le", mixed])
+    run(["-i", captioned, "-i", mixed, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+         "-ar", "48000", "-movflags", "+faststart", out])
+    # never ship a video whose sound is shorter than its picture
+    a_len, v_len = duration(mixed), duration(captioned)
+    if abs(a_len - v_len) > 0.3:
+        raise SystemExit(f"{name}: audio {a_len:.2f}s vs video {v_len:.2f}s")
     print(out, f"{total:.1f}s")
 
 
