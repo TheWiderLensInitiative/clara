@@ -108,6 +108,10 @@ class BridgeApi(val baseUrl: String, private val token: String?) {
 
     suspend fun activity(limit: Int = 200): List<ActivityItem> = json.decodeFromString<ActivityList>(call("GET", "/v1/activity?limit=$limit")).activity
     suspend fun upcoming(): List<Job> = json.decodeFromString<JobList>(call("GET", "/v1/upcoming")).jobs
+    /** An open "Clara needs your help in her browser" request, if any (survives the app being closed). */
+    suspend fun openHelp(): HelpRequest? =
+        json.parseToJsonElement(call("GET", "/v1/screen/status")).jsonObject["help"]
+            ?.takeIf { it !is kotlinx.serialization.json.JsonNull }?.let { json.decodeFromJsonElement<HelpRequest>(it) }
     suspend fun jobAction(id: String, action: String) { call("POST", "/v1/upcoming/$id/$action") }
     suspend fun deleteJob(id: String) { call("DELETE", "/v1/upcoming/$id") }
     suspend fun memory(): Memory = json.decodeFromString(call("GET", "/v1/memory"))

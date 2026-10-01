@@ -138,6 +138,7 @@ class ClaraViewModel : ViewModel() {
         val convs = a.conversations()
         _ui.update { it.copy(conversations = convs, pending = a.approvals("pending")) }
         runCatching { a.character() }.getOrNull()?.let { c -> _ui.update { it.copy(character = c) } }
+        runCatching { a.openHelp() }.onSuccess { h -> _ui.update { it.copy(help = h) } }
         val cid = _ui.value.conversationId ?: convs.firstOrNull { it.id != NOTIFICATIONS_CONVERSATION }?.id
         if (cid != null) openConversation(cid) else newChat()
     }

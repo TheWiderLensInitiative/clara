@@ -117,7 +117,7 @@ fun ChatScreen(
     val pendingHere = state.pending.filter { it.conversationId == state.conversationId || it.conversationId == null }
     val lastMsg = state.messages.lastOrNull()
     val chips = if (lastMsg != null && lastMsg.role == "assistant" && !state.working) lastMsg.suggestions else emptyList()
-    val itemCount = (if (chips.isNotEmpty()) 1 else 0) + state.messages.size + pendingHere.size + state.vaultRequests.size + state.apiRequests.size + state.cloudRequests.size + state.budgetSuggestions.size + (if (state.working) 1 else 0)
+    val itemCount = (if (chips.isNotEmpty()) 1 else 0) + (if (state.help != null) 1 else 0) + state.messages.size + pendingHere.size + state.vaultRequests.size + state.apiRequests.size + state.cloudRequests.size + state.budgetSuggestions.size + (if (state.working) 1 else 0)
     // to the very bottom of the last item (a long reply or a browser card is taller than the screen)
     LaunchedEffect(itemCount, state.streaming.length) { if (itemCount > 0) list.animateScrollToItem(itemCount - 1, scrollOffset = 100_000) }
     var celebrating by remember { mutableStateOf(false) }
@@ -223,7 +223,6 @@ fun ChatScreen(
                 LazyColumn(state = list, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), modifier = Modifier.fillMaxSize()) {
                     items(state.messages, key = { it.id }) { MessageBubble(it, loadImage, onOpenBrowser = onWatch) }
                     if (chips.isNotEmpty()) item("chips-" + lastMsg!!.id) { SuggestionChips(chips) { onSend(it) } }
-                    state.help?.let { h -> item("help-" + h.id) { info.thewiderlens.clara.ui.components.HelpCard(h.reason, onTakeOver) } }
                     items(pendingHere, key = { "a-" + it.id }) { a -> ApprovalCard(a) { onAnswer(a, it) } }
                     items(state.vaultRequests, key = { "v-" + it.id }) { r -> info.thewiderlens.clara.ui.components.VaultCard(r) { ok -> onVault(r, ok) } }
                     items(state.apiRequests, key = { "k-" + it.id }) { r -> info.thewiderlens.clara.ui.components.ApiRequestCard(r) { c -> onApi(r, c) } }
@@ -235,6 +234,8 @@ fun ChatScreen(
                             if (state.showLive || mood == Mood.Browsing) info.thewiderlens.clara.ui.components.LiveBrowserCard(api, onWatch)
                         }
                     }
+                    // last, so it's what the chat scrolls to: Clara is waiting on the user
+                    state.help?.let { h -> item("help-" + h.id) { info.thewiderlens.clara.ui.components.HelpCard(h.reason, onTakeOver) } }
                 }
             }
         }
