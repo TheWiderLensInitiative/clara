@@ -1,0 +1,3 @@
+• Voice mode starts talking sooner and never repeats an answer
+• Clara can read web pages on her own
+• In chat, Clara offers to do things instead of promising them
