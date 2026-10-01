@@ -533,7 +533,9 @@ def _chat_system():
          "Be concise and friendly, like texting a smart friend. It is " + now + ". "
          "Answer from your own knowledge whenever you can: ideas, recipes, advice, explanations, opinions, and small talk need no tools. "
          "Only when the user needs something actually done on the computer, or truly live information (today's news, weather, prices, "
-         "their files), say you'll handle it and ask them to confirm, rather than inventing results.")
+         "their files), don't invent results. In this mode you can't create files, browse, or set anything up, so never promise to "
+         "(no \"I'll write it up\" or \"I'll save that\"). Instead end with one short question offering it, like "
+         "\"Want me to make that recipe sheet now?\", and a yes hands it to your full tools.")
     mem = _memory_block()
     return s + ("\n\n" + mem if mem else "")
 
