@@ -108,6 +108,9 @@ class VoiceSession(
             startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                // end the turn sooner after the user stops talking (honored by Google's recognizer; others ignore it)
+                .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 700L)
+                .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 500L)
                 .putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.packageName))
         }
         _phase.value = VoicePhase.Listening
@@ -234,6 +237,7 @@ class SentenceSplitter {
     private var spoken = 0
     private val said = StringBuilder()   // everything spoken for this reply, normalized, so the final text isn't read twice
     private val boundary = Regex("""(?<=[.!?…])["')\]]*\s+|\n{2,}""")
+    private val clause = Regex("""(?<=[,;:—–])\s+""")
 
     /** New complete sentences in [text] (the reply so far); keeps short fragments together so speech flows. */
     fun feed(text: String, final: Boolean): List<String> {
@@ -246,6 +250,14 @@ class SentenceSplitter {
             chunk.append(rest, consumed, m.range.last + 1)
             consumed = m.range.last + 1
             if (chunk.trim().length >= 25) { out += chunk.toString().trim(); chunk = StringBuilder() }
+        }
+        if (!final && out.isEmpty() && said.isEmpty()) {
+            // Start talking sooner: the first piece of a reply may end at a comma or dash, so it is quick to voice.
+            clause.findAll(rest).firstOrNull { it.range.first >= 20 }?.let { m ->
+                out += rest.substring(0, m.range.last + 1).trim()
+                consumed = m.range.last + 1
+                chunk = StringBuilder()
+            }
         }
         if (final) {
             chunk.append(rest.substring(consumed))

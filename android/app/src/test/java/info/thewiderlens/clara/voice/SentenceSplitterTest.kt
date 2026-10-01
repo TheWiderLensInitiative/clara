@@ -20,9 +20,10 @@ class SentenceSplitterTest {
         assertEquals(reply.replace(Regex("\\s+"), " "), spoken.joinToString(" "))
     }
 
-    @Test fun shortSentencesAreKeptTogether() {
+    @Test fun firstPieceCanEndAtAComma() {
         val spoken = stream("Sure! Done. I set it for six o'clock tonight, and I'll ping you then.")
-        assertEquals(listOf("Sure! Done. I set it for six o'clock tonight, and I'll ping you then."), spoken)
+        // the first piece may end at a comma so Clara starts talking sooner
+        assertEquals(listOf("Sure! Done. I set it for six o'clock tonight,", "and I'll ping you then."), spoken)
     }
 
     @Test fun firstSentenceIsReadyBeforeTheReplyEnds() {
