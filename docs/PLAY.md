@@ -1,6 +1,6 @@
 # Publishing Clara on Google Play
 
-Everything Play Console asks for, with Clara's answers. Store text and graphics are in
+Everything Play Console asks for, with Clara's answers. To hand this to an agent, see [PLAY-HANDOFF.md](PLAY-HANDOFF.md). Store text and graphics are in
 `fastlane/metadata/android/en-US/` (the same layout F-Droid uses).
 
 ## 1. Create the app
