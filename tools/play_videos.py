@@ -174,7 +174,7 @@ def build(name, layout, intro, shots, outro, clips, out_dir, tmp):
     print(out)
 
 
-END = ("Clara", "Free and open source", "Needs a Linux PC with an NVIDIA GPU (12 GB+)\nclara.thewiderlens.info")
+END = ("Clara", "Free and open source", "Created by DevIgnite × The Wider Lens Initiative Project\nNeeds a Linux PC with an NVIDIA GPU (12 GB+)\nclara.thewiderlens.info")
 
 VIDEOS = {
     # 1. Store listing promo (landscape, for YouTube)
@@ -184,6 +184,7 @@ VIDEOS = {
             ("clip1.mp4", 1.0, 15.0, 1.6, "Ask her anything", "Answers in seconds, from the GPU in your own computer."),
             ("clip2.mp4", 1.0, 36.0, 4.5, "She does real work", "Research, files, code, a browser of her own."),
             ("clip2b.mp4", 2.0, 12.0, 1.4, "And brings back the answer", "Nothing you ask leaves your PC."),
+            ("voice.mp4", 0.0, 16.0, 1.15, "Or just talk", "Hands-free voice mode. She answers out loud, with a voice made on your PC."),
             ("clip3.mp4", 3.0, 30.0, 2.5, "You approve anything risky", "Sending, deleting, buying and installing ask you first."),
             ("clip1.mp4", 40.5, 52.0, 1.6, "Reminders and routines", "Delivered to your phone."),
             ("clip2.mp4", 53.0, 58.0, 1.0, "Connect your accounts", "Gmail, Calendar, Spotify, Notion and more. Your logins stay on your PC."),
@@ -199,6 +200,7 @@ VIDEOS = {
             ("clip2b.mp4", 0.0, 13.0, 1.0, "…and reports back"),
             ("clip3.mp4", 0.0, 38.0, 1.0, "4. Risky actions need the user's approval"),
             ("clip1.mp4", 36.0, 56.0, 1.0, "5. Reminders are scheduled on the PC"),
+            ("voice.mp4", 0.0, 36.0, 1.0, "6. Voice mode: speech is recognized on the phone, Clara's voice is made on the PC"),
         ],
         END + (4.0,)),
     # 3. Foreground service declaration (portrait)

@@ -73,8 +73,8 @@ channel, then paste the links:
 
 | File | YouTube visibility | Where the link goes |
 |---|---|---|
-| `clara-promo.mp4` (54 s, landscape) | Public | Store listing → **Video**; also `fastlane/metadata/android/en-US/video.txt` so `fastlane supply` keeps it |
-| `clara-reviewer-demo.mp4` (2:22, portrait) | Unlisted | App content → **App access** instructions (replace `<VIDEO LINK>` in PLAY.md) |
+| `clara-promo.mp4` (68 s, landscape) | Public | Store listing → **Video**; also `fastlane/metadata/android/en-US/video.txt` so `fastlane supply` keeps it |
+| `clara-reviewer-demo.mp4` (2:58, portrait) | Unlisted | App content → **App access** instructions (replace `<VIDEO LINK>` in PLAY.md) |
 | `clara-foreground-service.mp4` (43 s, portrait) | Unlisted | App content → **Foreground service permissions** → video link |
 
 The videos are built from phone screen recordings by `tools/play_videos.py` (cut list, captions and timing are at the
@@ -94,6 +94,6 @@ bottom of that file); rerun it after recording new clips.
 
 ## Decisions for the owner
 
-- Public developer name on Play: currently **DevIgnite**; the project's name is The Wider Lens Initiative Project.
+- ~~Public developer name~~ Decided: the app is credited as **"Created by DevIgnite × The Wider Lens Initiative Project"** (store description, README, video end cards). The Play developer account stays DevIgnite; the license's copyright holder stays The Wider Lens Initiative Project.
 - Public contact email (W4).
 - Who the ~12 beta testers are.

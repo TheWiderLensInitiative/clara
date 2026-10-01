@@ -94,4 +94,4 @@ and more; see [NOTICE](NOTICE).
 
 ## License
 
-Apache-2.0. Made by The Wider Lens Initiative Project.
+Apache-2.0. Created by DevIgnite × The Wider Lens Initiative Project.

@@ -26,4 +26,4 @@ USE HER ANYWHERE
 At home over Wi-Fi, or anywhere privately through Tailscale. The app switches automatically.
 
 FREE AND OPEN SOURCE
-Clara is free, open source (Apache-2.0) and made by The Wider Lens Initiative Project. Code, installer and docs: github.com/TheWiderLensInitiative/clara
+Clara is free and open source (Apache-2.0). Created by DevIgnite × The Wider Lens Initiative Project. Code, installer and docs: github.com/TheWiderLensInitiative/clara
