@@ -5,6 +5,24 @@
 Free and open source. No subscription. Your chats, files and memories never leave your computer.<br>
 <a href="https://clara.thewiderlens.info">clara.thewiderlens.info</a> · <a href="https://github.com/TheWiderLensInitiative/clara/releases/latest">Download the app</a></p>
 
+<p align="center">
+<a href="https://github.com/TheWiderLensInitiative/clara/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/TheWiderLensInitiative/clara?color=8b5cf6"></a>
+<a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-38e1ff"></a>
+<a href="https://github.com/TheWiderLensInitiative/clara/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/TheWiderLensInitiative/clara/total?color=f471d8"></a>
+<a href="https://huggingface.co/TheWiderLensInitiative/laya-for-clara"><img alt="Laya on Hugging Face" src="https://img.shields.io/badge/%F0%9F%A4%97-laya--for--clara-ffcc4d"></a>
+<a href="https://clara.thewiderlens.info/beta"><img alt="Beta testers wanted" src="https://img.shields.io/badge/beta-testers%20wanted-22c55e"></a>
+</p>
+
+<p align="center">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_home.png" width="19%" alt="Home">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_working.png" width="19%" alt="Clara at work">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_answer.png" width="19%" alt="An answer">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5_menu.png" width="19%" alt="Clara's menu">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6_connectors.png" width="19%" alt="Connectors">
+</p>
+
+<p align="center">▶️ <a href="https://www.youtube.com/watch?v=42DrnEKDVrE"><b>Watch the 1-minute demo</b></a> · 🧪 <a href="https://clara.thewiderlens.info/beta"><b>Join the beta</b></a> · ⭐ Star the repo if you'd like to see Clara grow</p>
+
 ---
 
 Clara is a personal agent: she doesn't just chat, she **does things** on her own computer, like browsing the web,
