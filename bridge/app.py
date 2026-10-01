@@ -7,6 +7,7 @@ Run:  installed as the user service clara-bridge (see install.sh); by hand: pyth
 Pair: clara pair   (or: python bridge/pair.py)
 """
 import asyncio
+import shutil
 import datetime as dt
 import json
 import os
@@ -849,6 +850,7 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     store.set_active_run(cid, run_id)
     bus.publish("run.started", conversation_id=cid, run_id=run_id, route=route_name, effort=effort)
     final = None
+    browser_used, browser_url, run_started = False, "", time.time()
     try:
         async with hermes.stream("GET", f"/v1/runs/{run_id}/events") as resp:
             async for line in resp.aiter_lines():
@@ -863,6 +865,11 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                     detail = _brief(ev, "preview") or _brief(ev, "args")
                     store.add_activity(cid, run_id, kind, tool, detail)
                     bus.publish("activity", conversation_id=cid, run_id=run_id, kind=kind, tool=tool, detail=detail)
+                    if tool and tool.startswith("browser"):
+                        browser_used = True
+                        args = ev.get("args") if isinstance(ev.get("args"), dict) else {}
+                        if tool == "browser_navigate" and str(args.get("url", "")).startswith("http"):
+                            browser_url = str(args["url"])[:500]
                     if tool and tool.startswith("browser") and kind == "tool.completed":
                         bus.publish("screenshot.available", conversation_id=cid, run_id=run_id)
                 elif kind == "approval.request":
@@ -883,8 +890,13 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
         for job_id in await _job_ids() - jobs_before:  # jobs this run created report back into this chat
             store.set_job_conversation(job_id, cid)
     restyled = _pending_restyle.pop(cid, False)
+    meta = {"kind": "restyle"} if restyled else {}
+    if browser_used:   # keep a picture of the page Clara ended on, shown under her reply with "Open browser"
+        shot = await _browser_snapshot(run_id, run_started)
+        if shot:
+            meta.update({"browser": shot, "browser_url": browser_url})
     msg = store.add_message(cid, "assistant", (final or "Done.").strip(), route=route_name, run_id=run_id,
-                            suggestions=["Undo my new look"] if restyled else None, meta={"kind": "restyle"} if restyled else None)
+                            suggestions=["Undo my new look"] if restyled else None, meta=meta or None)
     store.add_activity(cid, run_id, "run.finished", None, (final or "")[:300])
     bus.publish("message.completed", conversation_id=cid, message=msg)
 
@@ -2710,6 +2722,35 @@ async def screen_stream(ws: WebSocket):
     finally:
         if took_over_here and _takeover_on():
             _set_takeover(False, dev["name"])  # the phone went away mid-takeover: give Clara back her browser
+
+
+async def _browser_snapshot(run_id: str, since: float) -> Optional[str]:
+    """One frame of Clara's browser, saved in the workspace's hidden .browser folder (not listed in the Library).
+    Taken from the live stream; if the browser already closed, the newest screenshot from this run is used."""
+    import base64
+    folder = WORKSPACE / ".browser"
+    try:
+        folder.mkdir(exist_ok=True)
+        async with websockets.connect(STREAM_URL, max_size=16_000_000, open_timeout=2) as up:
+            while True:
+                raw = await asyncio.wait_for(up.recv(), 3)
+                m = json.loads(raw)
+                if m.get("type") == "frame" and m.get("data"):
+                    out = folder / f"{run_id}.jpg"
+                    out.write_bytes(base64.b64decode(m["data"]))
+                    return str(out.relative_to(WORKSPACE))
+    except Exception:
+        pass
+    try:
+        shots = [p for p in (HERMES_HOME / "cache" / "screenshots").glob("*.png") if p.stat().st_mtime >= since]
+        if shots:
+            newest = max(shots, key=lambda p: p.stat().st_mtime)
+            out = folder / f"{run_id}.png"
+            shutil.copyfile(newest, out)
+            return str(out.relative_to(WORKSPACE))
+    except Exception:
+        pass
+    return None
 
 
 @app.get("/v1/screenshots/latest")

@@ -98,6 +98,7 @@ fun ChatScreen(
     onHideLive: () -> Unit,
     onAssistant: () -> Unit,
     onWatch: () -> Unit = {},
+    api: info.thewiderlens.clara.data.BridgeApi? = null,
     onVault: (info.thewiderlens.clara.data.VaultRequest, Boolean) -> Unit = { _, _ -> },
     onApi: (info.thewiderlens.clara.data.ApiRequest, String) -> Unit = { _, _ -> },
     onCloud: (info.thewiderlens.clara.data.CloudRequest, String) -> Unit = { _, _ -> },
@@ -193,7 +194,7 @@ fun ChatScreen(
                     },
                     style = MaterialTheme.typography.labelMedium, color = ClaraColors.Muted,
                 )
-                if (mood == Mood.Browsing || mood == Mood.Searching || (state.working && state.showLive)) {
+                if (state.working && (mood == Mood.Browsing || state.showLive)) {   // only when her browser is really open, not while she searches
                     Text(
                         "●  Watch live", style = MaterialTheme.typography.labelMedium, color = ClaraColors.Text,
                         modifier = Modifier.padding(top = 6.dp).clip(RoundedCornerShape(12.dp)).background(ClaraBrush.bubble)
@@ -218,14 +219,19 @@ fun ChatScreen(
                 }
             } else {
                 LazyColumn(state = list, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), modifier = Modifier.fillMaxSize()) {
-                    items(state.messages, key = { it.id }) { MessageBubble(it, loadImage) }
+                    items(state.messages, key = { it.id }) { MessageBubble(it, loadImage, onOpenBrowser = onWatch) }
                     if (chips.isNotEmpty()) item("chips-" + lastMsg!!.id) { SuggestionChips(chips) { onSend(it) } }
                     items(pendingHere, key = { "a-" + it.id }) { a -> ApprovalCard(a) { onAnswer(a, it) } }
                     items(state.vaultRequests, key = { "v-" + it.id }) { r -> info.thewiderlens.clara.ui.components.VaultCard(r) { ok -> onVault(r, ok) } }
                     items(state.apiRequests, key = { "k-" + it.id }) { r -> info.thewiderlens.clara.ui.components.ApiRequestCard(r) { c -> onApi(r, c) } }
                     items(state.cloudRequests, key = { "c-" + it.id }) { r -> info.thewiderlens.clara.ui.components.CloudRequestCard(r) { c -> onCloud(r, c) } }
                     items(state.budgetSuggestions, key = { "b-" + it.id }) { b -> info.thewiderlens.clara.ui.components.BudgetCard(b) { ok -> onBudget(b, ok) } }
-                    if (state.working) item("working") { WorkingRow(state.streaming, if (state.showLive || mood == Mood.Browsing || mood == Mood.Searching) onWatch else null) }
+                    if (state.working) item("working") {
+                        Column {
+                            WorkingRow(state.streaming)
+                            if (state.showLive || mood == Mood.Browsing) info.thewiderlens.clara.ui.components.LiveBrowserCard(api, onWatch)
+                        }
+                    }
                 }
             }
         }

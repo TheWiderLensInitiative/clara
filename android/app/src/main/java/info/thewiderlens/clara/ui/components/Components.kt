@@ -90,7 +90,7 @@ fun markdown(raw: String): AnnotatedString = buildAnnotatedString {
 }
 
 @Composable
-fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null) {
+fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, onOpenBrowser: () -> Unit = {}) {
     val mine = m.role == "user"
     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = if (mine) Arrangement.End else Arrangement.Start) {
         if (mine) {
@@ -143,6 +143,8 @@ fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null) {
                     ReplyMenu(text, menu, onDismiss = { menu = false }, onReport = { menu = false; reporting = true })
                 }
                 if (load != null) images.forEach { if (isVideoPath(it)) InlineVideo(it, load) else InlineImage(it, load) }
+                val shot = m.meta?.get("browser")
+                if (shot != null && load != null) BrowserSnapshotCard(shot, m.meta["browser_url"].orEmpty(), load, onOpenBrowser)
             }
             if (reporting) ReportDialog(text) { reporting = false }
         }

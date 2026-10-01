@@ -195,7 +195,7 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
         // consumeWindowInsets: the keyboard padding inside the chat must not add the tab bar's height again
         Box(Modifier.fillMaxSize().padding(pad).consumeWindowInsets(pad)) {
             when (tab) {
-                0 -> ChatScreen(state, vm::send, vm::stop, vm::answer, vm::newChat, vm::openConversation, vm::hideLive, onAssistant = { page = "hub" }, onWatch = { page = "screen" },
+                0 -> ChatScreen(state, vm::send, vm::stop, vm::answer, vm::newChat, vm::openConversation, vm::hideLive, onAssistant = { page = "hub" }, onWatch = { page = "screen" }, api = api,
                     onVault = { r, ok ->
                         if (!ok) vm.answerVault(r, false)
                         else (context as MainActivity).confirmIdentity("Let Clara sign in to ${r.name}?", r.site) { vm.answerVault(r, true) }
