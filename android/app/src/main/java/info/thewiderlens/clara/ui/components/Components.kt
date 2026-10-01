@@ -19,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -128,15 +130,76 @@ fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null) {
             }
         } else {
             val (text, images) = remember(m.content) { splitImages(m.content) }
+            var menu by remember { mutableStateOf(false) }
+            var reporting by remember { mutableStateOf(false) }
             Column {
-                if (text.isNotBlank()) Text(
-                    markdown(text), style = MaterialTheme.typography.bodyLarge, color = ClaraColors.Text,
-                    modifier = Modifier.widthIn(max = 330.dp).padding(horizontal = 4.dp, vertical = 6.dp),
-                )
+                if (text.isNotBlank()) Box {
+                    Text(
+                        markdown(text), style = MaterialTheme.typography.bodyLarge, color = ClaraColors.Text,
+                        modifier = Modifier.widthIn(max = 330.dp)
+                            .pointerInput(Unit) { detectTapGestures(onLongPress = { menu = true }) }
+                            .padding(horizontal = 4.dp, vertical = 6.dp),
+                    )
+                    ReplyMenu(text, menu, onDismiss = { menu = false }, onReport = { menu = false; reporting = true })
+                }
                 if (load != null) images.forEach { if (isVideoPath(it)) InlineVideo(it, load) else InlineImage(it, load) }
             }
+            if (reporting) ReportDialog(text) { reporting = false }
         }
     }
+}
+
+/** Long-press on Clara's reply: copy it, or report it (Google Play's rule for AI-generated content). */
+@Composable
+private fun ReplyMenu(text: String, open: Boolean, onDismiss: () -> Unit, onReport: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    androidx.compose.material3.DropdownMenu(expanded = open, onDismissRequest = onDismiss) {
+        androidx.compose.material3.DropdownMenuItem(text = { Text("Copy") }, onClick = {
+            context.getSystemService(android.content.ClipboardManager::class.java)
+                .setPrimaryClip(android.content.ClipData.newPlainText("Clara", text))
+            onDismiss()
+        })
+        androidx.compose.material3.DropdownMenuItem(text = { Text("Report this reply") }, onClick = onReport)
+    }
+}
+
+/** Reports go to the project's public issue tracker; there is no Clara server. The reply is only included if the user opts in. */
+@Composable
+private fun ReportDialog(text: String, onDone: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var include by remember { mutableStateOf(false) }
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDone,
+        title = { Text("Report this reply") },
+        text = {
+            Column {
+                Text(
+                    "Was this reply offensive, harmful or wrong? Your report opens on the Clara project's GitHub, where it helps " +
+                        "improve Clara's rules and models. GitHub reports are public.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Row(Modifier.padding(top = 12.dp).clickable { include = !include }, verticalAlignment = Alignment.CenterVertically) {
+                    androidx.compose.material3.Checkbox(checked = include, onCheckedChange = { include = it })
+                    Text("Include the reply's text", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val body = buildString {
+                    append("**What was wrong with the reply?**\n\n\n")
+                    if (include) append("**Clara's reply:**\n\n").append(text.take(1500).lines().joinToString("\n") { "> $it" }).append("\n")
+                }
+                val url = android.net.Uri.parse("https://github.com/TheWiderLensInitiative/clara/issues/new").buildUpon()
+                    .appendQueryParameter("title", "Reported reply")
+                    .appendQueryParameter("labels", "reported-reply")
+                    .appendQueryParameter("body", body).build()
+                runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, url)) }
+                onDone()
+            }) { Text("Report") }
+        },
+        dismissButton = { TextButton(onClick = onDone) { Text("Cancel") } },
+    )
 }
 
 private const val WORKSPACE = "/var/lib/clara/workspace/"
