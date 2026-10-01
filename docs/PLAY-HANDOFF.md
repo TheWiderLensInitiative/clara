@@ -14,6 +14,7 @@ For the agent helping The Wider Lens Initiative Project publish the Clara app on
 | Release notes for versionCode 2 | `fastlane/metadata/android/en-US/changelogs/2.txt` |
 | Signed app bundle, version 1.1.0 (versionCode 2) | **not in git**: `~/Desktop/clara-release-files/Clara-1.1.0.aab` on the project owner's PC |
 | Privacy policy | `docs/PRIVACY.md` (Play needs a public URL; see task W1) |
+| Videos: promo, reviewer demo, foreground-service demo | `media/google-play/` (see "Videos" below) |
 
 The `fastlane/metadata/android` folder uses fastlane's layout, so `fastlane supply` can upload it as is.
 
@@ -64,6 +65,20 @@ fastlane supply --package_name info.thewiderlens.clara --json_key ~/.clara-relea
 
 (`alpha` is the API's name for the closed testing track; `production` once Play allows it.) Each new version must also
 be published on GitHub Releases with the same versionCode, so both channels stay in step.
+
+## Videos
+
+Play only accepts **YouTube links**, not files. Upload each video from `media/google-play/` to the project's YouTube
+channel, then paste the links:
+
+| File | YouTube visibility | Where the link goes |
+|---|---|---|
+| `clara-promo.mp4` (54 s, landscape) | Public | Store listing → **Video**; also `fastlane/metadata/android/en-US/video.txt` so `fastlane supply` keeps it |
+| `clara-reviewer-demo.mp4` (2:22, portrait) | Unlisted | App content → **App access** instructions (replace `<VIDEO LINK>` in PLAY.md) |
+| `clara-foreground-service.mp4` (43 s, portrait) | Unlisted | App content → **Foreground service permissions** → video link |
+
+The videos are built from phone screen recordings by `tools/play_videos.py` (cut list, captions and timing are at the
+bottom of that file); rerun it after recording new clips.
 
 ## Part 3: the website (clara.thewiderlens.info)
 
