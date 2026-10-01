@@ -96,11 +96,16 @@ fun BrowserSnapshotCard(path: String, url: String, load: suspend (String) -> Byt
         val bytes = runCatching { load(path) }.getOrNull()
         bmp = bytes?.let { withContext(Dispatchers.Default) { BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap() } }
     }
-    BrowserFrame(bmp, url, live = false, onOpen = onOpen)
+    // Her browser has usually closed by now, so the button opens that page in the phone's own browser instead.
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val openPage: () -> Unit = if (url.startsWith("http")) {
+        { runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) } }
+    } else onOpen
+    BrowserFrame(bmp, url, live = false, onOpen = openPage, label = if (url.startsWith("http")) "Open page" else "Open browser")
 }
 
 @Composable
-private fun BrowserFrame(frame: ImageBitmap?, url: String, live: Boolean, onOpen: () -> Unit) {
+private fun BrowserFrame(frame: ImageBitmap?, url: String, live: Boolean, onOpen: () -> Unit, label: String = "Open browser") {
     val shape = RoundedCornerShape(20.dp)
     Column(
         Modifier.padding(vertical = 6.dp).widthIn(max = 340.dp).fillMaxWidth().clip(shape)
@@ -137,7 +142,7 @@ private fun BrowserFrame(frame: ImageBitmap?, url: String, live: Boolean, onOpen
                 .clickable(onClick = onOpen).padding(vertical = 11.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text("Open browser", style = MaterialTheme.typography.titleSmall, color = ClaraColors.Text)
+            Text(label, style = MaterialTheme.typography.titleSmall, color = ClaraColors.Text)
         }
     }
 }

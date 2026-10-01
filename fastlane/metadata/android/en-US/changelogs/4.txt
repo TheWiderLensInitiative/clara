@@ -1,0 +1,3 @@
+• See Clara's browser right in the chat while she works, like a live preview
+• Her replies keep a picture of the page she used, with a button to open it
+• The chat now scrolls all the way to the end of long replies
