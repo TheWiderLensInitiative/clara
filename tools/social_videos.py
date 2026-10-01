@@ -246,7 +246,8 @@ def build(name, scenes, layout, clips, out_dir, tmp):
         t += length
         print(f"  {name} scene {i + 1}/{len(scenes)}: {length:.1f}s", flush=True)
     total = t
-    mix = pad(total)
+    music = os.environ.get(f"CLARA_PROMO_MUSIC_{name.split('-')[-1].upper()}")   # e.g. CLARA_PROMO_MUSIC_REEL=track.wav
+    mix = np.zeros(int(total * SR)) if music else pad(total)
     for start, a in voice_track:
         i0 = int(start * SR)
         mix[i0:i0 + len(a)] += a[: max(0, len(mix) - i0)]
@@ -262,9 +263,19 @@ def build(name, scenes, layout, clips, out_dir, tmp):
     ass = os.path.join(tmp, f"{name}.ass")
     captions(words_at, layout, ass)
     out = os.path.join(out_dir, f"{name}.mp4")
-    run(["-i", silent, "-i", wav, "-vf", f"subtitles={ass}:fontsdir={pv.FONTS}", "-map", "0:v", "-map", "1:a",
-         "-c:v", "libx264", "-crf", "19", "-preset", "medium", "-pix_fmt", "yuv420p", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-c:a", "aac", "-b:a", "160k",
-         "-ar", "48000", "-shortest", "-movflags", "+faststart", out])
+    common = ["-c:v", "libx264", "-crf", "19", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
+              "-ar", "48000", "-shortest", "-movflags", "+faststart", out]
+    vf = f"subtitles={ass}:fontsdir={pv.FONTS}"
+    if music:
+        # music under the voice, ducked while Clara speaks (sidechain), faded at both ends, then loudness for social
+        fc = (f"[2:a]aresample=48000,aformat=channel_layouts=stereo,atrim=0:{total:.2f},asetpts=PTS-STARTPTS,"
+              f"afade=t=in:d=0.8,afade=t=out:st={max(0, total - 2.5):.2f}:d=2.5,volume=0.55[m];"
+              f"[1:a]aresample=48000,aformat=channel_layouts=stereo,asplit=2[v1][v2];"
+              f"[m][v1]sidechaincompress=threshold=0.02:ratio=8:attack=15:release=450:makeup=1[md];"
+              f"[md][v2]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11[a];[0:v]{vf}[v]")
+        run(["-i", silent, "-i", wav, "-i", music, "-filter_complex", fc, "-map", "[v]", "-map", "[a]", *common])
+    else:
+        run(["-i", silent, "-i", wav, "-vf", vf, "-map", "0:v", "-map", "1:a", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", *common])
     print(out, f"{total:.1f}s")
 
 
