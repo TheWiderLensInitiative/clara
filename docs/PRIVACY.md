@@ -61,5 +61,6 @@ https://github.com/TheWiderLensInitiative/clara/commits/main/docs/PRIVACY.md
 
 ## Contact
 
-The Wider Lens Initiative Project: questions and requests at https://github.com/TheWiderLensInitiative/clara/issues
-(security problems: see [SECURITY.md](../SECURITY.md)).
+The Wider Lens Initiative Project: email **clara@thewiderlens.info** with questions or privacy requests, or open an issue at
+https://github.com/TheWiderLensInitiative/clara/issues (issues are public). Security problems: see
+[SECURITY.md](../SECURITY.md).

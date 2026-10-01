@@ -89,11 +89,10 @@ bottom of that file); rerun it after recording new clips.
   opt-in link Play Console shows for the track.
 - **W3. Download section**: keep the GitHub link (`https://github.com/TheWiderLensInitiative/clara/releases/latest`)
   and add the official "Get it on Google Play" badge only once the app is public.
-- **W4. Contact**: Play shows a public contact email. Ask the owner which address to use, and use the same one on the
-  site.
+- **W4. Contact**: clara@thewiderlens.info, on Play (store listing contact email), the site, and the privacy policy.
 
 ## Decisions for the owner
 
 - ~~Public developer name~~ Decided: the app is credited as **"Created by DevIgnite × The Wider Lens Initiative Project"** (store description, README, video end cards). The Play developer account stays DevIgnite; the license's copyright holder stays The Wider Lens Initiative Project.
-- Public contact email (W4).
+- ~~Public contact email~~ Decided: clara@thewiderlens.info (W4).
 - Who the ~12 beta testers are.

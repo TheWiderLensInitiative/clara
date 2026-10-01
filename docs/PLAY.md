@@ -40,7 +40,7 @@ The upload key can be the same key. Build the bundle with
 | Feature graphic (1024×500) | `images/featureGraphic.png` |
 | Phone screenshots | `images/phoneScreenshots/` |
 | Category | Productivity |
-| Contact email | a public address for users (required) |
+| Contact email | clara@thewiderlens.info |
 | Website | https://clara.thewiderlens.info |
 | Privacy policy | https://clara.thewiderlens.info/privacy |
 

@@ -6,7 +6,8 @@ Clara can act on a real computer, so security matters. How she's contained is de
 ## Reporting a vulnerability
 
 Please **don't open a public issue** for security problems. Use GitHub's private vulnerability reporting
-(Security tab → "Report a vulnerability") with steps to reproduce. We'll reply as soon as we can.
+(Security tab → "Report a vulnerability") or email clara@thewiderlens.info, with steps to reproduce. We'll reply as soon
+as we can.
 
 ## Good practice for users
 
