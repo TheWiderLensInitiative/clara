@@ -93,7 +93,10 @@ fun LiveScreenPage(state: UiState, api: BridgeApi?, onBack: () -> Unit) {
                                 }
                                 if (bmp != null) {
                                     frame = bmp
-                                    if (md != null) device = md.optDouble("deviceWidth", 1280.0).toFloat() to md.optDouble("deviceHeight", 720.0).toFloat()
+                                    // The frame shows the visible viewport, which can be shorter than the reported device height
+                                    // (577 vs 720 here): map taps with the frame's own shape, in page (CSS) pixels.
+                                    val cssPerPx = (md?.optDouble("deviceWidth", bmp.width.toDouble()) ?: bmp.width.toDouble()).toFloat() / bmp.width
+                                    device = bmp.width * cssPerPx to bmp.height * cssPerPx
                                 }
                                 webSocket.send("""{"type":"ack","seq":$seq}""")   // one frame in flight: never lags behind
                             }
