@@ -83,6 +83,12 @@ VAULT_BYPASS = re.compile(r"agent-browser|\.agent-browser", re.I)
 VAULT_BLOCK = "Clara's browser and password vault can only be used through her browser tools, never directly."
 
 
+# Human checks are for humans: never script around them, ask the user to take over instead.
+CAPTCHA = re.compile(r"captcha|recaptcha|hcaptcha|turnstile|cf-chl|g-recaptcha|i'?m not a robot|arkose|funcaptcha", re.I)
+CAPTCHA_BLOCK = ("Don't try to get around a CAPTCHA or human check. Call ask_user_for_browser_help with what you need "
+                 "(e.g. 'There's a CAPTCHA on the sign-in page'); the user takes over from their phone and hands it back.")
+
+
 def decide(tool_name, args):
     args = args or {}
     if tool_name == "terminal":
@@ -117,6 +123,9 @@ def decide(tool_name, args):
                 return ("approve", f"Clara wants to {what}.")
         return None
     # Page JavaScript can read what's typed into fields, including passwords the vault filled in.
+    if tool_name in ("browser_console", "browser_cdp", "execute_code", "terminal") and CAPTCHA.search(
+            str(args.get("expression") or args.get("code") or args.get("command") or args.get("params") or "")):
+        return ("block", CAPTCHA_BLOCK)
     if tool_name == "browser_console" and str(args.get("expression") or "").strip():
         return ("approve", f"Clara wants to run JavaScript in the web page: {str(args.get('expression'))[:200]}")
     if tool_name == "browser_cdp":
