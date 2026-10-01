@@ -81,7 +81,7 @@ The upload key can be the same key. Build the bundle with
 
 > Clara is the phone app for a self-hosted AI assistant that runs on the user's own Linux PC with an NVIDIA GPU
 > (https://github.com/TheWiderLensInitiative/clara). It can't be used without that PC. To review it, please use the
-> demonstration video at <VIDEO LINK>, which shows pairing, chatting, an approval request and voice mode. If you need a
+> demonstration video at https://www.youtube.com/watch?v=qHMkqXRiKxk, which shows pairing, chatting, an approval request and voice mode. If you need a
 > live server, contact us and we'll provide a temporary pairing code and address.
 
 ## 5. Release
