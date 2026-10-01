@@ -112,6 +112,7 @@ if [ ! -x /opt/clara/venv-hermes/bin/hermes ] || [ "$(hermes_at)" != "$HERMES_RE
     "$UV" pip install -q --python /opt/clara/venv-hermes/bin/python -e "/opt/clara/hermes-agent[all]" 2>/dev/null \
         || "$UV" pip install -q --python /opt/clara/venv-hermes/bin/python -e /opt/clara/hermes-agent
 fi
+"$UV" pip install -q --python /opt/clara/venv-hermes/bin/python trafilatura   # clean page text for clara-fetch
 ok "Hermes $(hermes_at)"
 if [ "$(/opt/clara/node/bin/node --version 2>/dev/null)" != "v$NODE_VERSION" ]; then
     rm -rf /opt/clara/node

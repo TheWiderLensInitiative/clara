@@ -1,0 +1,6 @@
+name: clara-fetch
+version: "0.1.0"
+description: "Reads web pages for web_extract on this PC (no API key, nothing sent to a third party). Refuses addresses on the local network."
+author: "Clara"
+provides_web_providers:
+  - clara-fetch

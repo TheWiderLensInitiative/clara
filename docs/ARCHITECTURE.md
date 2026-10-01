@@ -42,6 +42,7 @@ root.
 | `clara-vault` | `list_logins`, `sign_in`: logins sealed by the phone (ECDH P-256 + HKDF + AES-GCM) and decrypted only in memory |
 | `clara-connect` | `call_api`, `email_*`, `calendar_*`, `list_connections`, `connection_call`, `youtube_upload` |
 | `clara-cloud` | `generate_image`, `make_video`, brand kit, `restyle_yourself`, cloud status and budget suggestions |
+| `clara-fetch` | `web_extract` backend: reads web pages on this PC (trafilatura), no API key; refuses local and private addresses |
 | `clara-link` | delivers scheduled-job results, mirrors memory to the Bridge, shares workspace files with the Library |
 
 ## Secrets

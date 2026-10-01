@@ -113,7 +113,8 @@ onboarding:
   seen:
     tool_progress_prompt: true
 web:
-  backend: searxng
+  search_backend: searxng      # private search on this PC
+  extract_backend: clara-fetch  # reads pages on this PC (plugin clara-fetch); the built-in readers need paid keys
 auxiliary:
   vision:
     provider: main
@@ -165,6 +166,7 @@ approvals:
 plugins:
   enabled:
   - clara-cloud
+  - clara-fetch
   - clara-connect
   - clara-guardian
   - clara-link
