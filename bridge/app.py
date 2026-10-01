@@ -867,9 +867,10 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                     bus.publish("activity", conversation_id=cid, run_id=run_id, kind=kind, tool=tool, detail=detail)
                     if tool and tool.startswith("browser"):
                         browser_used = True
-                        args = ev.get("args") if isinstance(ev.get("args"), dict) else {}
-                        if tool == "browser_navigate" and str(args.get("url", "")).startswith("http"):
-                            browser_url = str(args["url"])[:500]
+                        if tool == "browser_navigate" and kind == "tool.started":
+                            m_url = re.search(r"https?://[^\s\"'<>]+", detail or "")
+                            if m_url:
+                                browser_url = m_url.group(0)[:500]
                     if tool and tool.startswith("browser") and kind == "tool.completed":
                         bus.publish("screenshot.available", conversation_id=cid, run_id=run_id)
                         asyncio.create_task(_grab_browser_frame(run_id))   # the browser closes when the task ends: keep its latest look now

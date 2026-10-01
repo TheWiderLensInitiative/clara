@@ -117,7 +117,8 @@ fun ChatScreen(
     val lastMsg = state.messages.lastOrNull()
     val chips = if (lastMsg != null && lastMsg.role == "assistant" && !state.working) lastMsg.suggestions else emptyList()
     val itemCount = (if (chips.isNotEmpty()) 1 else 0) + state.messages.size + pendingHere.size + state.vaultRequests.size + state.apiRequests.size + state.cloudRequests.size + state.budgetSuggestions.size + (if (state.working) 1 else 0)
-    LaunchedEffect(itemCount, state.streaming.length) { if (itemCount > 0) list.animateScrollToItem(itemCount - 1) }
+    // to the very bottom of the last item (a long reply or a browser card is taller than the screen)
+    LaunchedEffect(itemCount, state.streaming.length) { if (itemCount > 0) list.animateScrollToItem(itemCount - 1, scrollOffset = 100_000) }
     var celebrating by remember { mutableStateOf(false) }
     LaunchedEffect(state.doneAt) { if (state.doneAt > 0) { celebrating = true; kotlinx.coroutines.delay(2500); celebrating = false } }
     val mood = moodOf(state, celebrating)
