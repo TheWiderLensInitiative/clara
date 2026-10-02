@@ -121,12 +121,16 @@ def handle_sign_in(args, task_id=None, session_id=None, **_):
 
     priv = ec.generate_private_key(ec.SECP256R1())
     pub = base64.b64encode(priv.public_key().public_bytes(serialization.Encoding.DER, serialization.PublicFormat.SubjectPublicKeyInfo)).decode()
-    try:
-        sealed = _link("/internal/vault/request", {"name": name, "pubkey": pub, "conversation_id": _conversation(session_id)}, timeout=330)
+    import hermes_plugins.clara_guardian as guardian
+    ask = {"name": name, "pubkey": pub, "conversation_id": _conversation(session_id)}
+    try:   # waits as long as the user needs to unlock their phone
+        sealed = guardian.patient(lambda: _link("/internal/vault/request", ask, timeout=None))
     except Exception as e:
         return json.dumps({"success": False, "error": f"The sign-in request failed: {type(e).__name__}"})
+    if sealed is guardian.STOPPED:
+        return json.dumps({"success": False, "error": "The user stopped this task."})
     if sealed.get("status") != "approved":
-        why = {"timeout": "The user didn't answer in time.", "not_on_phone": "That login isn't on the user's phone."}.get(sealed.get("reason"), "The user declined.")
+        why = {"stopped": "The user stopped this task.", "not_on_phone": "That login isn't on the user's phone."}.get(sealed.get("reason"), "The user declined.")
         return json.dumps({"success": False, "error": f"Sign-in not allowed: {why} Stop here and tell the user. Do NOT type a username or "
                                                       "password into the page yourself, even if you can see one — logins only go through sign_in."})
 

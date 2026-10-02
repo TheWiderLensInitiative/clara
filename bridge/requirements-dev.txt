@@ -1,0 +1,2 @@
+# Only for the test stand-ins in tools/ (fake_services.py, fake_google.py); the Bridge itself doesn't need these.
+python-multipart==0.0.32

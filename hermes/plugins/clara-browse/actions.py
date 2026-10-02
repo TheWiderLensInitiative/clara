@@ -8,17 +8,22 @@ import json
 import re
 from urllib.parse import urlparse
 
-ACTIONS = {"open", "click", "fill", "press", "scroll", "find", "back", "wait", "sign_in", "help", "done"}
+ACTIONS = {"open", "click", "fill", "set", "select", "press", "scroll", "find", "click_at", "drag", "tab", "back", "wait",
+           "sign_in", "help", "done"}
+CHOICE_ROLES = {"combobox", "listbox"}
+SLIDER_ROLES = {"slider", "spinbutton"}
 
-# A click or a "find and click" whose label is one of these needs the user's OK first.
+# A click or a "find and click" whose label is one of these needs the user's OK first. Other buttons
+# (Next, Back, Close, menus, tabs) and form settings (sliders, options, checkboxes) don't.
 COMMIT = re.compile(
-    r"\b(buy|purchase|pay|checkout|place order|order now|subscribe|unsubscribe|delete|remove|send|publish|post|submit|save|share|invite|upload|confirm|accept|agree|register|sign up|transfer)\b",
+    r"\b(buy|purchase|pay|checkout|place order|order now|subscribe|unsubscribe|delete|remove|send|publish|post|submit|save|share|invite|upload|confirm|accept|agree|register|sign up|transfer|continue|proceed|finish|create)\b",
     re.I,
 )
 CARD = re.compile(r"\b(?:\d[ -]?){13,19}\b")
 HUMAN_CHECK = re.compile(
     r"i'?m not a robot|recaptcha|hcaptcha|verify (that )?you are (a )?human|are you a robot|"
-    r"checking (if the site connection is secure|your browser)|security check|press (and|&) hold",
+    r"checking (if the site connection is secure|your browser)|security check|press (and|&) hold|"
+    r"slide to (verify|complete the puzzle)|drag the (slider|puzzle piece)|complete the puzzle",
     re.I,
 )
 SIGNIN_BLOCKED = re.compile(
@@ -92,13 +97,45 @@ def parse_action(text: str) -> dict:
             raise ValueError("fill text exceeds 100000 characters")
         if not out["ref"]:
             raise ValueError("fill needs a ref")
+    elif action == "set":
+        out["ref"] = _ref(data.get("ref"))
+        out["value"] = str(data.get("value") if data.get("value") is not None else "").strip()[:120]
+        if not out["ref"] or not out["value"]:
+            raise ValueError("set needs a ref and a value")
     elif action == "press":
         out["key"] = str(data.get("key") or "").strip()[:40]
         if not out["key"]:
             raise ValueError("press needs a key")
+    elif action == "select":
+        out["ref"] = _ref(data.get("ref"))
+        out["value"] = str(data.get("value") if data.get("value") is not None else "").strip()[:200]
+        if not out["ref"] or not out["value"]:
+            raise ValueError("select needs a ref and a value")
     elif action == "scroll":
         direction = str(data.get("direction") or "down").strip().lower()
         out["direction"] = direction if direction in ("up", "down") else "down"
+        if data.get("ref"):
+            out["ref"] = _ref(data.get("ref"))   # scroll inside this panel or list instead of the whole page
+        elif data.get("x") is not None and data.get("y") is not None:
+            try:   # or inside the panel at this spot on the 0-1000 grid, for lists that have no ref
+                out["x"], out["y"] = float(data["x"]), float(data["y"])
+            except (TypeError, ValueError):
+                raise ValueError("scroll x and y must be numbers")
+            if not (0 <= out["x"] <= 1000 and 0 <= out["y"] <= 1000):
+                raise ValueError("scroll x and y are on the 0-1000 grid")
+    elif action in ("click_at", "drag"):
+        keys = ("x", "y") if action == "click_at" else ("x", "y", "to_x", "to_y")
+        for key in keys:
+            try:
+                out[key] = float(data.get(key))
+            except (TypeError, ValueError):
+                raise ValueError(f"{action} needs numbers for {', '.join(keys)}")
+            if not 0 <= out[key] <= 1000:
+                raise ValueError(f"{action} coordinates are on the 0-1000 grid over the screenshot")
+    elif action == "tab":
+        out["to"] = str(data.get("to") or "").strip()
+        if not re.fullmatch(r"t\d{1,4}", out["to"]):
+            raise ValueError('tab needs a tab id like "t2"')
     elif action == "find":
         out["text"] = str(data.get("text") or "").strip()[:200]
         if not out["text"]:
@@ -168,8 +205,18 @@ def veto(action: dict, snapshot: str):
     kind = action.get("action")
     if kind == "open":
         return blocked_url_reason(action.get("url") or "")
-    if kind in ("fill", "click") and not _line(snapshot, action.get("ref") or ""):
+    if (kind in ("fill", "click", "set", "select") or (kind == "scroll" and action.get("ref"))) and not _line(snapshot, action.get("ref") or ""):
         return "That element is missing from the current snapshot. Observe the page again."
+    if kind == "select" and control(_line(snapshot, action.get("ref") or ""))[0] not in CHOICE_ROLES:
+        return "select is only for dropdowns and lists. Click buttons; use set for sliders."
+    if kind in ("click_at", "drag"):
+        target = action.get("_target") or {}
+        if looks_like_human_check(" ".join(str(target.get(k) or "") for k in ("name", "text"))):
+            return "That's a human check. Hand the page to the user with help; never solve it yourself."
+        if kind == "drag" and target.get("role") in SLIDER_ROLES:
+            return "That's a slider: use set with the setting you want instead of dragging it."
+    if kind == "set" and control(_line(snapshot, action.get("ref") or ""))[0] not in SLIDER_ROLES:
+        return "set is only for sliders. Click options, buttons and checkboxes instead."
     if kind == "fill":
         text = action.get("text") or ""
         if CARD.search(text):
@@ -180,20 +227,155 @@ def veto(action: dict, snapshot: str):
     return None
 
 
+# Settings inside a form: changing one never sends anything by itself.
+SETTING_ROLES = {"slider", "option", "checkbox", "radio", "switch", "tab", "textbox", "searchbox", "combobox",
+                 "listbox", "spinbutton", "menuitemcheckbox", "menuitemradio", "treeitem"}
+SEARCH_FIELD = re.compile(r"^\s*-?\s*(?:searchbox\b|(?:combobox|textbox)\s+\"[^\"]*search)", re.I | re.M)
+
+
+def control(line: str):
+    """(role, name) of a snapshot row: '- button "Next" [ref=e3]' or '@e3 [button] "Next"'."""
+    role = re.match(r"\s*-\s*([a-z]+)", line or "") or re.search(r"\[([a-z]+)\]", line or "")
+    name = re.search(r'"([^"\n]*)"', line or "")
+    return (role.group(1).lower() if role else ""), (name.group(1).strip(" ,") if name else "")
+
+
 def commit_label(action: dict, snapshot: str):
-    """The button or link text when this step would buy, send, or delete, else None."""
+    """What the user is asked to approve when this step is risky (buy, delete, send, submit, continue…), else None."""
     kind = action.get("action")
     if kind == "press":
-        if any(k in str(action.get("key", "")).lower() for k in ("enter", "return", "space")):
-            return "activate the focused control (may submit this form)"
+        # Enter in a search field just searches; elsewhere it may submit the form.
+        if any(k in str(action.get("key", "")).lower() for k in ("enter", "return")) and not SEARCH_FIELD.search(snapshot or ""):
+            return "press Enter (this may submit the form)"
+        return None
     if kind == "find":
-        return "activate control: " + str(action.get("text") or "")
+        text = str(action.get("text") or "").strip()
+        return f'click "{text[:120]}"' if COMMIT.search(text) else None
     if kind == "click":
         line = _line(snapshot, action.get("ref") or "")
-        if COMMIT.search(line) or not line or re.search(r"\bbutton\b", line, re.I):
-            return line.strip()[:180] or "activate an unidentified control"
-        return None
+        if not line:
+            return "click a control I can't identify"
+        role, name = control(line)
+        if role in SETTING_ROLES:
+            return None
+        return f'click "{name[:120]}"' if COMMIT.search(name) else None
+    if kind in ("click_at", "drag"):
+        # A spot on the screenshot: judged by the element under it, found before anything happens.
+        target = action.get("_target") or {}
+        role, name = str(target.get("role") or ""), str(target.get("name") or "").strip()
+        verb = "click" if kind == "click_at" else "drag"
+        if not name:
+            return f"{verb} a spot on the page I can't identify ({target.get('tag') or 'nothing'} at {action['x']:.0f}, {action['y']:.0f})"
+        if role in SETTING_ROLES and kind == "click_at":
+            return None
+        return f'{verb} "{name[:120]}"' if COMMIT.search(name) else None
     return None
+
+
+def _norm(text) -> str:
+    return re.sub(r"\s+", " ", str(text or "")).strip(" ,").casefold()
+
+
+def set_slider(read, press, want: str, name: str = "", limit: int = 40) -> dict:
+    """Move a focused slider to `want` (its visible label, e.g. "Anyone on the web", or a number) with arrow keys,
+    which every accessible slider supports. Clicking can't do this: a tap lands on the middle of the track.
+    read() -> {"role", "name", "now", "text"} of the focused element; press(key) sends one key."""
+    number = re.fullmatch(r"-?\d+(?:\.\d+)?", want.strip())
+
+    def matches(state):
+        if number:
+            try:
+                return float(state.get("now")) == float(want)
+            except (TypeError, ValueError):
+                return False
+        text, goal = _norm(state.get("text")), _norm(want)
+        return bool(text) and (text == goal or goal in text)
+
+    def label(state):
+        return str(state.get("text") or state.get("now") or "").strip()
+
+    state = read()
+    if not state or state.get("role") not in SLIDER_ROLES:
+        return {"success": False, "error": "That control isn't a slider, or it couldn't be focused."}
+    if name and _norm(state.get("name")) != _norm(name):
+        return {"success": False, "error": "Focus landed on a different control. Observe again."}
+    seen = [label(state)]
+    if matches(state):
+        return {"success": True, "value": label(state)}
+    # Sweep to one end, then across to the other, checking every stop on the way.
+    for key in ("ArrowLeft", "ArrowRight"):
+        for _ in range(limit):
+            before = (state.get("now"), state.get("text"))
+            press(key)
+            state = read() or {}
+            if name and _norm(state.get("name")) != _norm(name):
+                return {"success": False, "error": "Focus moved off the slider. Observe again."}
+            if label(state) and label(state) not in seen:
+                seen.append(label(state))
+            if matches(state):
+                return {"success": True, "value": label(state)}
+            if (state.get("now"), state.get("text")) == before:
+                break   # reached this end
+    choices = ", ".join(c for c in seen if c)
+    return {"success": False, "error": f'This slider has no setting "{want}". Its settings are: {choices}.'}
+
+
+def option_owner(snapshot: str, ref: str) -> str:
+    """For an option row, the ref of the dropdown or list it sits in (options are indented under it), else ""."""
+    lines = (snapshot or "").splitlines()
+    mine = _line(snapshot, ref)
+    if not mine or control(mine)[0] != "option":
+        return ""
+    depth = len(mine) - len(mine.lstrip())
+    for line in reversed(lines[:lines.index(mine)]):
+        indent = len(line) - len(line.lstrip())
+        if indent < depth and control(line)[0] in CHOICE_ROLES:
+            found = re.search(r"(?:ref=|@)(e\d+)", line)
+            return f"@{found.group(1)}" if found else ""
+        if indent < depth and line.strip():
+            depth = indent
+    return ""
+
+
+def parse_verdict(text: str) -> dict:
+    """The checker's answer to "is the goal really done?": {"verified": bool, "reason": str}."""
+    raw = re.sub(r"^```(?:json)?\s*|\s*```$", "", (text or "").strip(), flags=re.I)
+    start, end = raw.find("{"), raw.rfind("}")
+    try:
+        data = json.loads(raw[start:end + 1]) if start >= 0 < end else {}
+    except ValueError:
+        data = {}
+    verified = data.get("verified")
+    return {"verified": verified is True or str(verified).lower() == "true", "reason": str(data.get("reason") or "")[:300]}
+
+
+def drag_events(x: float, y: float, to_x: float, to_y: float, steps: int = 12) -> list:
+    """A press, a smooth move and a release, like a finger dragging. Sent through the stream like a tap,
+    so the release always goes out even while the page holds the pointer."""
+    def event(kind, px, py):
+        return {"type": "input_mouse", "eventType": kind, "x": round(px, 1), "y": round(py, 1),
+                "button": "none" if kind == "mouseMoved" else "left", "clickCount": 0 if kind == "mouseMoved" else 1}
+    out = [event("mouseMoved", x, y), event("mousePressed", x, y)]
+    for i in range(1, steps + 1):
+        out.append(event("mouseMoved", x + (to_x - x) * i / steps, y + (to_y - y) * i / steps))
+    out.append(event("mouseReleased", to_x, to_y))
+    return out
+
+
+def page_view(snapshot: str, text: str = "", tabs=None, controls_limit: int = 12000, text_limit: int = 3000) -> str:
+    """What the browser model reads next to the screenshot, like Antigravity's page reader:
+    the controls (with refs) and the text that's on screen right now."""
+    parts = []
+    if tabs and len(tabs) > 1:
+        parts.append("Open tabs: " + "; ".join(
+            f'{t.get("tabId")} "{str(t.get("title") or t.get("url") or "")[:60]}"' + (" (this one)" if t.get("active") else "")
+            for t in tabs[:8]))
+    snap = snapshot or "(no controls found)"
+    parts.append("Controls on the page:\n" + (snap if len(snap) <= controls_limit else snap[:controls_limit] + "\n…(more controls below)"))
+    words = (text or "").strip()
+    if words:
+        parts.append("Text on screen:\n" + (words if len(words) <= text_limit else words[:text_limit] + "…"))
+    return "\n\n".join(parts)
 
 
 def looks_like_human_check(text: str) -> bool:

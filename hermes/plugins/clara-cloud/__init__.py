@@ -134,9 +134,11 @@ BUDGET_SCHEMA = {
 
 def handle_image(args, session_id=None, **_):
     a = args or {}
-    try:
-        return json.dumps(_link("/internal/cloud/image", {"prompt": a.get("prompt", ""), "aspect_ratio": a.get("aspect_ratio"),
-                                                          "name": a.get("name"), "conversation_id": session_id}, timeout=330))
+    import hermes_plugins.clara_guardian as guardian
+    body = {"prompt": a.get("prompt", ""), "aspect_ratio": a.get("aspect_ratio"), "name": a.get("name"), "conversation_id": session_id}
+    try:   # may wait on the user's OK for cloud use, for as long as they need
+        res = guardian.patient(lambda: _link("/internal/cloud/image", body, timeout=None))
+        return json.dumps({"error": "The user stopped this task."} if res is guardian.STOPPED else res)
     except Exception as e:
         return json.dumps({"error": f"Couldn't reach the Clara Bridge: {type(e).__name__}"})
 
@@ -150,8 +152,10 @@ def handle_video(args, session_id=None, **_):
             "hook": a.get("hook"), "captions": a.get("captions"), "brand": bool(a.get("brand")), "end_card": bool(a.get("end_card")),
             "cta": a.get("cta"), "music": a.get("music"), "formats": [f for f in (a.get("formats") or []) if isinstance(f, str)],
             "callouts": [{"text": str(c.get("text", "")), "shot": int(c.get("shot") or 1)} for c in (a.get("callouts") or []) if isinstance(c, dict)]}
-    try:
-        return json.dumps(_link("/internal/cloud/video", body, timeout=360))   # waits only for the user's OK on the phone
+    import hermes_plugins.clara_guardian as guardian
+    try:   # waits only for the user's OK on the phone, for as long as they need
+        res = guardian.patient(lambda: _link("/internal/cloud/video", body, timeout=None))
+        return json.dumps({"error": "The user stopped this task."} if res is guardian.STOPPED else res)
     except urllib.error.HTTPError as e:
         return json.dumps({"error": e.read().decode(errors="replace")[:300]})
     except Exception as e:

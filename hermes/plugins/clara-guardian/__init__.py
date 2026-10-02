@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 STATE = rules.STATE
 TAKEOVER = os.path.join(STATE, "takeover")    # exists while the user is driving the browser
 HANDBACK = os.path.join(STATE, "handback")    # touched when the user hands control back
-MAX_TAKEOVER_WAIT = 30 * 60
 _seen_handback = 0.0
 
 
@@ -23,6 +22,51 @@ _session_owners = {}
 
 def session_owner(session_id=None):
     return _session_owners.get(session_id, (session_id, None))
+
+
+STOPPED = object()
+
+
+def patient(call):
+    """Run a Bridge call that waits on the user's phone, for as long as they need: people miss notifications.
+    Returns STOPPED as soon as the user stops the task. Meanwhile it tells Hermes the run is still alive,
+    so its idle timeout doesn't end a task that is only waiting for an answer."""
+    import threading
+    box = {}
+
+    def run():
+        try:
+            box["value"] = call()
+        except BaseException as e:
+            box["error"] = e
+
+    worker = threading.Thread(target=run, daemon=True, name="clara-wait-for-phone")
+    worker.start()
+    if not hold_while(worker.is_alive, "waiting for the user's answer on their phone", step=worker.join):
+        return STOPPED   # the Bridge's Stop also ends its side of the wait
+    if "error" in box:
+        raise box["error"]
+    return box["value"]
+
+
+def hold_while(waiting, label, step=None):
+    """Pause while waiting() is true, keeping the Hermes run alive. False if the user stopped the task."""
+    try:
+        from tools.interrupt import is_interrupted
+    except Exception:
+        is_interrupted = lambda: False
+    try:
+        from tools.environments.base import touch_activity_if_due
+    except Exception:
+        touch_activity_if_due = None
+    state = {"last_touch": time.monotonic(), "start": time.monotonic()}
+    while waiting():
+        if is_interrupted():
+            return False
+        (step or time.sleep)(0.5)
+        if touch_activity_if_due is not None:
+            touch_activity_if_due(state, label)
+    return True
 
 
 def _on_subagent_start(parent_session_id=None, child_session_id=None, **_):
@@ -68,11 +112,9 @@ def _wait_for_handback():
     if not os.path.exists(TAKEOVER):
         return False
     logger.info("guardian: user has taken over the browser; pausing Clara")
-    deadline = time.time() + MAX_TAKEOVER_WAIT
-    while os.path.exists(TAKEOVER) and time.time() < deadline:
-        time.sleep(0.5)
-    if os.path.exists(TAKEOVER):
-        raise TimeoutError("The user still controls the browser")
+    # No time limit: the user hands back when they're done (a phone that disconnects hands back by itself).
+    if not hold_while(lambda: os.path.exists(TAKEOVER), "paused while the user controls the browser"):
+        raise TimeoutError("The user stopped this task")
     return True
 
 
@@ -83,7 +125,7 @@ def _on_pre_tool_call(tool_name: str = "", args: Any = None, **_: Any) -> Option
     try:
         _wait_for_handback()
     except TimeoutError:
-        return {"action": "block", "message": "The user still controls the browser. Stop until they hand it back."}
+        return {"action": "block", "message": "The user stopped this task."}
     # After the user hands the browser back, the page may have changed. A snapshot is allowed
     # through (it's how she looks); every other browser action waits until she has looked.
     if tool_name.startswith("browser"):
@@ -134,16 +176,20 @@ def _ask_phone(tool_name, args, message, session_id=None):
     req = urllib.request.Request(os.environ.get("CLARA_BRIDGE_URL", "http://127.0.0.1:8700") + "/internal/approvals/ask",
                                  data=body, method="POST", headers={"Content-Type": "application/json",
                                  "Authorization": "Bearer " + os.environ.get("CLARA_LINK_TOKEN", "")})
+    def ask():
+        with urllib.request.urlopen(req, timeout=None) as r:   # no limit: Clara waits until the user answers
+            return json.loads(r.read()).get("choice")
     try:
-        with urllib.request.urlopen(req, timeout=1900) as r:
-            choice = json.loads(r.read()).get("choice")
+        choice = patient(ask)
     except Exception as e:
         logger.warning("guardian: couldn't reach the phone for a helper approval: %s", e)
         choice = None
+    if choice is STOPPED:
+        return {"action": "block", "message": "The user stopped this task."}
     logger.info("guardian helper approval %s: %s", tool_name, choice)
     if choice in ("once", "session"):
         return None
-    reason = "The user declined this on their phone." if choice == "deny" else "The user didn't answer the approval on their phone."
+    reason = "The user declined this on their phone." if choice == "deny" else "Clara couldn't reach the user's phone for this approval."
     return {"action": "block", "message": f"{reason} Don't retry it; find another way or report back that it needs their OK."}
 
 
@@ -153,7 +199,7 @@ HELP_SCHEMA = {
         "Ask the user to take over your browser from their phone when you're stuck on something only a person should do: a CAPTCHA "
         "or 'are you human' check, a two-factor or SMS code, a sign-in your saved logins can't complete, a payment or consent step, "
         "or a page you can't get past after trying. Their phone gets a notification; they take over, fix it, and hand it back. "
-        "This waits (up to 15 minutes) until they're done, then tells you. Afterwards take a fresh browser_snapshot: the page has "
+        "This waits as long as they need until they're done, then tells you. Afterwards take a fresh browser_snapshot: the page has "
         "probably changed. Don't use it for things you can do yourself, and never ask them for a password in chat."),
     "parameters": {"type": "object", "properties": {
         "reason": {"type": "string", "description": "What you need them to do, short and specific, e.g. 'There's a CAPTCHA on the Amazon sign-in page'."},
@@ -171,19 +217,23 @@ def handle_help(args, session_id=None, **_):
     req = urllib.request.Request(os.environ.get("CLARA_BRIDGE_URL", "http://127.0.0.1:8700") + "/internal/help",
                                  data=body, method="POST", headers={"Content-Type": "application/json",
                                  "Authorization": "Bearer " + os.environ.get("CLARA_LINK_TOKEN", "")})
+    def ask():
+        with urllib.request.urlopen(req, timeout=None) as r:   # no limit: the user may be away from their phone
+            return json.loads(r.read()).get("result")
     try:
-        with urllib.request.urlopen(req, timeout=16 * 60) as r:
-            result = json.loads(r.read()).get("result")
+        result = patient(ask)
     except Exception as e:
         logger.warning("guardian: couldn't ask the phone for help: %s", e)
         result = None
+    if result is STOPPED or result == "stopped":
+        return json.dumps({"success": False, "error": "The user stopped this task."})
     _seen_handback = _mtime(HANDBACK)   # this tool already tells Clara to look again; don't repeat it on her next step
     if result == "handed_back":
         return json.dumps({"success": True, "message": "The user took over your browser and has handed it back. Take a fresh "
                                                        "browser_snapshot to see where things are now, then continue the task."})
     if result == "busy":
         return json.dumps({"success": False, "error": "The user is already in control of your browser; wait for them."})
-    return json.dumps({"success": False, "error": "The user didn't take over in time. Stop here and tell them what you need "
+    return json.dumps({"success": False, "error": "Clara couldn't reach the user's phone. Stop here and tell them what you need "
                                                    "(they can take over from the Screen page later), or find another way."})
 
 

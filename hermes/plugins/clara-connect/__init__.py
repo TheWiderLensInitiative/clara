@@ -60,12 +60,15 @@ def handle_list(args, **_):
 
 def handle_call(args, session_id=None, **_):
     a = args or {}
-    try:
-        res = _link("/internal/apis/call", {"service": a.get("service", ""), "method": a.get("method", "GET"), "path": a.get("path", "/"),
-                                            "query": a.get("query"), "body": a.get("body"), "headers": a.get("headers"),
-                                            "conversation_id": _conversation(session_id)}, timeout=330)
+    import hermes_plugins.clara_guardian as guardian
+    body = {"service": a.get("service", ""), "method": a.get("method", "GET"), "path": a.get("path", "/"),
+            "query": a.get("query"), "body": a.get("body"), "headers": a.get("headers"), "conversation_id": _conversation(session_id)}
+    try:   # may wait on the user's OK on the phone, for as long as they need
+        res = guardian.patient(lambda: _link("/internal/apis/call", body, timeout=None))
     except Exception as e:
         return json.dumps({"error": f"Couldn't reach the Clara Bridge: {type(e).__name__}"})
+    if res is guardian.STOPPED:
+        return json.dumps({"error": "The user stopped this task."})
     return json.dumps(res)[:60000]
 
 
@@ -131,8 +134,11 @@ GOOGLE_TOOLS = {
 
 def _google(action):
     def handler(args, session_id=None, **_):
-        try:
-            return json.dumps(_link("/internal/connectors/call", {"action": action, "args": args or {}, "conversation_id": _conversation(session_id)}, timeout=1900))
+        import hermes_plugins.clara_guardian as guardian
+        body = {"action": action, "args": args or {}, "conversation_id": _conversation(session_id)}
+        try:   # sends and calendar changes wait on the user's OK, for as long as they need
+            res = guardian.patient(lambda: _link("/internal/connectors/call", body, timeout=None))
+            return json.dumps({"error": "The user stopped this task."} if res is guardian.STOPPED else res)
         except Exception as e:
             return json.dumps({"error": f"Couldn't reach the Clara Bridge: {type(e).__name__}"})
     return handler

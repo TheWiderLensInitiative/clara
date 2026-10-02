@@ -1072,6 +1072,7 @@ async def stop(cid: str, dev=Depends(device)):
         raise HTTPException(404, "conversation not found")
     task = _run_tasks.get(cid)
     run_id = conv.get("active_run")
+    _release_waits(cid)
     if not run_id and not task:
         return {"ok": True}
     if run_id and not run_id.startswith("starting:"):
@@ -1122,6 +1123,30 @@ async def answer_approval(aid: str, body: ApprovalIn, dev=Depends(device)):
     return {"ok": True, "status": status}
 
 
+# Clara waits for the user's answer as long as it takes: people miss their phone. Only Stop ends the wait.
+_waiting: dict = {}   # conversation id -> [(future, value it gets when the task is stopped)]
+
+
+async def _until_answered(fut, conversation_id, stopped):
+    """Wait for the phone with no time limit; the conversation's Stop button resolves it with `stopped`."""
+    entry = (fut, stopped)
+    _waiting.setdefault(conversation_id, []).append(entry)
+    try:
+        return await fut
+    finally:
+        waiters = _waiting.get(conversation_id) or []
+        if entry in waiters:
+            waiters.remove(entry)
+        if not waiters:
+            _waiting.pop(conversation_id, None)
+
+
+def _release_waits(conversation_id):
+    for fut, stopped in list(_waiting.get(conversation_id) or []):
+        if not fut.done():
+            fut.set_result(stopped)
+
+
 # Sub-agents run in worker threads outside the phone session, so Hermes would silently deny anything that
 # needs approval. Guardian asks here instead and waits for the user's answer on the phone.
 helper_approvals: dict = {}   # approval id -> future
@@ -1135,6 +1160,7 @@ class HelperAsk(BaseModel):
     description: str
     command: str = ""
     rule: str = ""
+    source: str = "helper"   # "helper" = a cloud sub-agent; "browser" = Clara's own browser
 
 
 @app.post("/internal/approvals/ask")
@@ -1142,11 +1168,11 @@ async def helper_ask(body: HelperAsk, ok=Depends(link)):
     conv = store.get_conversation(body.conversation_id) if body.conversation_id else None
     if body.run_id and (not conv or conv.get("active_run") != body.run_id):
         return {"choice": "deny"}
-    return {"choice": await _phone_approval("☁️ Helper: " + body.description, body.command, body.rule or body.description, choices=("once", "session", "deny") if body.allow_session else ("once", "deny"), conversation_id=body.conversation_id)}
+    return {"choice": await _phone_approval(("☁️ Helper: " if body.source == "helper" else "") + body.description, body.command, body.rule or body.description, choices=("once", "session", "deny") if body.allow_session else ("once", "deny"), conversation_id=body.conversation_id)}
 
 
 async def _phone_approval(description: str, preview: str, rule: str, choices=("once", "session", "deny"), conversation_id=None) -> str:
-    """Put an approval card on the phone for the running task and wait for the answer: once|session|deny|timeout."""
+    """Put an approval card on the phone for the running task and wait for the answer: once|session|deny (deny also when the task is stopped)."""
     cid = conversation_id or _approval_context.get()
     conv = store.get_conversation(cid) if cid else None
     if not conv or not conv.get("active_run"):
@@ -1163,19 +1189,15 @@ async def _phone_approval(description: str, preview: str, rule: str, choices=("o
     store.add_activity(cid, run_id, "approval.requested", None, a["description"])
     bus.publish("approval.requested", conversation_id=cid, approval=a)
     try:
-        choice = await asyncio.wait_for(fut, 1800)
+        choice = await _until_answered(fut, cid, "stopped")
     except asyncio.CancelledError:
         store.resolve_approval(a["id"], "expired")
         bus.publish("approval.resolved", conversation_id=cid, run_id=run_id, choice="cancelled")
         raise
-    except asyncio.TimeoutError:
-        store.resolve_approval(a["id"], "expired")
-        bus.publish("approval.resolved", conversation_id=cid, run_id=run_id, choice="timeout")
-        return "timeout"
     finally:
         helper_approvals.pop(a["id"], None)
     current = store.get_conversation(cid)
-    if not current or current.get("active_run") != run_id:
+    if choice == "stopped" or not current or current.get("active_run") != run_id:
         store.resolve_approval(a["id"], "expired")
         choice = "deny"
     if choice == "session":
@@ -1595,21 +1617,35 @@ async def activity(conversation_id: Optional[str] = None, limit: int = 200, dev=
     return {"activity": store.activity(conversation_id, min(limit, 1000))}
 
 
+async def _jobs(method: str, path: str):
+    """Hermes's jobs API, with its errors passed on instead of a 500 (it is briefly down while restarting)."""
+    try:
+        r = await hermes.request(method, path, timeout=20)
+    except httpx.HTTPError:
+        raise HTTPException(503, "Clara is restarting. Try again in a moment.")
+    if r.status_code >= 400:
+        raise HTTPException(r.status_code if r.status_code < 500 else 502, r.text[:300] or "Clara couldn't do that.")
+    try:
+        return r.json()
+    except ValueError:
+        raise HTTPException(502, "Clara sent back something unexpected.")
+
+
 @app.get("/v1/upcoming")
 async def upcoming(dev=Depends(device)):
-    return (await hermes.get("/api/jobs")).json()
+    return await _jobs("GET", "/api/jobs")
 
 
 @app.post("/v1/upcoming/{job_id}/{action}")
 async def job_action(job_id: str, action: str, dev=Depends(device)):
     if action not in ("pause", "resume", "run"):
         raise HTTPException(400)
-    return (await hermes.post(f"/api/jobs/{job_id}/{action}")).json()
+    return await _jobs("POST", f"/api/jobs/{job_id}/{action}")
 
 
 @app.delete("/v1/upcoming/{job_id}")
 async def job_delete(job_id: str, dev=Depends(device)):
-    return (await hermes.delete(f"/api/jobs/{job_id}")).json()
+    return await _jobs("DELETE", f"/api/jobs/{job_id}")
 
 
 @app.get("/v1/memory")
@@ -1871,14 +1907,12 @@ async def internal_api_call(req: ApiCallIn, ok=Depends(link)):
         api_requests[rid] = {"info": info, "future": fut}
         bus.publish("api.request", request=info)
         try:
-            choice = await asyncio.wait_for(fut, 300)
-        except asyncio.TimeoutError:
-            choice = "timeout"
+            choice = await _until_answered(fut, req.conversation_id, "stopped")
         finally:
             api_requests.pop(rid, None)
             bus.publish("api.resolved", id=rid)
         if choice not in ("once", "chat", "always"):
-            return {"error": "The user didn't allow this call." if choice == "deny" else "The user didn't answer in time.",
+            return {"error": "The user didn't allow this call." if choice == "deny" else "The user stopped this task.",
                     "note": "Stop and tell the user; don't try to reach this service another way."}
         if choice == "chat" and req.conversation_id:
             store.grant(req.service, scope, req.conversation_id)
@@ -1906,8 +1940,13 @@ def _cloud_state():
 
 
 async def _ask_cloud(kind: str, model: str, conversation_id=None, estimate=None, summary=None, choices=None) -> str:
-    """Phone approval before a task first uses the cloud. Returns once|task|always|deny|timeout."""
+    """Phone approval before a task first uses the cloud. Returns once|task|always|deny (deny also when the task is stopped)."""
     import uuid as _uuid
+    # The wait has no time limit, so a sub-agent's HTTP client may give up and retry: join the card already on the phone.
+    pending = next((r for r in cloud_requests.values() if estimate is None and not r["future"].done() and
+                    r["info"]["kind"] == kind and r["info"]["conversation_id"] == conversation_id and r["info"]["estimate"] is None), None)
+    if pending:
+        return await asyncio.shield(pending["future"])
     rid = _uuid.uuid4().hex
     st = _cloud_state()
     info = {"id": rid, "kind": kind, "model": model, "conversation_id": conversation_id, "spent_today": st["spent_today"],
@@ -1917,9 +1956,7 @@ async def _ask_cloud(kind: str, model: str, conversation_id=None, estimate=None,
     cloud_requests[rid] = {"info": info, "future": fut}
     bus.publish("cloud.request", request=info)
     try:
-        return await asyncio.wait_for(fut, 300)
-    except asyncio.TimeoutError:
-        return "timeout"
+        return await _until_answered(fut, conversation_id, "deny")
     finally:
         cloud_requests.pop(rid, None)
         bus.publish("cloud.resolved", id=rid)
@@ -2950,9 +2987,7 @@ async def internal_vault_request(body: VaultRequestIn, ok=Depends(link)):
     store.add_activity(body.conversation_id, None, "vault.requested", None, f"Clara asked to sign in to “{entry['name']}” ({entry['site']})")
     bus.publish("vault.request", request=info)
     try:
-        answer = await asyncio.wait_for(fut, 300)
-    except asyncio.TimeoutError:
-        answer = {"approve": False, "reason": "timeout"}
+        answer = await _until_answered(fut, body.conversation_id, {"approve": False, "reason": "stopped"})
     finally:
         vault_requests.pop(rid, None)
         bus.publish("vault.resolved", id=rid)
@@ -3049,10 +3084,8 @@ async def ask_for_help(body: HelpIn, ok=Depends(link)):
     fut = asyncio.get_running_loop().create_future()
     _help_waiters.append(fut)
     try:
-        await asyncio.wait_for(fut, 15 * 60)
-        return {"result": "handed_back"}
-    except asyncio.TimeoutError:
-        return {"result": "timeout"}
+        handed_back = await _until_answered(fut, cid, False)
+        return {"result": "handed_back" if handed_back else "stopped"}
     finally:
         if fut in _help_waiters:
             _help_waiters.remove(fut)

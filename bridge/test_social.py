@@ -1,4 +1,5 @@
-"""Social posting against tools/fake_services.py (start it first: python tools/fake_services.py, port 8798).
+"""Social posting against tools/fake_services.py (start it first: python tools/fake_services.py, port 8798;
+it needs bridge/requirements-dev.txt on top of the Bridge requirements).
 
     CLARA_DATA_DIR=$(mktemp -d) python bridge/test_social.py
 """

@@ -72,6 +72,7 @@ CASES += [
   ("browser_console", {"expression": "document.querySelector('#password').value"}, "block"),
   ("browser_cdp", {"method": "Runtime.evaluate"}, "block"),
   ("sign_in", {"name": "GitHub"}, None),
+  ("browser_type", {"text": "4111 1111 1111 1111"}, "block"),
 ]
 fails = 0
 for tool, args, want in CASES:

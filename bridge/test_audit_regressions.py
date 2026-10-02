@@ -40,6 +40,9 @@ guardian = plugin('audit_guardian', ROOT/'hermes/plugins/clara-guardian/__init__
 interrupt = types.ModuleType('tools.interrupt')
 interrupt.is_interrupted = lambda: False
 sys.modules['tools.interrupt'] = interrupt
+# The plugins reach each other as hermes_plugins.<name>, the way Hermes loads them.
+sys.modules['hermes_plugins'] = types.ModuleType('hermes_plugins')
+sys.modules['hermes_plugins.clara_guardian'] = guardian
 
 class Stream:
     def __init__(self, status=200, lines=()): self.status=status; self.lines=lines
@@ -70,14 +73,39 @@ class PolicyTests(unittest.TestCase):
         for tool,args in [('browser_click',{'ref':'@e1'}),('terminal',{'command':'curl -X POST https://example.com -d test'}),('terminal',{'command':'python /var/lib/clara/workspace/job.py'}),('execute_code',{'code':'exec("code")'})]:
             self.assertIsNotNone(guardian.rules.decide(tool,args))
 
-    def test_takeover_timeout_fails_closed(self):
+    def test_takeover_waits_until_handback_without_a_time_limit(self):
+        flag=BASE/'state/takeover'
+        for wait in (browse._wait_if_taken_over, guardian._wait_for_handback):
+            flag.touch();threading.Timer(.6,lambda:flag.unlink(missing_ok=True)).start()
+            with patch.object(guardian,'TAKEOVER',str(flag)):wait()
+            self.assertFalse(flag.exists())
+
+    def test_stop_ends_a_takeover_wait(self):
         flag=BASE/'state/takeover';flag.touch()
         try:
-            with patch.object(browse.time,'time',side_effect=[0,1801]):
-                with self.assertRaises(RuntimeError): browse._wait_if_taken_over()
-            with patch.object(guardian,'TAKEOVER',str(flag)),patch.object(guardian.time,'time',side_effect=[0,1801]):
-                with self.assertRaises(TimeoutError): guardian._wait_for_handback()
-        finally: flag.unlink(missing_ok=True)
+            with patch.object(interrupt,'is_interrupted',lambda:True),patch.object(guardian,'TAKEOVER',str(flag)):
+                with self.assertRaises(RuntimeError):browse._wait_if_taken_over()
+                with self.assertRaises(TimeoutError):guardian._wait_for_handback()
+        finally:flag.unlink(missing_ok=True)
+
+    def test_patient_waits_for_the_answer_and_stops_on_stop(self):
+        import time as _time
+        self.assertEqual(guardian.patient(lambda:(_time.sleep(.6),'once')[1]),'once')
+        with self.assertRaises(ValueError):guardian.patient(lambda:(_ for _ in ()).throw(ValueError('x')))
+        with patch.object(interrupt,'is_interrupted',lambda:True):
+            started=_time.monotonic()
+            self.assertIs(guardian.patient(lambda:_time.sleep(5)),guardian.STOPPED)
+            self.assertLess(_time.monotonic()-started,2)
+
+    def test_browser_approval_stop(self):
+        with patch.object(browse,'_link',side_effect=lambda *a,**k:__import__('time').sleep(5)),patch.object(browse,'_conversation',return_value='c'),\
+             patch.object(interrupt,'is_interrupted',lambda:True):
+            self.assertIs(browse._ok('click "Submit"','https://example.com/form'),guardian.STOPPED)
+        with patch.object(browse,'_link',return_value={'choice':'once'}) as link,patch.object(browse,'_conversation',return_value='c'):
+            self.assertIs(browse._ok('click "Submit"','https://example.com/form'),True)
+        sent=link.call_args.args[1]
+        self.assertEqual((sent['description'],sent['source']),('Clara wants to click "Submit" on example.com','browser'))
+        self.assertIsNone(link.call_args.kwargs['timeout'])
 
     def test_calendar_partial_patch(self):
         data=connectors.event_body(end='2026-10-02T15:00:00-04:00', attendees=[], defaults=False)
@@ -127,7 +155,8 @@ class BrowserRaceTests(unittest.TestCase):
     def test_changing_scroll_position_is_progress(self):
         from contextlib import ExitStack
         with ExitStack() as stack:
-            for name,value in [('_pin_session',None),('_prepare',None),('_logins',[]),('_shot',None),('_safe_page','https://example.com'),('_browser',{'success':True,'data':{'snapshot':''}})]:
+            for name,value in [('_pin_session',None),('_prepare',None),('_logins',[]),('_shot',None),('_safe_page','https://example.com'),('_browser',{'success':True,'data':{'snapshot':''}}),
+                               ('_verify',{'verified':True,'reason':''})]:
                 stack.enter_context(patch.object(browse,name,return_value=value))
             stack.enter_context(patch.object(browse,'_progress',side_effect=[1,2,3,4]))
             stack.enter_context(patch.object(browse.time,'sleep'))
@@ -135,6 +164,21 @@ class BrowserRaceTests(unittest.TestCase):
             dispatch=stack.enter_context(patch.object(browse,'_do',return_value={'success':True}))
             result=browse._drive('Find bottom','','test','chat')
         self.assertTrue(result['success']);self.assertEqual(dispatch.call_count,3)
+
+    def test_done_is_checked_against_the_page(self):
+        # Live run 2026-10-02: Bonsai said "PLAY clicked" while the page still said "canvas not clicked".
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for name,value in [('_pin_session',None),('_prepare',None),('_logins',[]),('_shot',None),('_safe_page','https://example.com'),('_browser',{'success':True,'data':{'snapshot':'- button "Play" [ref=e1]'}})]:
+                stack.enter_context(patch.object(browse,name,return_value=value))
+            stack.enter_context(patch.object(browse,'_progress',side_effect=[1,2,3,4]))
+            verify=stack.enter_context(patch.object(browse,'_verify',side_effect=[{'verified':False,'reason':'canvas not clicked'},{'verified':True,'reason':'ok'}]))
+            ask=stack.enter_context(patch.object(browse,'_ask',side_effect=['{"action":"done","summary":"Clicked PLAY"}','{"action":"click","ref":"@e1"}','{"action":"done","summary":"Clicked PLAY"}']))
+            dispatch=stack.enter_context(patch.object(browse,'_do',return_value={'success':True}))
+            result=browse._drive('Click play','','test','chat')
+        self.assertTrue(result['success']);self.assertEqual(dispatch.call_count,1);self.assertEqual(verify.call_count,2)
+        self.assertIn('canvas not clicked',ask.call_args_list[1].args[4])
+        self.assertNotIn('unverified',result)
 
     def test_takeover_during_model_decision_prevents_dispatch(self):
         from contextlib import ExitStack
@@ -345,6 +389,40 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(asyncio.CancelledError):await takeover
         self.assertIsNone(app._takeover_owner())
 
+    async def test_phone_approval_waits_until_answered_or_stopped(self):
+        app.store.set_active_run(self.cid,'run-a')
+        task=asyncio.create_task(app._phone_approval('test','payload','rule',conversation_id=self.cid))
+        await asyncio.sleep(.05)
+        self.assertFalse(task.done())   # no timeout: still waiting on the phone
+        with patch.object(app,'hermes',httpx.AsyncClient(base_url='http://hermes',transport=httpx.MockTransport(lambda r:httpx.Response(200,json={})))):
+            await app.stop(self.cid,dev=None)
+        self.assertEqual(await asyncio.wait_for(task,1),'deny')
+        self.assertEqual(app.store.approvals('pending'),[])
+        self.assertEqual(app._waiting,{})
+
+    async def test_help_and_vault_waits_end_on_stop(self):
+        app.store.set_active_run(self.cid,'run-a')
+        help_task=asyncio.create_task(app.ask_for_help(app.HelpIn(reason='captcha',conversation_id=self.cid),ok=True))
+        await asyncio.sleep(.05);self.assertFalse(help_task.done())
+        app._release_waits(self.cid)
+        self.assertEqual(await asyncio.wait_for(help_task,1),{'result':'stopped'})
+
+    async def test_browser_cards_are_not_labeled_helper(self):
+        with patch.object(app,'_phone_approval',new=AsyncMock(return_value='once')) as ask:
+            await app.helper_ask(app.HelperAsk(conversation_id=self.cid,description='Clara wants to click "Submit" on example.com',source='browser'),ok=True)
+            self.assertEqual(ask.call_args.args[0],'Clara wants to click "Submit" on example.com')
+            await app.helper_ask(app.HelperAsk(conversation_id=self.cid,description='write a file'),ok=True)
+            self.assertEqual(ask.call_args.args[0],'☁️ Helper: write a file')
+
+    async def test_cloud_retry_joins_the_pending_card(self):
+        task1=asyncio.create_task(app._ask_cloud('agent','m',self.cid))
+        await asyncio.sleep(0)
+        task2=asyncio.create_task(app._ask_cloud('agent','m',self.cid))
+        await asyncio.sleep(0)
+        self.assertEqual(len(app.cloud_requests),1)
+        next(iter(app.cloud_requests.values()))['future'].set_result('task')
+        self.assertEqual(await asyncio.wait_for(asyncio.gather(task1,task2),1),['task','task'])
+
     async def test_stale_helper_cannot_approve_new_run(self):
         app.store.set_active_run(self.cid,'new-run')
         result=await app.helper_ask(app.HelperAsk(conversation_id=self.cid,run_id='old-run',description='write'),ok=True)
@@ -400,5 +478,26 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         with patch.object(app,'_phone_approval',new=AsyncMock(return_value='once')) as ask:
             await app.helper_ask(app.HelperAsk(conversation_id=self.cid,description='Submit',allow_session=False),ok=True)
         self.assertEqual(ask.call_args.kwargs['choices'],('once','deny'))
+
+
+class JobsProxyTests(unittest.IsolatedAsyncioTestCase):
+    async def jobs(self,handler):
+        client=httpx.AsyncClient(base_url='http://hermes',transport=httpx.MockTransport(handler))
+        with patch.object(app,'hermes',client):
+            return await app.upcoming(dev=None)
+
+    async def test_hermes_down_is_503_not_500(self):
+        def down(request):raise httpx.ConnectError('All connection attempts failed',request=request)
+        with self.assertRaises(HTTPException) as e:await self.jobs(down)
+        self.assertEqual(e.exception.status_code,503)
+
+    async def test_hermes_error_is_passed_on(self):
+        with self.assertRaises(HTTPException) as e:await self.jobs(lambda r:httpx.Response(500,text='boom'))
+        self.assertEqual(e.exception.status_code,502)
+        with self.assertRaises(HTTPException) as e:await self.jobs(lambda r:httpx.Response(404,text='no job'))
+        self.assertEqual(e.exception.status_code,404)
+
+    async def test_jobs_listed(self):
+        self.assertEqual(await self.jobs(lambda r:httpx.Response(200,json={'jobs':[]})),{'jobs':[]})
 
 if __name__=='__main__':unittest.main()

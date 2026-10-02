@@ -21,8 +21,12 @@ Environment=AGENT_BROWSER_PROFILE=/var/lib/clara/.browser-profile
 Environment=AGENT_BROWSER_RESTORE=clara
 Environment=AGENT_BROWSER_ARGS=--no-sandbox,--disable-dev-shm-usage,--disable-blink-features=AutomationControlled,--no-first-run,--no-default-browser-check,--start-fullscreen
 ExecStart=/opt/clara/venv-hermes/bin/hermes gateway
-Restart=on-failure
+# Hermes exits 1 even on a normal stop, so 1 isn't a failure; Restart=always still brings back a real crash.
+SuccessExitStatus=1
+Restart=always
 RestartSec=5
+# Hermes interrupts a running task on stop; don't wait the default 90 s for it.
+TimeoutStopSec=30
 
 # Sandbox: your /home is invisible to her, the system is read-only, she can never gain privileges.
 ProtectHome=yes

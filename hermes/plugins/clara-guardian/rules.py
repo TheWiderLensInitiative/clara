@@ -138,14 +138,11 @@ def decide(tool_name, args):
         return ("block", "Use browser_use; arbitrary page scripts bypass browser control and field protections.")
     if tool_name == "browser_cdp":
         return ("block", "Use browser_use; direct DevTools access bypasses browser control and field protections.")
+    if tool_name == "browser_type" and re.search(r"\b(?:\d[ -]?){13,19}\b", str(args.get("text", ""))):
+        return ("block", "Clara never types card numbers. Use the payment vault instead.")
     # sign_in needs no Guardian prompt: the phone itself asks (fingerprint/PIN) before releasing a login.
     if tool_name.startswith("browser") and tool_name not in ("browser_use", "browser_snapshot", "browser_vision", "browser_console", "browser_cdp"):
         return ("block", "Use browser_use so target, approval and takeover checks cover every browser action.")
-    if tool_name == "browser_type":
-        text = str(args.get("text", ""))
-        if re.search(r"\b(?:\d[ -]?){13,19}\b", text):
-            return ("block", "Clara never types card numbers. Use the payment vault instead.")
-        return None
     if tool_name == "skill_manage" and _mentions_protected(args):
         return ("block", "Clara may not touch her own configuration, Guardian, or the Bridge.")
     return None

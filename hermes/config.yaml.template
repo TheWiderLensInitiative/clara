@@ -144,7 +144,7 @@ auxiliary:
     reasoning_effort: medium
 approvals:
   mode: manual
-  timeout: 1800
+  timeout: 31536000   # no real limit: Clara waits until the user answers (Stop still ends the wait)
   cron_mode: deny
   deny:
   - rm -rf ~
