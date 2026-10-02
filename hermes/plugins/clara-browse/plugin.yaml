@@ -1,0 +1,4 @@
+name: clara-browse
+version: "0.1.0"
+description: "Drives Clara's browser by looking at the page and acting one step at a time, on a persistent Chrome profile."
+author: "Clara"
