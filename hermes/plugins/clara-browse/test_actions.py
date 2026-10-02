@@ -35,7 +35,7 @@ check("password veto", actions.veto({"action": "fill", "ref": "@e2", "text": "hu
 check("card veto", actions.veto({"action": "fill", "ref": "@e9", "text": "4111 1111 1111 1111"}, snap) is not None, True)
 check("search ok", actions.veto({"action": "fill", "ref": "@e1", "text": "cheap flights"}, '@e1 [input] "Search"'), None)
 check("buy needs ok", actions.commit_label({"action": "click", "ref": "@e3"}, snap) is not None, True)
-check("find send", actions.commit_label({"action": "find", "text": "Send message"}, "") , "Send message")
+check("find send", actions.commit_label({"action": "find", "text": "Send message"}, "") , "activate control: Send message")
 check("plain click", actions.commit_label({"action": "click", "ref": "@e1"}, '@e1 [link] "Pricing"'), None)
 check("captcha", actions.looks_like_human_check("please verify you are human"), True)
 check("google block", actions.signin_blocked("Couldn't sign you in. Try using a different browser"), True)

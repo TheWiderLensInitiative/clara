@@ -1,5 +1,7 @@
 package info.thewiderlens.clara.ui.screens
 
+import info.thewiderlens.clara.data.readBounded
+
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -84,7 +86,7 @@ fun BrandPage(
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri ?: return@rememberLauncherForActivityResult
         scope.launch {
-            val bytes = withContext(Dispatchers.IO) { runCatching { context.contentResolver.openInputStream(uri)!!.use { it.readBytes() } }.getOrNull() }
+            val bytes = withContext(Dispatchers.IO) { runCatching { context.contentResolver.openInputStream(uri)!!.use { it.readBounded() } }.getOrNull() }
             if (bytes != null) onLogo(bytes)
         }
     }

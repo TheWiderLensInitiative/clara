@@ -39,6 +39,11 @@ SIGN_IN_SCHEMA = {
 }
 
 
+def _conversation(session_id):
+    from hermes_plugins.clara_guardian import session_owner
+    return session_owner(session_id)[0]
+
+
 def _link(path, body=None, timeout=15):
     req = urllib.request.Request(BRIDGE + path, data=json.dumps(body).encode() if body is not None else None,
                                  headers={"Authorization": "Bearer " + os.environ.get("CLARA_LINK_TOKEN", ""), "Content-Type": "application/json"},
@@ -117,7 +122,7 @@ def handle_sign_in(args, task_id=None, session_id=None, **_):
     priv = ec.generate_private_key(ec.SECP256R1())
     pub = base64.b64encode(priv.public_key().public_bytes(serialization.Encoding.DER, serialization.PublicFormat.SubjectPublicKeyInfo)).decode()
     try:
-        sealed = _link("/internal/vault/request", {"name": name, "pubkey": pub, "conversation_id": session_id}, timeout=330)
+        sealed = _link("/internal/vault/request", {"name": name, "pubkey": pub, "conversation_id": _conversation(session_id)}, timeout=330)
     except Exception as e:
         return json.dumps({"success": False, "error": f"The sign-in request failed: {type(e).__name__}"})
     if sealed.get("status") != "approved":
@@ -128,22 +133,27 @@ def handle_sign_in(args, task_id=None, session_id=None, **_):
     tmp = "clara-tmp-" + secrets.token_hex(6)
     ok, url = False, ""
     try:
-        cred = _open(sealed, name, entry["site"], priv)
-        _vault_cli(task_id, "auth", "save", tmp, "--url", entry["site"], "--username", cred.get("username", ""), "--password-stdin", secret=cred.get("password", ""))
-        cred = None
-        r = _browser(task_id, "login", tmp, "--no-navigate")
-        if not (r or {}).get("success"):
-            logger.warning("clara-vault: login in place failed: %s", str((r or {}).get("error"))[:200])
-            r = _browser(task_id, "login", tmp)
+        from hermes_plugins.clara_browse import action_guard, _safe_page, _resolves_local, actions
+        if actions.blocked_url_reason(entry["site"]) or _resolves_local(entry["site"]):
+            raise RuntimeError("Saved login uses a blocked address")
+        with action_guard():
+            _safe_page(task_id)
+            cred = _open(sealed, name, entry["site"], priv)
+            _vault_cli(task_id, "auth", "save", tmp, "--url", entry["site"], "--username", cred.get("username", ""), "--password-stdin", secret=cred.get("password", ""))
+            cred = None
+            r = _browser(task_id, "login", tmp, "--no-navigate")
             if not (r or {}).get("success"):
-                logger.warning("clara-vault: login with navigation failed: %s", str((r or {}).get("error"))[:200])
-        ok = bool((r or {}).get("success"))
-        try:
-            from tools.browser_tool import _run_browser_command
-            u = _run_browser_command(task_id or "default", "get", ["url"])
-            url = str(((u or {}).get("data") or {}).get("url") or "")[:300]
-        except Exception:
-            pass
+                logger.warning("clara-vault: login in place failed: %s", str((r or {}).get("error"))[:200])
+                r = _browser(task_id, "login", tmp)
+                if not (r or {}).get("success"):
+                    logger.warning("clara-vault: login with navigation failed: %s", str((r or {}).get("error"))[:200])
+            ok = bool((r or {}).get("success"))
+            try:
+                from tools.browser_tool import _run_browser_command
+                u = _run_browser_command(task_id or "default", "get", ["url"])
+                url = str(((u or {}).get("data") or {}).get("url") or "")[:300]
+            except Exception:
+                pass
     except Exception as e:
         logger.warning("clara-vault sign_in %s failed: %s: %s", name, type(e).__name__, str(e)[:120])
     finally:

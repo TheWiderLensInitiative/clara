@@ -1,5 +1,7 @@
 package info.thewiderlens.clara.ui.screens
 
+import info.thewiderlens.clara.data.readBounded
+
 import androidx.compose.foundation.border
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.Delete
@@ -111,6 +113,9 @@ fun ChatScreen(
     onVoice: () -> Unit = {},
 ) {
     var input by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(state.retryText) {
+        if (state.retryText.isNotBlank()) input = if (input.isBlank()) state.retryText else input + "\n" + state.retryText
+    }
     var showHistory by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf<info.thewiderlens.clara.data.Conversation?>(null) }
     val list = rememberLazyListState()
@@ -119,7 +124,11 @@ fun ChatScreen(
     val chips = if (lastMsg != null && lastMsg.role == "assistant" && !state.working) lastMsg.suggestions else emptyList()
     val itemCount = (if (chips.isNotEmpty()) 1 else 0) + (if (state.help != null) 1 else 0) + state.messages.size + pendingHere.size + state.vaultRequests.size + state.apiRequests.size + state.cloudRequests.size + state.budgetSuggestions.size + (if (state.working) 1 else 0)
     // to the very bottom of the last item (a long reply or a browser card is taller than the screen)
-    LaunchedEffect(itemCount, state.streaming.length) { if (itemCount > 0) list.animateScrollToItem(itemCount - 1, scrollOffset = 100_000) }
+    LaunchedEffect(itemCount, state.streaming.length / 80) {
+        val lastVisible = list.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+        if (itemCount > 0 && !list.isScrollInProgress && lastVisible >= itemCount - 3)
+            list.scrollToItem(itemCount - 1, scrollOffset = 100_000)
+    }
     var celebrating by remember { mutableStateOf(false) }
     LaunchedEffect(state.doneAt) { if (state.doneAt > 0) { celebrating = true; kotlinx.coroutines.delay(2500); celebrating = false } }
     val mood = moodOf(state, celebrating)
@@ -143,7 +152,7 @@ fun ChatScreen(
                     val name = cr.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
                         if (c.moveToFirst()) c.getString(0) else null
                     } ?: "file"
-                    Triple(name, cr.openInputStream(uri)!!.use { it.readBytes() }, cr.getType(uri) ?: "application/octet-stream")
+                    Triple(name, cr.openInputStream(uri)!!.use { it.readBounded() }, cr.getType(uri) ?: "application/octet-stream")
                 }.getOrNull()
             }
             if (picked == null) android.widget.Toast.makeText(context, "Couldn't read that file", android.widget.Toast.LENGTH_SHORT).show()
@@ -306,18 +315,18 @@ fun ChatScreen(
             Spacer(Modifier.width(8.dp))
             val uploading = state.drafts.any { it.path == null && !it.failed }
             val hasFiles = state.drafts.any { it.path != null }
-            val canSend = (input.isNotBlank() || hasFiles) && !uploading && state.link == Link.Online
+            val canSend = (input.isNotBlank() || hasFiles) && !uploading && state.drafts.none { it.failed } && !state.working && state.link == Link.Online
             val voiceButton = !canSend && !state.working && input.isBlank() && state.drafts.isEmpty()  // empty composer: talk instead
             Box(
                 Modifier.size(50.dp).clip(CircleShape)
-                    .background(if (state.working && input.isBlank() && !hasFiles) ClaraBrush.approval else ClaraBrush.bubble)
+                    .background(if (state.working) ClaraBrush.approval else ClaraBrush.bubble)
                     .clickable(enabled = canSend || state.working || voiceButton) {
                         if (canSend) { onSend(input.trim()); input = "" } else if (voiceButton) onVoice() else onStop()
                     },
                 contentAlignment = Alignment.Center,
             ) {
                 if (voiceButton) Icon(ClaraIcons.Waveform, "Voice mode", tint = ClaraColors.Text)
-                else if (state.working && input.isBlank() && !hasFiles) Icon(Icons.Filled.Close, "Stop", tint = ClaraColors.Text)
+                else if (state.working) Icon(Icons.Filled.Close, "Stop", tint = ClaraColors.Text)
                 else Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = ClaraColors.Text.copy(alpha = if (canSend) 1f else 0.4f))
             }
         }

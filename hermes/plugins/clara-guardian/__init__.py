@@ -17,6 +17,45 @@ MAX_TAKEOVER_WAIT = 30 * 60
 _seen_handback = 0.0
 
 
+# Hermes supplies these IDs through lifecycle hooks, never tool arguments or page content.
+_session_owners = {}
+
+
+def session_owner(session_id=None):
+    return _session_owners.get(session_id, (session_id, None))
+
+
+def _on_subagent_start(parent_session_id=None, child_session_id=None, **_):
+    if not child_session_id or not parent_session_id:
+        return
+    cid, run_id = session_owner(parent_session_id)
+    if not run_id:
+        try:
+            from tools.approval import get_current_session_key
+            run_id = get_current_session_key(default="") or None
+        except ImportError:
+            pass
+    _session_owners[child_session_id] = (cid, run_id)
+
+
+def _on_subagent_stop(child_session_id=None, **_):
+    _session_owners.pop(child_session_id, None)
+
+
+def _cloud_request(request, base_url="", session_id=None, **_):
+    bridge = os.environ.get("CLARA_BRIDGE_URL", "http://127.0.0.1:8700").rstrip("/")
+    if base_url.rstrip("/") != bridge + "/cloud/v1":
+        return None
+    cid, run_id = session_owner(session_id)
+    if not cid:
+        return None
+    headers = dict(request.get("extra_headers") or {})
+    headers["x-clara-conversation-id"] = cid
+    if run_id:
+        headers["x-clara-run-id"] = run_id
+    return {"request": {**request, "extra_headers": headers}}
+
+
 def _mtime(path):
     try:
         return os.path.getmtime(path)
@@ -32,6 +71,8 @@ def _wait_for_handback():
     deadline = time.time() + MAX_TAKEOVER_WAIT
     while os.path.exists(TAKEOVER) and time.time() < deadline:
         time.sleep(0.5)
+    if os.path.exists(TAKEOVER):
+        raise TimeoutError("The user still controls the browser")
     return True
 
 
@@ -39,7 +80,10 @@ def _on_pre_tool_call(tool_name: str = "", args: Any = None, **_: Any) -> Option
     global _seen_handback
     if tool_name.startswith("browser"):
         _point_at_real_chrome()
-    _wait_for_handback()
+    try:
+        _wait_for_handback()
+    except TimeoutError:
+        return {"action": "block", "message": "The user still controls the browser. Stop until they hand it back."}
     # After the user hands the browser back, the page may have changed. A snapshot is allowed
     # through (it's how she looks); every other browser action waits until she has looked.
     if tool_name.startswith("browser"):
@@ -62,7 +106,7 @@ def _on_pre_tool_call(tool_name: str = "", args: Any = None, **_: Any) -> Option
     action, message = verdict
     logger.info("guardian %s %s: %s", action, tool_name, message)
     if action == "approve" and _is_helper_context():
-        return _ask_phone(tool_name, args if isinstance(args, dict) else {}, message)
+        return _ask_phone(tool_name, args if isinstance(args, dict) else {}, message, _.get("session_id"))
     return {"action": action, "message": message}
 
 
@@ -78,12 +122,15 @@ def _is_helper_context() -> bool:
         return False
 
 
-def _ask_phone(tool_name, args, message):
+def _ask_phone(tool_name, args, message, session_id=None):
     """Put the approval card on the user's phone via the Bridge and wait for their answer."""
     import json
     import urllib.request
-    cmd = str(args.get("command") or args.get("path") or args.get("code") or "")[:500]
-    body = json.dumps({"description": message, "command": cmd, "rule": f"{tool_name}:{message.split(':')[0]}"}).encode()
+    session_id, run_id = session_owner(session_id)
+    cmd = json.dumps(args, ensure_ascii=False)
+    if len(cmd) > 100000:
+        return {"action": "block", "message": "This operation is too large to preview for approval. Split it into smaller steps."}
+    body = json.dumps({"description": message, "command": cmd, "conversation_id": session_id, "run_id": run_id, "rule": f"{tool_name}:{message.split(':')[0]}"}).encode()
     req = urllib.request.Request(os.environ.get("CLARA_BRIDGE_URL", "http://127.0.0.1:8700") + "/internal/approvals/ask",
                                  data=body, method="POST", headers={"Content-Type": "application/json",
                                  "Authorization": "Bearer " + os.environ.get("CLARA_LINK_TOKEN", "")})
@@ -120,7 +167,7 @@ def handle_help(args, session_id=None, **_):
     import json
     import urllib.request
     reason = str((args or {}).get("reason", "")).strip()[:300] or "I'm stuck in the browser and need you for a moment."
-    body = json.dumps({"reason": reason, "conversation_id": session_id}).encode()
+    body = json.dumps({"reason": reason, "conversation_id": session_owner(session_id)[0]}).encode()
     req = urllib.request.Request(os.environ.get("CLARA_BRIDGE_URL", "http://127.0.0.1:8700") + "/internal/help",
                                  data=body, method="POST", headers={"Content-Type": "application/json",
                                  "Authorization": "Bearer " + os.environ.get("CLARA_LINK_TOKEN", "")})
@@ -184,6 +231,9 @@ def register(ctx) -> None:
     global _seen_handback
     _seen_handback = _mtime(HANDBACK)   # don't replay an old handback after a restart
     _pin_browser()
+    ctx.register_hook("subagent_start", _on_subagent_start)
+    ctx.register_hook("subagent_stop", _on_subagent_stop)
+    ctx.register_middleware("llm_request", _cloud_request)
     ctx.register_hook("pre_tool_call", _on_pre_tool_call)
     ctx.register_hook("transform_tool_result", _on_tool_result)
     ctx.register_tool(name="ask_user_for_browser_help", toolset="clara_guardian", schema=HELP_SCHEMA, handler=handle_help, emoji="🙋")

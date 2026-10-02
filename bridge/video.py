@@ -185,36 +185,39 @@ def duration(path: Path) -> float:
 
 def finish(clips: list[Path], out: Path, size: tuple[int, int], narration_wav: Path | None = None):
     """Normalize every clip (size, 30 fps, stereo AAC; silence where a clip has no sound), join them, and mix narration."""
-    w, h = size
-    parts = []
-    for i, c in enumerate(clips):
-        n = out.parent / f".part{i}.mp4"
-        d = dimensions(c)
-        close = d and abs((d[0] / d[1]) / (w / h) - 1) < 0.35
-        fit = (f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}" if close    # similar shape: fill the frame
-               else f"split[a][b];[a]scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},gblur=sigma=28,eq=brightness=-0.12[bg];"
-                    f"[b]scale={w}:{h}:force_original_aspect_ratio=decrease[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2")  # blurred fill, no black bars
-        vf = f"{fit},setsar=1,fps=30,format=yuv420p"
-        if has_audio(c):
-            _run(["-i", str(c), "-vf", vf, "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
-                  "-c:a", "aac", "-ar", "48000", "-ac", "2", "-shortest", str(n)])
+    import tempfile
+    with tempfile.TemporaryDirectory(prefix=".finish-", dir=out.parent) as temp:
+        scratch = Path(temp)
+        w, h = size
+        parts = []
+        for i, c in enumerate(clips):
+            n = scratch / f".part{i}.mp4"
+            d = dimensions(c)
+            close = d and abs((d[0] / d[1]) / (w / h) - 1) < 0.35
+            fit = (f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}" if close    # similar shape: fill the frame
+                   else f"split[a][b];[a]scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},gblur=sigma=28,eq=brightness=-0.12[bg];"
+                        f"[b]scale={w}:{h}:force_original_aspect_ratio=decrease[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2")  # blurred fill, no black bars
+            vf = f"{fit},setsar=1,fps=30,format=yuv420p"
+            if has_audio(c):
+                _run(["-i", str(c), "-vf", vf, "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
+                      "-c:a", "aac", "-ar", "48000", "-ac", "2", "-shortest", str(n)])
+            else:
+                _run(["-i", str(c), "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo", "-vf", vf, "-c:v", "libx264", "-preset", "veryfast",
+                      "-crf", "20", "-c:a", "aac", "-shortest", str(n)])
+            parts.append(n)
+        joined = scratch / ".joined.mp4"
+        listing = scratch / ".list.txt"
+        listing.write_text("".join(f"file '{p.name}'\n" for p in parts))
+        _run(["-f", "concat", "-safe", "0", "-i", str(listing), "-c", "copy", str(joined)])
+        if narration_wav:
+            # the clips' own sound drops to 25% under Clara's voice; video length stays the same
+            _run(["-i", str(joined), "-i", str(narration_wav), "-filter_complex",
+                  "[0:a]volume=0.25[bg];[1:a]aresample=48000,apad[vo];[bg][vo]amix=inputs=2:duration=first:dropout_transition=0,volume=2[a]",
+                  "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", str(out)])
         else:
-            _run(["-i", str(c), "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo", "-vf", vf, "-c:v", "libx264", "-preset", "veryfast",
-                  "-crf", "20", "-c:a", "aac", "-shortest", str(n)])
-        parts.append(n)
-    joined = out.parent / ".joined.mp4"
-    listing = out.parent / ".list.txt"
-    listing.write_text("".join(f"file '{p.name}'\n" for p in parts))
-    _run(["-f", "concat", "-safe", "0", "-i", str(listing), "-c", "copy", str(joined)])
-    if narration_wav:
-        # the clips' own sound drops to 25% under Clara's voice; video length stays the same
-        _run(["-i", str(joined), "-i", str(narration_wav), "-filter_complex",
-              "[0:a]volume=0.25[bg];[1:a]aresample=48000,apad[vo];[bg][vo]amix=inputs=2:duration=first:dropout_transition=0,volume=2[a]",
-              "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", str(out)])
-    else:
-        joined.replace(out)
-    for p in parts + [joined, listing]:
-        p.unlink(missing_ok=True)
+            joined.replace(out)
+        for p in parts + [joined, listing]:
+            p.unlink(missing_ok=True)
 
 
 def poster(video: Path, jpg: Path):

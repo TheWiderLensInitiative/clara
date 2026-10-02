@@ -183,7 +183,7 @@ private fun CheckinSheet(
                 entries == null -> Text("Loading…", style = MaterialTheme.typography.bodySmall, color = ClaraColors.Muted)
                 entries.isEmpty() -> Text("Nothing yet. Your check-ins and answers show up here.", style = MaterialTheme.typography.bodySmall, color = ClaraColors.Muted)
                 else -> entries.take(15).forEach { e ->
-                    val whenText = java.text.SimpleDateFormat("EEE MMM d", java.util.Locale.getDefault()).format(java.util.Date((e.created * 1000).toLong()))
+                    val whenText = java.text.SimpleDateFormat("EEE MMM d", androidx.compose.ui.platform.LocalConfiguration.current.locales[0]).format(java.util.Date((e.created * 1000).toLong()))
                     Row(Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
                         Text(if (e.kind == "checkin") "Clara" else "You", style = MaterialTheme.typography.labelMedium,
                             color = if (e.kind == "checkin") ClaraColors.Violet else ClaraColors.Cyan, modifier = Modifier.width(48.dp))

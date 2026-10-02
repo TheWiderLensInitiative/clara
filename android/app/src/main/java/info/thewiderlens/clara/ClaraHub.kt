@@ -81,7 +81,8 @@ object ClaraHub {
     /** The best address that answers right now: home Wi-Fi first, then Tailscale. All are tried at once. */
     private suspend fun pick(p: info.thewiderlens.clara.data.Pairing): String? = kotlinx.coroutines.coroutineScope {
         val checks = p.addresses.map { a -> a to async { BridgeApi(a, p.token).reachable() } }
-        checks.firstOrNull { (_, ok) -> ok.await() }?.first
+        try { checks.firstOrNull { (_, ok) -> ok.await() }?.first }
+        finally { checks.forEach { (_, check) -> check.cancel() } }
     }
 
     fun start() {

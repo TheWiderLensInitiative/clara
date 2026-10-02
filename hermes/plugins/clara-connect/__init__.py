@@ -38,6 +38,11 @@ CALL_SCHEMA = {
 }
 
 
+def _conversation(session_id):
+    from hermes_plugins.clara_guardian import session_owner
+    return session_owner(session_id)[0]
+
+
 def _link(path, body=None, timeout=20):
     req = urllib.request.Request(BRIDGE + path, data=json.dumps(body).encode() if body is not None else None,
                                  headers={"Authorization": "Bearer " + os.environ.get("CLARA_LINK_TOKEN", ""), "Content-Type": "application/json"},
@@ -58,7 +63,7 @@ def handle_call(args, session_id=None, **_):
     try:
         res = _link("/internal/apis/call", {"service": a.get("service", ""), "method": a.get("method", "GET"), "path": a.get("path", "/"),
                                             "query": a.get("query"), "body": a.get("body"), "headers": a.get("headers"),
-                                            "conversation_id": session_id}, timeout=330)
+                                            "conversation_id": _conversation(session_id)}, timeout=330)
     except Exception as e:
         return json.dumps({"error": f"Couldn't reach the Clara Bridge: {type(e).__name__}"})
     return json.dumps(res)[:60000]
@@ -125,9 +130,9 @@ GOOGLE_TOOLS = {
 
 
 def _google(action):
-    def handler(args, **_):
+    def handler(args, session_id=None, **_):
         try:
-            return json.dumps(_link("/internal/connectors/call", {"action": action, "args": args or {}}, timeout=1900))
+            return json.dumps(_link("/internal/connectors/call", {"action": action, "args": args or {}, "conversation_id": _conversation(session_id)}, timeout=1900))
         except Exception as e:
             return json.dumps({"error": f"Couldn't reach the Clara Bridge: {type(e).__name__}"})
     return handler

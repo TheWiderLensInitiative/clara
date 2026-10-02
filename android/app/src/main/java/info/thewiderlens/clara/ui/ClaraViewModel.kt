@@ -32,6 +32,7 @@ data class Draft(val id: Long, val name: String, val isImage: Boolean, val previ
 
 data class UiState(
     val drafts: List<Draft> = emptyList(),
+    val retryText: String = "",
     val voice: info.thewiderlens.clara.data.VoiceSettings = info.thewiderlens.clara.data.VoiceSettings(),
     val proactive: info.thewiderlens.clara.data.ProactiveSettings = info.thewiderlens.clara.data.ProactiveSettings(),
     val videoModels: List<info.thewiderlens.clara.data.VideoModel> = emptyList(),
@@ -82,6 +83,10 @@ class ClaraViewModel : ViewModel() {
     val ui: StateFlow<UiState> = _ui
 
     private var api: BridgeApi? = null
+    private var pendingConversation: String? = null
+    private var activityVersion = 0L
+    private var loadGeneration = 0L
+    private var refreshJob: kotlinx.coroutines.Job? = null
 
     init {
         viewModelScope.launch {
@@ -91,15 +96,20 @@ class ClaraViewModel : ViewModel() {
                 if (a != null) { refreshAll(); refreshLogins(); refreshApis(); refreshCloud() }
             }
         }
-        viewModelScope.launch { ClaraHub.link.collect { l -> _ui.update { it.copy(link = l) }; if (l == Link.Online) refreshAll() } }
+        viewModelScope.launch { ClaraHub.link.collect { l -> _ui.update { it.copy(link = l) }; if (l == Link.Online) refreshAllPending() } }
         viewModelScope.launch { ClaraHub.via.collect { v -> _ui.update { it.copy(via = v) } } }
         viewModelScope.launch { ClaraHub.currentPairing.collect { p -> _ui.update { it.copy(remoteUrl = p?.remoteUrl) } } }
         viewModelScope.launch { ClaraHub.api.collect { a -> if (a != null) _ui.update { it.copy(bridgeUrl = a.baseUrl) } } }
         viewModelScope.launch { ClaraHub.events.collect(::onEvent) }
     }
 
+    private fun refreshAllPending() {
+        refreshAll(); refreshApis(); refreshCloud()
+        launchSafe { val a = api ?: return@launchSafe; val requests = a.vaultRequests(); _ui.update { it.copy(vaultRequests = requests) } }
+    }
+
     private fun launchSafe(block: suspend () -> Unit) = viewModelScope.launch {
-        try { block() } catch (e: Exception) {
+        try { block() } catch (e: kotlinx.coroutines.CancellationException) { throw e } catch (e: Exception) {
             // this phone was unpaired on the PC: go back to the pairing screen instead of failing every call
             if (e is info.thewiderlens.clara.data.BridgeException && e.code == 401) { confirmUnpaired(); return@launch }
             _ui.update { it.copy(error = e.message ?: e.toString()) }
@@ -133,26 +143,40 @@ class ClaraViewModel : ViewModel() {
     fun unpair() = viewModelScope.launch { ClaraHub.unpair(); _ui.value = UiState(paired = false) }
 
     // --- loading -------------------------------------------------------------------
-    fun refreshAll() = launchSafe {
+    fun refreshAll() {
+        if (refreshJob?.isActive == true) return
+        refreshJob = launchSafe {
         val a = api ?: return@launchSafe
         val convs = a.conversations()
-        _ui.update { it.copy(conversations = convs, pending = a.approvals("pending")) }
+        run { val fetched0 = a.approvals("pending"); _ui.update { it.copy(conversations = convs, pending = fetched0) } }
         runCatching { a.character() }.getOrNull()?.let { c -> _ui.update { it.copy(character = c) } }
         runCatching { a.openHelp() }.onSuccess { h -> _ui.update { it.copy(help = h) } }
-        val cid = _ui.value.conversationId ?: convs.firstOrNull { it.id != NOTIFICATIONS_CONVERSATION }?.id
+        val cid = pendingConversation ?: _ui.value.conversationId ?: convs.firstOrNull { it.id != NOTIFICATIONS_CONVERSATION }?.id
         if (cid != null) openConversation(cid) else newChat()
+        }
     }
 
-    fun openConversation(cid: String) = launchSafe {
+    fun openConversation(cid: String): kotlinx.coroutines.Job {
+        pendingConversation = cid
+        val generation = ++loadGeneration
+        return launchSafe {
         val a = api ?: return@launchSafe
-        val conv = _ui.value.conversations.firstOrNull { it.id == cid }
+        if (_ui.value.conversationId != cid) _ui.update { it.copy(conversationId = cid, messages = emptyList(), streaming = "") }
+        val activityAtLoad = activityVersion
+        val initialIds = _ui.value.messages.map { it.id }.toSet()
         val msgs = a.messages(cid)
+        if (generation != loadGeneration || api !== a) return@launchSafe
+        pendingConversation = null
+        val conv = _ui.value.conversations.firstOrNull { it.id == cid }
         _ui.update {
+            val arrived = it.messages.filter { m -> m.id !in initialIds }
+            val working = if (activityVersion != activityAtLoad) it.working else conv?.activeRun != null
             it.copy(
-                conversationId = cid, messages = msgs, streaming = "", working = conv?.activeRun != null,
-                status = if (conv?.activeRun != null) "Working on it…" else "", showLive = false,
+                conversationId = cid, messages = (msgs + arrived).distinctBy { m -> m.id }, working = working,
+                status = if (activityVersion != activityAtLoad) it.status else if (working) "Working on it…" else "", showLive = false,
                 unreadNotifications = if (cid == NOTIFICATIONS_CONVERSATION) 0 else it.unreadNotifications,
             )
+        }
         }
     }
 
@@ -168,14 +192,17 @@ class ClaraViewModel : ViewModel() {
     }
 
     fun newChat() = launchSafe {
+        val generation = ++loadGeneration
+        pendingConversation = null
         val a = api ?: return@launchSafe
         val c = a.newConversation()
+        if (generation != loadGeneration) return@launchSafe
         _ui.update { it.copy(conversations = listOf(c) + it.conversations, conversationId = c.id, messages = emptyList(), streaming = "", working = false, status = "", showLive = false) }
     }
 
-    fun refreshActivity() = launchSafe { api?.let { a -> _ui.update { it.copy(activity = a.activity(), pending = a.approvals("pending")) } } }
-    fun refreshUpcoming() = launchSafe { api?.let { a -> _ui.update { it.copy(upcoming = a.upcoming()) } } }
-    fun refreshMemory() = launchSafe { api?.let { a -> _ui.update { it.copy(memory = a.memory()) } } }
+    fun refreshActivity() = launchSafe { api?.let { a -> run { val fetched0 = a.activity(); val fetched1 = a.approvals("pending"); _ui.update { it.copy(activity = fetched0, pending = fetched1) } } } }
+    fun refreshUpcoming() = launchSafe { api?.let { a -> run { val fetched0 = a.upcoming(); _ui.update { it.copy(upcoming = fetched0) } } } }
+    fun refreshMemory() = launchSafe { api?.let { a -> run { val fetched0 = a.memory(); _ui.update { it.copy(memory = fetched0) } } } }
 
     // --- actions -------------------------------------------------------------------
     /** Upload a picked photo/file right away so sending is instant. Photos are shrunk to phone-friendly JPEGs first. */
@@ -191,8 +218,8 @@ class ClaraViewModel : ViewModel() {
     }
 
     suspend fun speech(text: String): ByteArray? = api?.let { runCatching { it.tts(text) }.getOrNull() }
-    fun refreshVoice() = launchSafe { api?.let { a -> _ui.update { it.copy(voice = a.voiceSettings()) } } }
-    fun setVoice(id: String) = launchSafe { api?.let { a -> _ui.update { it.copy(voice = a.setVoice(id)) } } }
+    fun refreshVoice() = launchSafe { api?.let { a -> run { val fetched0 = a.voiceSettings(); _ui.update { it.copy(voice = fetched0) } } } }
+    fun setVoice(id: String) = launchSafe { api?.let { a -> run { val fetched0 = a.setVoice(id); _ui.update { it.copy(voice = fetched0) } } } }
 
     fun removeDraft(id: Long) = _ui.update { s -> s.copy(drafts = s.drafts.filterNot { it.id == id }) }
 
@@ -200,40 +227,61 @@ class ClaraViewModel : ViewModel() {
 
     /** voice = sent from voice mode, so Clara answers in short spoken sentences. */
     fun send(text: String, voice: Boolean) = launchSafe {
-        val a = api ?: return@launchSafe
+        val initialConversation = _ui.value.conversationId
+        try {
+        val a = api ?: throw IllegalStateException("Clara is not connected yet. Your message is saved below.")
         val cid = _ui.value.conversationId ?: a.newConversation().id.also { id -> _ui.update { it.copy(conversationId = id) } }
-        val files = _ui.value.drafts.mapNotNull { it.path }
+        if (_ui.value.working) return@launchSafe
+        val savedDrafts = _ui.value.drafts
+        if (savedDrafts.any { it.path == null || it.failed }) throw IllegalStateException("Wait for attachments to finish uploading or remove failed attachments.")
+        val files = savedDrafts.mapNotNull { it.path }
+        activityVersion++
         val optimistic = Message("local-${System.nanoTime()}", cid, "user", text, attachments = files)
-        _ui.update { it.copy(messages = it.messages + optimistic, working = true, status = if (files.isNotEmpty()) "Looking…" else "Thinking…", streaming = "", drafts = emptyList()) }
-        val res = a.send(cid, text, files, voice)
-        _ui.update { s -> s.copy(messages = s.messages.map { if (it.id == optimistic.id) res.message else it }) }
-        if (_ui.value.messages.size <= 1) _ui.update { it.copy(conversations = a.conversations()) }
+        _ui.update { it.copy(messages = it.messages + optimistic, working = true, status = if (files.isNotEmpty()) "Looking…" else "Thinking…", streaming = "", drafts = emptyList(), retryText = "") }
+        try {
+            val res = a.send(cid, text, files, voice)
+            _ui.update { s -> if (s.conversationId != cid) s else s.copy(messages = s.messages.map { if (it.id == optimistic.id) res.message else it }) }
+        } catch (e: Exception) {
+            _ui.update { s -> if (s.conversationId != cid) s else s.copy(
+                messages = s.messages.filterNot { it.id == optimistic.id }, working = false, status = "", retryText = text,
+                drafts = (savedDrafts + s.drafts).distinctBy { it.id }) }
+            throw e
+        }
+        if (_ui.value.messages.size <= 1) run { val fetched0 = a.conversations(); _ui.update { it.copy(conversations = fetched0) } }
+        } catch (error: Exception) {
+            if (error !is kotlinx.coroutines.CancellationException) _ui.update { state ->
+                if (state.conversationId == initialConversation || initialConversation == null)
+                    state.copy(retryText = text) else state
+            }
+            throw error
+        }
     }
 
     fun stop() = launchSafe { _ui.value.conversationId?.let { api?.stop(it) } }
 
     fun answer(approval: Approval, choice: String) = launchSafe {
+        val a = api ?: return@launchSafe
+        a.answer(approval.id, choice)
         _ui.update { s -> s.copy(pending = s.pending.filterNot { it.id == approval.id }) }
-        api?.answer(approval.id, choice)
     }
 
     fun jobAction(job: Job, action: String) = launchSafe {
         val a = api ?: return@launchSafe
         if (action == "delete") a.deleteJob(job.id) else a.jobAction(job.id, action)
-        _ui.update { it.copy(upcoming = a.upcoming()) }
+        run { val fetched0 = a.upcoming(); _ui.update { it.copy(upcoming = fetched0) } }
     }
 
     fun hideLive() = _ui.update { it.copy(showLive = false) }
 
     // --- goals, library, identity, screen (assistant sections) ------------------
-    fun refreshGoals() = launchSafe { api?.let { a -> _ui.update { it.copy(goals = a.goals()) } } }
-    fun addGoal(title: String, area: String) = launchSafe { api?.let { a -> a.addGoal(title, area); _ui.update { it.copy(goals = a.goals()) } } }
+    fun refreshGoals() = launchSafe { api?.let { a -> run { val fetched0 = a.goals(); _ui.update { it.copy(goals = fetched0) } } } }
+    fun addGoal(title: String, area: String) = launchSafe { api?.let { a -> a.addGoal(title, area); run { val fetched0 = a.goals(); _ui.update { it.copy(goals = fetched0) } } } }
     fun toggleGoal(g: info.thewiderlens.clara.data.Goal) = launchSafe {
         _ui.update { s -> s.copy(goals = s.goals.map { if (it.id == g.id) it.copy(done = !g.done) else it }) }
         api?.setGoalDone(g.id, !g.done)
     }
     fun setCheckin(g: info.thewiderlens.clara.data.Goal, checkin: String, time: String, day: Int) = launchSafe {
-        api?.let { a -> a.setCheckin(g.id, checkin, time, day); _ui.update { it.copy(goals = a.goals()) } }
+        api?.let { a -> a.setCheckin(g.id, checkin, time, day); run { val fetched0 = a.goals(); _ui.update { it.copy(goals = fetched0) } } }
     }
     suspend fun goalLog(g: info.thewiderlens.clara.data.Goal): List<info.thewiderlens.clara.data.GoalLogEntry> = api?.let { runCatching { it.goalLog(g.id) }.getOrNull() }.orEmpty()
     /** Ask Clara to check in on a goal (or send her daily note) right now; it arrives in the chat. */
@@ -242,12 +290,12 @@ class ClaraViewModel : ViewModel() {
         api?.proactiveNow(kind, goalId)
         _ui.update { it.copy(status = "") }
     }
-    fun refreshProactive() = launchSafe { api?.let { a -> _ui.update { it.copy(proactive = a.proactive()) } } }
-    fun setProactive(p: info.thewiderlens.clara.data.ProactiveSettings) = launchSafe { api?.let { a -> _ui.update { it.copy(proactive = a.setProactive(p)) } } }
+    fun refreshProactive() = launchSafe { api?.let { a -> run { val fetched0 = a.proactive(); _ui.update { it.copy(proactive = fetched0) } } } }
+    fun setProactive(p: info.thewiderlens.clara.data.ProactiveSettings) = launchSafe { api?.let { a -> run { val fetched0 = a.setProactive(p); _ui.update { it.copy(proactive = fetched0) } } } }
 
-    fun deleteGoal(g: info.thewiderlens.clara.data.Goal) = launchSafe { api?.let { a -> a.deleteGoal(g.id); _ui.update { it.copy(goals = a.goals()) } } }
+    fun deleteGoal(g: info.thewiderlens.clara.data.Goal) = launchSafe { api?.let { a -> a.deleteGoal(g.id); run { val fetched0 = a.goals(); _ui.update { it.copy(goals = fetched0) } } } }
 
-    fun refreshLibrary() = launchSafe { api?.let { a -> _ui.update { it.copy(library = a.library()) } } }
+    fun refreshLibrary() = launchSafe { api?.let { a -> run { val fetched0 = a.library(); _ui.update { it.copy(library = fetched0) } } } }
     suspend fun libraryBytes(path: String): ByteArray? = api?.let { it.bytes(it.libraryUrl(path)) }
 
     // --- passwords: stored only on this phone; the PC gets names/sites/usernames ---------
@@ -256,7 +304,7 @@ class ClaraViewModel : ViewModel() {
         val idx = withContext(Dispatchers.Default) { localIndex() }
         _ui.update { it.copy(logins = idx) }
         api?.setVaultIndex(idx)
-        api?.let { a -> _ui.update { it.copy(vaultRequests = a.vaultRequests()) } }
+        api?.let { a -> run { val fetched0 = a.vaultRequests(); _ui.update { it.copy(vaultRequests = fetched0) } } }
     }
     fun saveLogin(name: String, url: String, username: String, password: String) = launchSafe {
         withContext(Dispatchers.Default) { ClaraHub.vault.save(info.thewiderlens.clara.vault.PhoneLogin(name, url, username, password)) }
@@ -268,43 +316,45 @@ class ClaraViewModel : ViewModel() {
     }
     /** Called only after the fingerprint/PIN check succeeded (or with approve=false to deny). */
     fun answerVault(r: info.thewiderlens.clara.data.VaultRequest, approve: Boolean) = launchSafe {
-        _ui.update { s -> s.copy(vaultRequests = s.vaultRequests.filterNot { it.id == r.id }) }
+        val a = api ?: return@launchSafe
         val sealed = if (approve) withContext(Dispatchers.Default) { ClaraHub.vault.seal(r.id, r.name, r.pubkey) } else null
-        api?.answerVault(r.id, sealed)
+        a.answerVault(r.id, sealed)
+        _ui.update { s -> s.copy(vaultRequests = s.vaultRequests.filterNot { it.id == r.id }) }
     }
 
     // --- API keys: stored encrypted on the PC in your account; never sent back to any phone -----
-    fun refreshApis() = launchSafe { api?.let { a -> _ui.update { it.copy(apis = a.apis(), apiRequests = a.apiRequests()) } } }
+    fun refreshApis() = launchSafe { api?.let { a -> run { val fetched0 = a.apis(); val fetched1 = a.apiRequests(); _ui.update { it.copy(apis = fetched0, apiRequests = fetched1) } } } }
     fun saveApi(name: String, baseUrl: String, authType: String, authName: String, key: String, notes: String, writePolicy: String) = launchSafe {
-        api?.let { a -> a.saveApi(name, baseUrl, authType, authName, key, notes, writePolicy); _ui.update { it.copy(apis = a.apis()) } }
+        api?.let { a -> a.saveApi(name, baseUrl, authType, authName, key, notes, writePolicy); run { val fetched0 = a.apis(); _ui.update { it.copy(apis = fetched0) } } }
     }
-    fun deleteApi(name: String) = launchSafe { api?.let { a -> a.deleteApi(name); _ui.update { it.copy(apis = a.apis()) } } }
+    fun deleteApi(name: String) = launchSafe { api?.let { a -> a.deleteApi(name); run { val fetched0 = a.apis(); _ui.update { it.copy(apis = fetched0) } } } }
     fun answerApi(r: info.thewiderlens.clara.data.ApiRequest, choice: String) = launchSafe {
+        val a = api ?: return@launchSafe
+        a.answerApi(r.id, choice)
         _ui.update { s -> s.copy(apiRequests = s.apiRequests.filterNot { it.id == r.id }) }
-        api?.answerApi(r.id, choice)
     }
 
     // --- cloud boost ------------------------------------------------------------------
     fun refreshCloud() = launchSafe {
         api?.let { a -> val c = a.cloud(); _ui.update { it.copy(cloud = c, cloudRequests = c.requests, budgetSuggestions = c.suggestions) } }
     }
-    fun refreshCharacter() = launchSafe { api?.let { a -> _ui.update { it.copy(character = a.character()) } } }
-    fun setCharacterPreset(name: String) = launchSafe { api?.let { a -> _ui.update { it.copy(character = a.setCharacterPreset(name)) } } }
+    fun refreshCharacter() = launchSafe { api?.let { a -> run { val fetched0 = a.character(); _ui.update { it.copy(character = fetched0) } } } }
+    fun setCharacterPreset(name: String) = launchSafe { api?.let { a -> run { val fetched0 = a.setCharacterPreset(name); _ui.update { it.copy(character = fetched0) } } } }
     fun setCharacterStyle(style: info.thewiderlens.clara.ui.components.CharacterStyle) = launchSafe {
-        api?.let { a -> _ui.update { it.copy(character = a.setCharacterStyle(style)) } }
+        api?.let { a -> run { val fetched0 = a.setCharacterStyle(style); _ui.update { it.copy(character = fetched0) } } }
     }
-    fun undoCharacter() = launchSafe { api?.let { a -> _ui.update { it.copy(character = a.undoCharacter()) } } }
+    fun undoCharacter() = launchSafe { api?.let { a -> run { val fetched0 = a.undoCharacter(); _ui.update { it.copy(character = fetched0) } } } }
 
-    fun refreshConnectors() = launchSafe { api?.let { a -> _ui.update { it.copy(connectors = a.connectors()) } } }
+    fun refreshConnectors() = launchSafe { api?.let { a -> run { val fetched0 = a.connectors(); _ui.update { it.copy(connectors = fetched0) } } } }
     fun setConnectorClient(p: String, id: String, secret: String) = launchSafe {
-        api?.let { a -> a.setConnectorClient(p, id.trim(), secret.trim()); _ui.update { it.copy(connectors = a.connectors()) } }
+        api?.let { a -> a.setConnectorClient(p, id.trim(), secret.trim()); run { val fetched0 = a.connectors(); _ui.update { it.copy(connectors = fetched0) } } }
     }
     fun setConnectorToken(p: String, fields: Map<String, String>) = launchSafe {
-        api?.let { a -> a.setConnectorToken(p, fields); _ui.update { it.copy(connectors = a.connectors()) } }
+        api?.let { a -> a.setConnectorToken(p, fields); run { val fetched0 = a.connectors(); _ui.update { it.copy(connectors = fetched0) } } }
     }
-    fun disconnect(p: String, forgetClient: Boolean) = launchSafe { api?.let { a -> a.disconnect(p, forgetClient); _ui.update { it.copy(connectors = a.connectors()) } } }
+    fun disconnect(p: String, forgetClient: Boolean) = launchSafe { api?.let { a -> a.disconnect(p, forgetClient); run { val fetched0 = a.connectors(); _ui.update { it.copy(connectors = fetched0) } } } }
     fun setConnectorPolicy(p: String, key: String, value: String) = launchSafe {
-        api?.let { a -> a.setConnectorPolicy(p, key, value); _ui.update { it.copy(connectors = a.connectors()) } }
+        api?.let { a -> a.setConnectorPolicy(p, key, value); run { val fetched0 = a.connectors(); _ui.update { it.copy(connectors = fetched0) } } }
     }
 
     /** Sign in with Google in the phone's browser; the redirect comes back to 127.0.0.1 on this phone (see LoopbackReceiver). */
@@ -319,9 +369,9 @@ class ClaraViewModel : ViewModel() {
             val url = a.startConnect(p, receiver.redirectUri)
             _ui.update { it.copy(connectLink = url) }
             if (!openBrowser(url)) _ui.update { it.copy(error = "No browser found. Copy the link below into a browser on this phone.") }
-            val result = receiver.await()   // up to 10 minutes
+            val result = receiver.await(android.net.Uri.parse(url).getQueryParameter("state"))   // up to 10 minutes
             if (result.error != null) _ui.update { it.copy(error = "Google sign-in: ${result.error}") }
-            else { a.finishConnect(p, result.state!!, result.code!!); _ui.update { it.copy(connectors = a.connectors()) } }
+            else { a.finishConnect(p, result.state!!, result.code!!); run { val fetched0 = a.connectors(); _ui.update { it.copy(connectors = fetched0) } } }
         } catch (e: Exception) {
             _ui.update { it.copy(error = e.message ?: e.toString()) }
         } finally {
@@ -330,7 +380,7 @@ class ClaraViewModel : ViewModel() {
         }
     }
 
-    fun refreshSpend() = launchSafe { api?.let { a -> _ui.update { it.copy(spend = a.spend()) } } }
+    fun refreshSpend() = launchSafe { api?.let { a -> run { val fetched0 = a.spend(); _ui.update { it.copy(spend = fetched0) } } } }
     /** Caps only the user can set. null = leave as is; clear = remove the cap. */
     fun setCaps(daily: Double?, clearDaily: Boolean, monthly: Double?, clearMonthly: Boolean) = launchSafe {
         val o = kotlinx.serialization.json.buildJsonObject {
@@ -339,17 +389,17 @@ class ClaraViewModel : ViewModel() {
             monthly?.let { put("cloud_monthly_cap", kotlinx.serialization.json.JsonPrimitive(it)) }
             if (clearMonthly) put("clear_monthly_cap", kotlinx.serialization.json.JsonPrimitive(true))
         }
-        api?.let { a -> a.updateCloud(o.toString()); refreshCloud(); _ui.update { it.copy(spend = a.spend()) } }
+        api?.let { a -> a.updateCloud(o.toString()); refreshCloud(); run { val fetched0 = a.spend(); _ui.update { it.copy(spend = fetched0) } } }
     }
 
-    fun refreshBrand() = launchSafe { api?.let { a -> _ui.update { it.copy(brand = a.brand()) } } }
-    fun saveBrand(b: info.thewiderlens.clara.data.BrandKit) = launchSafe { api?.let { a -> _ui.update { it.copy(brand = a.setBrand(b)) } } }
+    fun refreshBrand() = launchSafe { api?.let { a -> run { val fetched0 = a.brand(); _ui.update { it.copy(brand = fetched0) } } } }
+    fun saveBrand(b: info.thewiderlens.clara.data.BrandKit) = launchSafe { api?.let { a -> run { val fetched0 = a.setBrand(b); _ui.update { it.copy(brand = fetched0) } } } }
     fun setBrandLogo(bytes: ByteArray) = launchSafe {
         api?.let { a -> val b = a.setBrandLogo(bytes); _ui.update { it.copy(brand = b, brandLogoVersion = it.brandLogoVersion + 1) } }
     }
     fun removeBrandLogo() = launchSafe { api?.let { a -> val b = a.removeBrandLogo(); _ui.update { it.copy(brand = b, brandLogoVersion = it.brandLogoVersion + 1) } } }
 
-    fun refreshVideoModels() = launchSafe { api?.let { a -> _ui.update { it.copy(videoModels = a.videoModels()) } } }
+    fun refreshVideoModels() = launchSafe { api?.let { a -> run { val fetched0 = a.videoModels(); _ui.update { it.copy(videoModels = fetched0) } } } }
     fun setVideoModel(id: String) = launchSafe {
         api?.let { a -> a.updateCloud(kotlinx.serialization.json.buildJsonObject { put("cloud_video_model", kotlinx.serialization.json.JsonPrimitive(id)) }.toString()); refreshCloud() }
     }
@@ -368,16 +418,19 @@ class ClaraViewModel : ViewModel() {
         api?.let { a -> a.saveApi("openrouter", "https://openrouter.ai/api/v1", "bearer", "", key.trim(), "OpenRouter: cloud models and images for Clara", "trust"); refreshCloud() }
     }
     fun answerCloud(r: info.thewiderlens.clara.data.CloudRequest, choice: String) = launchSafe {
+        val a = api ?: return@launchSafe
+        a.answerCloud(r.id, choice)
         _ui.update { s -> s.copy(cloudRequests = s.cloudRequests.filterNot { it.id == r.id }) }
-        api?.answerCloud(r.id, choice)
     }
     fun answerBudget(b: info.thewiderlens.clara.data.BudgetSuggestion, accept: Boolean) = launchSafe {
+        val a = api ?: return@launchSafe
+        a.answerBudget(b.id, accept)
         _ui.update { s -> s.copy(budgetSuggestions = s.budgetSuggestions.filterNot { it.id == b.id }) }
-        api?.answerBudget(b.id, accept); refreshCloud()
+        refreshCloud()
     }
 
-    fun refreshIdentity() = launchSafe { api?.let { a -> _ui.update { it.copy(identity = a.identity()) } } }
-    fun saveIdentity(name: String, text: String) = launchSafe { api?.let { a -> a.setIdentity(name, text); _ui.update { it.copy(identity = a.identity()) } } }
+    fun refreshIdentity() = launchSafe { api?.let { a -> run { val fetched0 = a.identity(); _ui.update { it.copy(identity = fetched0) } } } }
+    fun saveIdentity(name: String, text: String) = launchSafe { api?.let { a -> a.setIdentity(name, text); run { val fetched0 = a.identity(); _ui.update { it.copy(identity = fetched0) } } } }
 
     /** Screen tab: fetch the latest view of Clara's browser without touching the chat. */
     fun refreshScreen() = viewModelScope.launch {
@@ -402,7 +455,15 @@ class ClaraViewModel : ViewModel() {
     // --- live events -----------------------------------------------------------------
     private fun onEvent(ev: ClaraEvent) {
         val cur = _ui.value.conversationId
+        val affectsCurrent = when (ev) {
+            is ClaraEvent.Routed -> ev.conversationId == cur
+            is ClaraEvent.RunStarted -> ev.conversationId == cur
+            is ClaraEvent.Completed -> ev.message.conversationId == cur
+            else -> false
+        }
+        if (affectsCurrent) activityVersion++
         when (ev) {
+            ClaraEvent.Resync -> refreshAllPending()
             is ClaraEvent.Routed -> if (ev.conversationId == cur) _ui.update {
                 it.copy(working = true, status = when (ev.route) { "chat" -> "Typing…"; "schedule" -> "Scheduling…"; else -> "Working on it…" })
             }
@@ -434,7 +495,7 @@ class ClaraViewModel : ViewModel() {
             is ClaraEvent.Completed -> _ui.update { s ->
                 val convs = s.conversations.map { if (it.id == ev.message.conversationId) it.copy(activeRun = null) else it }
                 if (ev.message.conversationId != cur) s.copy(conversations = convs, unreadNotifications = s.unreadNotifications + 1)
-                else s.copy(conversations = convs, messages = s.messages + ev.message, streaming = "", working = false, status = "", showLive = false,
+                else s.copy(conversations = convs, messages = (s.messages + ev.message).distinctBy { it.id }, streaming = "", working = false, status = "", showLive = false,
                     doneAt = System.currentTimeMillis(), pending = s.pending.filterNot { it.runId != null && it.runId == ev.message.runId })
             }
             is ClaraEvent.CharacterChanged -> {
@@ -442,7 +503,7 @@ class ClaraViewModel : ViewModel() {
                 refreshCharacter()
             }
             is ClaraEvent.Notification -> _ui.update { s ->
-                if (ev.message.conversationId == cur) s.copy(messages = s.messages + ev.message, doneAt = System.currentTimeMillis())
+                if (ev.message.conversationId == cur) s.copy(messages = (s.messages + ev.message).distinctBy { it.id }, doneAt = System.currentTimeMillis())
                 else s.copy(unreadNotifications = s.unreadNotifications + 1)
             }
             else -> {}

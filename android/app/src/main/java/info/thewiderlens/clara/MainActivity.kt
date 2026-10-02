@@ -116,9 +116,28 @@ class MainActivity : FragmentActivity() {
     override fun onStart() { super.onStart(); ClaraHub.appVisible = true }
     override fun onStop() { ClaraHub.appVisible = false; super.onStop() }
 
+    private var credentialSuccess: (() -> Unit)? = null
+    private val credentialResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val callback = credentialSuccess
+        credentialSuccess = null
+        if (result.resultCode == android.app.Activity.RESULT_OK) callback?.invoke()
+    }
+
     /** Fingerprint / face / device PIN before a saved login may leave the phone. */
     fun confirmIdentity(title: String, subtitle: String, onOk: () -> Unit) {
+        if (Build.VERSION.SDK_INT < 30) {
+            val keyguard = getSystemService(android.app.KeyguardManager::class.java)
+            @Suppress("DEPRECATION")
+            val intent = keyguard.createConfirmDeviceCredentialIntent(title, subtitle)
+            if (intent != null) { credentialSuccess = onOk; credentialResult.launch(intent) }
+            else android.widget.Toast.makeText(this, "Set a device PIN or screen lock first.", android.widget.Toast.LENGTH_LONG).show()
+            return
+        }
         val auth = BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        if (BiometricManager.from(this).canAuthenticate(auth) != BiometricManager.BIOMETRIC_SUCCESS) {
+            android.widget.Toast.makeText(this, "Set up a screen lock or supported biometric first.", android.widget.Toast.LENGTH_LONG).show()
+            return
+        }
         val prompt = BiometricPrompt(this, ContextCompat.getMainExecutor(this), object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) = onOk()
         })

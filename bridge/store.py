@@ -83,8 +83,7 @@ class Store:
         return code
 
     def redeem_pairing_code(self, code: str, device_name: str):
-        row = self._one("SELECT * FROM pairing_codes WHERE code = ?", (code,))
-        self._x("DELETE FROM pairing_codes WHERE code = ?", (code,))  # single use, even on failure
+        row = self._one("DELETE FROM pairing_codes WHERE code = ? RETURNING *", (code,))
         if not row or row["expires"] < time.time():
             return None
         token = secrets.token_urlsafe(32)
@@ -119,6 +118,9 @@ class Store:
 
     def set_active_run(self, cid, run_id):
         self._x("UPDATE conversations SET active_run = ?, updated = ? WHERE id = ?", (run_id, time.time(), cid))
+
+    def clear_active_run(self, cid, run_id):
+        self._x("UPDATE conversations SET active_run = NULL WHERE id = ? AND active_run = ?", (cid, run_id))
 
     def set_title(self, cid, title):
         self._x("UPDATE conversations SET title = ? WHERE id = ?", (title[:80], cid))

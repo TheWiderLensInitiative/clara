@@ -124,7 +124,8 @@ class ClaraService : LifecycleService() {
         ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
     private fun post(id: Int, n: Notification) {
-        if (canNotify()) NotificationManagerCompat.from(this).notify(id, n)
+        @Suppress("MissingPermission") // canNotify checks the permission; it may still be revoked between calls.
+        if (canNotify()) try { NotificationManagerCompat.from(this).notify(id, n) } catch (_: SecurityException) {}
     }
 
     private fun notifyApproval(a: Approval) {
@@ -204,8 +205,9 @@ class ApprovalReceiver : BroadcastReceiver() {
             try {
                 ClaraHub.init(context)
                 val api = ClaraHub.api.first { it != null }!!
-                runCatching { api.answer(id, choice) }
-                NotificationManagerCompat.from(context).cancel(ClaraService.ID_APPROVAL_BASE + (id.hashCode() and 0xffff))
+                runCatching { api.answer(id, choice) }.onSuccess {
+                    NotificationManagerCompat.from(context).cancel(ClaraService.ID_APPROVAL_BASE + (id.hashCode() and 0xffff))
+                }
             } finally {
                 pending.finish()
             }

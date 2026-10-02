@@ -105,6 +105,13 @@ def decide(tool_name, args):
                 if what in ("delete files", "move or rename files") and _only_workspace_paths(cmd):
                     continue
                 return ("approve", f"Clara wants to {what}: {cmd[:300]}")
+        try:
+            tokens = shlex.split(cmd)
+        except ValueError:
+            tokens = []
+        read_only = {"pwd", "ls", "cat", "head", "tail", "wc", "stat", "file", "du", "df", "whoami", "date"}
+        if not tokens or tokens[0] not in read_only or any(c in cmd for c in (";", "|", "&", ">", "<", "$", "`", "\n")):
+            return ("approve", "Clara wants to execute a command that can run code or change external state: " + cmd[:300])
         return None
     if tool_name in ("write_file", "patch"):
         path = args.get("path") or args.get("file_path") or ""
@@ -122,16 +129,18 @@ def decide(tool_name, args):
         for rx, what in PY_RULES:
             if rx.search(code):
                 return ("approve", f"Clara wants to {what}.")
-        return None
+        return ("approve", "Clara wants to execute code; its external effects require approval.")
     # Page JavaScript can read what's typed into fields, including passwords the vault filled in.
     if tool_name in ("browser_console", "browser_cdp", "execute_code", "terminal") and CAPTCHA.search(
             str(args.get("expression") or args.get("code") or args.get("command") or args.get("params") or "")):
         return ("block", CAPTCHA_BLOCK)
     if tool_name == "browser_console" and str(args.get("expression") or "").strip():
-        return ("approve", f"Clara wants to run JavaScript in the web page: {str(args.get('expression'))[:200]}")
+        return ("block", "Use browser_use; arbitrary page scripts bypass browser control and field protections.")
     if tool_name == "browser_cdp":
-        return ("approve", "Clara wants raw low-level control of her browser (Chrome DevTools).")
+        return ("block", "Use browser_use; direct DevTools access bypasses browser control and field protections.")
     # sign_in needs no Guardian prompt: the phone itself asks (fingerprint/PIN) before releasing a login.
+    if tool_name.startswith("browser") and tool_name not in ("browser_use", "browser_snapshot", "browser_vision", "browser_console", "browser_cdp"):
+        return ("block", "Use browser_use so target, approval and takeover checks cover every browser action.")
     if tool_name == "browser_type":
         text = str(args.get("text", ""))
         if re.search(r"\b(?:\d[ -]?){13,19}\b", text):

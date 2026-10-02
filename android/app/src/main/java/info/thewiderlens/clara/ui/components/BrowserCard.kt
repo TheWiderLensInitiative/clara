@@ -59,18 +59,21 @@ fun LiveBrowserCard(api: BridgeApi?, onOpen: () -> Unit) {
     var url by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     DisposableEffect(api) {
+        val streamJob = kotlinx.coroutines.Job(scope.coroutineContext[kotlinx.coroutines.Job])
+        val streamScope = kotlinx.coroutines.CoroutineScope(scope.coroutineContext + streamJob)
         val ws = api?.let { a ->
-            a.http.newWebSocket(
-                Request.Builder().url(a.baseUrl.replaceFirst("http", "ws") + "/v1/screen/stream").build(),
+            info.thewiderlens.clara.data.BrowserConnection(a, streamScope,
                 object : WebSocketListener() {
                     override fun onMessage(webSocket: WebSocket, text: String) {
                         val m = runCatching { JSONObject(text) }.getOrNull() ?: return
                         when (m.optString("type")) {
-                            "frame" -> scope.launch {
+                            "frame" -> streamScope.launch {
                                 val seq = m.optLong("seq")
                                 val bmp = withContext(Dispatchers.Default) {
-                                    val bytes = Base64.decode(m.optString("data"), Base64.DEFAULT)
-                                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
+                                    runCatching {
+                                        val bytes = Base64.decode(m.optString("data"), Base64.DEFAULT)
+                                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
+                                    }.getOrNull()
                                 }
                                 if (bmp != null) frame = bmp
                                 webSocket.send("""{"type":"ack","seq":$seq}""")
@@ -83,7 +86,8 @@ fun LiveBrowserCard(api: BridgeApi?, onOpen: () -> Unit) {
                 },
             )
         }
-        onDispose { ws?.close(1000, "closed") }
+        onDispose {
+            streamJob.cancel(); ws?.close() }
     }
     BrowserFrame(frame, url, live = true, onOpen = onOpen)
 }

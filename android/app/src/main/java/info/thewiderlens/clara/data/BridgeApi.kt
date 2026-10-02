@@ -63,12 +63,20 @@ class BridgeApi(val baseUrl: String, private val token: String?) {
     suspend fun addresses(): Addresses = json.decodeFromString(call("GET", "/v1/addresses"))
 
     /** Quick reachability check (short timeouts) used to pick between home Wi-Fi and Tailscale. */
-    suspend fun reachable(timeoutMs: Long = 2500): Boolean = withContext(Dispatchers.IO) {
-        runCatching {
-            val quick = http.newBuilder().connectTimeout(timeoutMs, TimeUnit.MILLISECONDS).readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                .callTimeout(timeoutMs + 500, TimeUnit.MILLISECONDS).build()
-            quick.newCall(Request.Builder().url(url("/v1/addresses")).build()).execute().use { it.isSuccessful }
-        }.getOrDefault(false)
+    suspend fun reachable(timeoutMs: Long = 2500): Boolean = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+        val quick = http.newBuilder().connectTimeout(timeoutMs, TimeUnit.MILLISECONDS).readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+            .callTimeout(timeoutMs + 500, TimeUnit.MILLISECONDS).build()
+        val call = quick.newCall(Request.Builder().url(url("/v1/addresses")).build())
+        continuation.invokeOnCancellation { call.cancel() }
+        call.enqueue(object : okhttp3.Callback {
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
+                if (continuation.isActive) continuation.resumeWith(Result.success(false))
+            }
+            override fun onResponse(call: okhttp3.Call, response: Response) {
+                val success = response.use { it.isSuccessful }
+                if (continuation.isActive) continuation.resumeWith(Result.success(success))
+            }
+        })
     }
     suspend fun pair(code: String, deviceName: String): PairResponse =
         json.decodeFromString(call("POST", "/v1/pair", obj("code" to code, "device_name" to deviceName)))
@@ -216,7 +224,11 @@ class BridgeApi(val baseUrl: String, private val token: String?) {
             }
 
             override fun onEvent(eventSource: EventSource, id: String?, type: String?, data: String) {
-                parse(type, data)?.let { trySend(it) }
+                try {
+                    parse(type, data)?.let { if (trySend(it).isFailure) { close(); eventSource.cancel() } }
+                } catch (e: Exception) {
+                    close(); eventSource.cancel()
+                }
             }
 
             override fun onClosed(eventSource: EventSource) {
@@ -235,6 +247,7 @@ class BridgeApi(val baseUrl: String, private val token: String?) {
         val o = runCatching { json.parseToJsonElement(data).jsonObject }.getOrNull() ?: return null
         fun s(k: String) = o[k]?.jsonPrimitive?.contentOrNull ?: ""
         return when (type) {
+            "resync" -> ClaraEvent.Resync
             "message.routed" -> ClaraEvent.Routed(s("conversation_id"), s("message_id"), s("route"), s("source"))
             "message.delta" -> ClaraEvent.Delta(s("conversation_id"), s("text"))
             "message.completed" -> ClaraEvent.Completed(json.decodeFromJsonElement(o["message"]!!))

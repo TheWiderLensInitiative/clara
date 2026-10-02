@@ -41,3 +41,5 @@ check("parse junk", p.parse_suggestions("sorry"), (None, []))
 print(f"{ok} passed, {fails} failed")
 check("fresh", p.fresh(["What's using the most memory on my PC?", "Plan dinner"], ["what's using the most memory on my PC"]), ["Plan dinner"])
 print("fresh ok" if fails == 0 else "fresh FAILED")
+
+raise SystemExit(1 if fails else 0)

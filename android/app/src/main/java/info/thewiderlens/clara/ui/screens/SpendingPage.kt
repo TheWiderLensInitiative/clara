@@ -121,7 +121,7 @@ fun SpendingPage(
                         Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f)) {
                             Text(t.label.substringAfter(" · "), style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                            val whenText = if (t.last > 0) SimpleDateFormat("MMM d", Locale.getDefault()).format(java.util.Date((t.last * 1000).toLong())) else ""
+                            val whenText = if (t.last > 0) SimpleDateFormat("MMM d", androidx.compose.ui.platform.LocalConfiguration.current.locales[0]).format(java.util.Date((t.last * 1000).toLong())) else ""
                             Text(listOfNotNull(whenText, t.chat?.let { "in “${it.take(30)}”" }, if (t.calls > 1) "${t.calls} calls" else null).joinToString(" · "),
                                 style = MaterialTheme.typography.labelSmall, color = ClaraColors.Muted)
                         }
@@ -234,7 +234,8 @@ private fun SpendChart(s: SpendSummary) {
     }
     val d = s.daily.getOrNull(picked)
     if (d != null) {
-        val day = runCatching { SimpleDateFormat("EEE MMM d", Locale.getDefault()).format(SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(d.date)!!) }.getOrDefault(d.date)
+        val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
+        val day = runCatching { SimpleDateFormat("EEE MMM d", locale).format(SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(d.date)!!) }.getOrDefault(d.date)
         Spacer(Modifier.height(8.dp))
         Text("$day · ${money(d.total)}", style = MaterialTheme.typography.bodyMedium)
         if (d.kinds.isNotEmpty()) Text(d.kinds.entries.sortedByDescending { it.value }.joinToString("  ") { (KIND_EMOJI[it.key] ?: "") + " " + money(it.value) },

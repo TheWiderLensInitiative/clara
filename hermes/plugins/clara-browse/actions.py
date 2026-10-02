@@ -12,7 +12,7 @@ ACTIONS = {"open", "click", "fill", "press", "scroll", "find", "back", "wait", "
 
 # A click or a "find and click" whose label is one of these needs the user's OK first.
 COMMIT = re.compile(
-    r"\b(buy|purchase|pay|checkout|place order|order now|subscribe|delete|send|confirm payment|transfer)\b",
+    r"\b(buy|purchase|pay|checkout|place order|order now|subscribe|unsubscribe|delete|remove|send|publish|post|submit|save|share|invite|upload|confirm|accept|agree|register|sign up|transfer)\b",
     re.I,
 )
 CARD = re.compile(r"\b(?:\d[ -]?){13,19}\b")
@@ -87,7 +87,9 @@ def parse_action(text: str) -> dict:
             raise ValueError("click needs a ref")
     elif action == "fill":
         out["ref"] = _ref(data.get("ref"))
-        out["text"] = str(data.get("text") if data.get("text") is not None else "")[:500]
+        out["text"] = str(data.get("text") if data.get("text") is not None else "")
+        if len(out["text"]) > 100000:
+            raise ValueError("fill text exceeds 100000 characters")
         if not out["ref"]:
             raise ValueError("fill needs a ref")
     elif action == "press":
@@ -166,12 +168,14 @@ def veto(action: dict, snapshot: str):
     kind = action.get("action")
     if kind == "open":
         return blocked_url_reason(action.get("url") or "")
+    if kind in ("fill", "click") and not _line(snapshot, action.get("ref") or ""):
+        return "That element is missing from the current snapshot. Observe the page again."
     if kind == "fill":
         text = action.get("text") or ""
         if CARD.search(text):
             return "Clara never types card numbers. Ask the user to take over for payment."
         line = _line(snapshot, action.get("ref") or "")
-        if re.search(r"password", line, re.I):
+        if re.search(r"password|one.time|verification.code|security.code|\botp\b|\b2fa\b", line, re.I):
             return "That field is a password. Use sign_in with a saved login, or ask the user to take over. Never type it."
     return None
 
@@ -179,12 +183,16 @@ def veto(action: dict, snapshot: str):
 def commit_label(action: dict, snapshot: str):
     """The button or link text when this step would buy, send, or delete, else None."""
     kind = action.get("action")
+    if kind == "press":
+        if any(k in str(action.get("key", "")).lower() for k in ("enter", "return", "space")):
+            return "activate the focused control (may submit this form)"
     if kind == "find":
-        text = action.get("text") or ""
-        return text if COMMIT.search(text) else None
+        return "activate control: " + str(action.get("text") or "")
     if kind == "click":
         line = _line(snapshot, action.get("ref") or "")
-        return line.strip()[:180] if COMMIT.search(line) else None
+        if COMMIT.search(line) or not line or re.search(r"\bbutton\b", line, re.I):
+            return line.strip()[:180] or "activate an unidentified control"
+        return None
     return None
 
 

@@ -8,6 +8,8 @@ never clicks from a giant text dump, and it never types a password.
 The phone already watches this browser (the stream on port 9223) and can take over.
 """
 import base64
+import fcntl
+from contextlib import contextmanager
 import json
 import logging
 import os
@@ -23,10 +25,15 @@ logger = logging.getLogger(__name__)
 
 BRIDGE = os.environ.get("CLARA_BRIDGE_URL", "http://127.0.0.1:8700")
 LLM = os.environ.get("OPENAI_BASE_URL", "http://127.0.0.1:8080/v1").rstrip("/") + "/chat/completions"
-TAKEOVER = "/srv/clara-state/takeover"
+STATE_DIR = os.environ.get("CLARA_STATE_DIR", "/srv/clara-state")
+TAKEOVER = os.path.join(STATE_DIR, "takeover")
+CONTROL_LOCK = os.path.join(STATE_DIR, "browser-control.lock")
+HANDBACK = os.path.join(STATE_DIR, "handback")
 STREAM_PORT = os.environ.get("AGENT_BROWSER_STREAM_PORT", "9223")
 MAX_STEPS = 16
 _lock = threading.Lock()
+_tap_connection = None
+_cached_port = None
 
 EYES = (
     "You are Clara's hands on her browser. You can see a screenshot of the page. Numbered labels [N] on it "
@@ -69,6 +76,11 @@ SCHEMA = {
         "required": ["goal"],
     },
 }
+
+
+def _conversation(session_id):
+    from hermes_plugins.clara_guardian import session_owner
+    return session_owner(session_id)[0]
 
 
 def _link(path, body=None, timeout=30):
@@ -169,6 +181,56 @@ def _wait_if_taken_over():
     deadline = time.time() + 30 * 60
     while os.path.exists(TAKEOVER) and time.time() < deadline:
         time.sleep(0.5)
+    if os.path.exists(TAKEOVER):
+        raise RuntimeError("The user still controls the browser. Automation stopped.")
+
+
+class ControlChanged(RuntimeError):
+    pass
+
+
+def _generation():
+    try:
+        return os.stat(HANDBACK).st_mtime_ns
+    except OSError:
+        return 0
+
+
+@contextmanager
+def action_guard(generation=None):
+    # Bridge and plugins share this lock. A takeover is acknowledged only after the
+    # current action finishes; no new action can start after the flag is written.
+    with open(CONTROL_LOCK, "rb") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            from tools.interrupt import is_interrupted
+            if is_interrupted():
+                raise RuntimeError("Browser task stopped")
+            if os.path.exists(TAKEOVER) or (generation is not None and generation != _generation()):
+                raise ControlChanged("Browser ownership changed; observe again after handback.")
+            yield
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
+
+
+def _safe_page(task_id):
+    url = _page_url(task_id)
+    if not url:
+        raise RuntimeError("Unable to verify the current browser address")
+    if url != "about:blank":
+        reason = actions.blocked_url_reason(url)
+        if reason or _resolves_local(url):
+            raise RuntimeError(reason or "The browser reached a local-network address; automation stopped.")
+    return url
+
+
+def _progress(task_id, snapshot, url):
+    try:
+        result = _browser(task_id, "eval", ["JSON.stringify([scrollX,scrollY,document.body?.scrollHeight,document.body?.innerText?.slice(0,8000)])"], timeout=5)
+        page = (result.get("data") or {}).get("result")
+    except Exception:
+        page = None
+    return (url, snapshot, str(page))
 
 
 def _logins():
@@ -195,7 +257,7 @@ def _ask(goal, url, snapshot, image, history, logins):
             {"role": "system", "content": EYES},
             {"role": "user", "content": content},
         ],
-        "max_tokens": 300, "temperature": 0,
+        "max_tokens": 4096, "temperature": 0,
         "chat_template_kwargs": {"enable_thinking": False}, "id_slot": 1,
     }).encode()
     req = urllib.request.Request(LLM, data=body, headers={"Content-Type": "application/json"})
@@ -203,12 +265,14 @@ def _ask(goal, url, snapshot, image, history, logins):
         return json.load(r)["choices"][0]["message"]["content"]
 
 
-def _ok(label, url) -> bool:
+def _ok(label, url, session_id=None, action=None, snapshot="") -> bool:
     try:
         choice = _link("/internal/approvals/ask", {
             "description": f"Clara wants to {label.strip()[:180]} on {url or 'the current page'}",
-            "command": url or "",
+            "command": json.dumps({"url": url, "action": action, "page": snapshot}, ensure_ascii=False),
+            "allow_session": False,
             "rule": "browser:commit",
+            "conversation_id": _conversation(session_id),
         }, timeout=1900).get("choice")
     except Exception as e:
         logger.warning("browser_use: approval failed: %s", e)
@@ -228,10 +292,14 @@ def _help(reason, session_id):
 
 def _stream_port(task_id) -> str:
     """The live-view port. Enabling it is what makes a tap able to release the mouse immediately."""
+    global _cached_port
+    if _cached_port:
+        return _cached_port
     _browser(task_id, "stream", ["enable", "--port", str(STREAM_PORT)], timeout=10)
     status = _browser(task_id, "stream", ["status"], timeout=10)
     port = ((status or {}).get("data") or {}).get("port")
-    return str(port or STREAM_PORT)
+    _cached_port = str(port or STREAM_PORT)
+    return _cached_port
 
 
 def _send_tap(x: float, y: float, port: str):
@@ -241,9 +309,16 @@ def _send_tap(x: float, y: float, port: str):
     and a slider's press does not finish until that release arrives.
     """
     from websockets.sync.client import connect
-    with connect(f"ws://127.0.0.1:{port}", open_timeout=2, close_timeout=1, max_size=8_000_000) as ws:
+    global _tap_connection
+    if _tap_connection is None:
+        _tap_connection = connect(f"ws://127.0.0.1:{port}/?pacing=ack&maxFps=1", open_timeout=2, close_timeout=1, max_size=8_000_000)
+    try:
         for event in actions.tap_events(x, y):
-            ws.send(json.dumps(event))
+            _tap_connection.send(json.dumps(event))
+    except Exception:
+        _tap_connection.close()
+        _tap_connection = None
+        raise  # Never replay an uncertain click automatically.
 
 
 def _tap_point(task_id, x, y):
@@ -256,43 +331,43 @@ def _tap_point(task_id, x, y):
         return None
 
 
-def _tap_ref(task_id, ref):
+def _tap_ref(task_id, ref, expected_name=""):
+    moved = _browser(task_id, "scrollintoview", [ref], timeout=10)
+    if not moved.get("success", False):
+        return {"success": False, "error": "Could not bring the target into view"}
     box = _browser(task_id, "get", ["box", ref], timeout=10)
     center = actions.box_center((box or {}).get("data") or {})
-    if center and _tap_point(task_id, *center):
-        return {"success": True, "data": {"clicked": ref}}
-    logger.info("browser_use: tap missed %s; falling back to click", ref)
-    return _browser(task_id, "click", [ref])
+    if not center:
+        return {"success": False, "error": "Target has no visible box"}
+    x, y = center
+    # Check both the bounds and the top-most accessible control under the pointer.
+    script = """(() => {
+      const [x,y,want] = PARAMS;
+      if(x<0||y<0||x>=innerWidth||y>=innerHeight) return false;
+      const el=document.elementFromPoint(x,y)?.closest('a,button,input,textarea,select,[role]');
+      if(!el || el.disabled || getComputedStyle(el).visibility==='hidden') return false;
+      const name=(el.getAttribute('aria-label')||Array.from(el.labels||[]).map(l=>l.innerText).join(' ')||el.innerText||el.getAttribute('placeholder')||'').trim();
+      return !!want && name===want;
+    })()""".replace("PARAMS", json.dumps([x,y,expected_name]))
+    check = _browser(task_id, "eval", [script], timeout=10)
+    if (check.get("data") or {}).get("result") not in (True, "true"):
+        return {"success": False, "error": "The target is covered, ambiguous or changed. Observe again."}
+    return _tap_point(task_id, x, y) or {"success": False, "error": "Pointer dispatch failed"}
 
 
 def _tap_text(task_id, text):
-    """Click visible text without the waiting click command. Falls back to that command if the text has no box."""
-    script = (
-        "(() => {"
-        f"const want = {json.dumps((text or '').strip().lower())};"
-        "if (!want) return null;"
-        "const norm = (s) => (s || '').replace(/\\s+/g, ' ').trim().toLowerCase();"
-        "const nodes = document.querySelectorAll('a,button,summary,label,[role],input,textarea,select');"
-        "for (const el of nodes) {"
-        "  const name = norm(el.innerText || el.getAttribute('aria-label') || el.getAttribute('placeholder') || '');"
-        "  if (!name.includes(want)) continue;"
-        "  const r = el.getBoundingClientRect();"
-        "  if (r.width < 1 || r.height < 1) continue;"
-        "  return {x: r.x + r.width / 2, y: r.y + r.height / 2};"
-        "}"
-        "return null;"
-        "})()"
-    )
-    found = _browser(task_id, "eval", [script], timeout=15)
-    point = ((found or {}).get("data") or {}).get("result")
-    if isinstance(point, str):
-        try:
-            point = json.loads(point)
-        except Exception:
-            point = None
-    if isinstance(point, dict) and _tap_point(task_id, point.get("x"), point.get("y")):
-        return {"success": True, "data": {"clicked": text}}
-    return _browser(task_id, "find", ["text", text, "click"])
+    # Resolve an exact visible name to a fresh ref. Never choose the first substring match.
+    snapshot = _snapshot_text(_browser(task_id, "snapshot", ["-i", "-c"]))
+    import re
+    matches = []
+    for line in snapshot.splitlines():
+        name = re.search(r'"([^"\n]*)"', line)
+        ref = re.search(r'(?:ref=|@)(e\d+)', line)
+        if name and ref and name.group(1).casefold() == text.strip().casefold():
+            matches.append((ref.group(1), name.group(1)))
+    if len(matches) != 1:
+        return {"success": False, "error": "Text does not identify exactly one control; use a current ref."}
+    return _tap_ref(task_id, *matches[0])
 
 
 def _do(task_id, action):
@@ -305,9 +380,23 @@ def _do(task_id, action):
         except Exception:
             return {"success": False, "error": str(raw)[:300]}
     if kind == "click":
-        return _tap_ref(task_id, action["ref"])
+        return _tap_ref(task_id, action["ref"], action.get("_name", ""))
     if kind == "fill":
-        return _browser(task_id, "fill", [action["ref"], action["text"]])
+        for attribute in ("type", "autocomplete"):
+            result = _browser(task_id, "get", ["attr", action["ref"], attribute])
+            if not result.get("success", False):
+                return {"success": False, "error": "Unable to verify the input field type"}
+            data = result.get("data") or {}
+            value = str(data.get("value") or data.get("attribute") or data.get("result") or "").lower()
+            if any(word in value for word in ("password", "one-time-code", "cc-")):
+                return {"success": False, "error": "Sensitive fields require vault sign-in or human takeover"}
+        result = _browser(task_id, "fill", [action["ref"], action["text"]])
+        if result.get("success"):
+            actual = _browser(task_id, "get", ["value", action["ref"]])
+            value = (actual.get("data") or {}).get("value")
+            if value != action["text"]:
+                return {"success": False, "error": "The field did not retain the full intended text"}
+        return result
     if kind == "press":
         return _browser(task_id, "press", [action["key"]])
     if kind == "scroll":
@@ -322,12 +411,21 @@ def _do(task_id, action):
     return {"success": False, "error": "nothing to do"}
 
 
+def _ready(task_id):
+    started = time.monotonic()
+    result = _browser(task_id, "wait", ["--load", "domcontentloaded"], timeout=10)
+    logger.info("browser phase=readiness elapsed_ms=%.0f success=%s",
+                (time.monotonic()-started)*1000, bool(result.get("success")))
+    return bool(result.get("success"))
+
+
 def _prepare(task_id):
     _browser(task_id, "set", ["viewport", "1280", "800"], timeout=20)
     _browser(task_id, "stream", ["enable", "--port", STREAM_PORT], timeout=15)
 
 
 def handle_browser_use(args, task_id=None, session_id=None, **_):
+    global _tap_connection, _cached_port
     goal = str((args or {}).get("goal") or "").strip()
     if not goal:
         return json.dumps({"success": False, "error": "Tell browser_use what to accomplish."})
@@ -335,7 +433,13 @@ def handle_browser_use(args, task_id=None, session_id=None, **_):
         return json.dumps({"success": False, "error": "Clara's browser is already in the middle of a task. Wait until it finishes."})
     try:
         return json.dumps(_drive(goal, str((args or {}).get("url") or "").strip(), task_id or "default", session_id))
+    except (OSError, RuntimeError) as error:
+        return json.dumps({"success": False, "error": str(error)[:300]})
     finally:
+        if _tap_connection:
+            _tap_connection.close()
+        _tap_connection = None
+        _cached_port = None
         _lock.release()
 
 
@@ -345,24 +449,31 @@ def _drive(goal, start_url, task_id, session_id):
     history = []
     repeated = None
     repeat_count = 0
-    try:
+    previous_progress = None
+    _wait_if_taken_over()
+    with action_guard():
         _prepare(task_id)
-    except Exception as e:
-        logger.info("browser_use: prepare failed: %s", e)
     if start_url:
         why = actions.blocked_url_reason(start_url) or ("That address is on the local network." if _resolves_local(start_url) else None)
         if why:
             return {"success": False, "error": why}
-        opened = _do(task_id, {"action": "open", "url": start_url})
+        with action_guard():
+            opened = _do(task_id, {"action": "open", "url": start_url})
+            _safe_page(task_id)
         if not (opened or {}).get("success", True) and opened.get("error"):
             return {"success": False, "error": str(opened.get("error"))[:300]}
-        time.sleep(0.8)
+        _ready(task_id)
 
     for _ in range(MAX_STEPS):
+        from tools.interrupt import is_interrupted
+        if is_interrupted():
+            return {"success": False, "summary": "Browser task stopped.", "steps": history[-12:]}
         _wait_if_taken_over()
+        generation = _generation()
+        url = _safe_page(task_id)
         snap_result = _browser(task_id, "snapshot", ["-i", "-c"])
         snapshot = _snapshot_text(snap_result)
-        url = _page_url(task_id)
+        progress = _progress(task_id, snapshot, url)
         if actions.signin_blocked(snapshot):
             return {"success": False, "url": url,
                     "summary": "This site blocks signing in from an automated browser. It has to be done in the user's own browser, or through a connected service (Clara menu → Connectors) if there is one."}
@@ -371,11 +482,18 @@ def _drive(goal, start_url, task_id, session_id):
             if not outcome.get("success"):
                 return {"success": False, "url": url, "summary": outcome.get("error") or "The user didn't take over for the human check.", "steps": history[-12:]}
             history.append("user solved a human check and handed the browser back")
-            time.sleep(0.6)
+            _ready(task_id)
             continue
+        observed = time.monotonic()
         image = _shot(task_id)
+        logger.info("browser phase=screenshot elapsed_ms=%.0f", (time.monotonic()-observed)*1000)
+        if generation != _generation() or _safe_page(task_id) != url:
+            history.append("page changed during observation; looking again")
+            continue
         try:
+            decided = time.monotonic()
             reply = _ask(goal, url, snapshot, image, "\n".join(history[-8:]), logins)
+            logger.info("browser phase=model elapsed_ms=%.0f", (time.monotonic()-decided)*1000)
             action = actions.parse_action(reply)
         except Exception as e:
             logger.info("browser_use: could not read a step (%s)", e)
@@ -385,7 +503,7 @@ def _drive(goal, start_url, task_id, session_id):
             continue
 
         if action["action"] == "done":
-            return {"success": True, "url": url or _page_url(task_id), "summary": action.get("summary") or "Done.", "steps": history[-12:]}
+            return {"success": True, "url": _safe_page(task_id), "summary": action.get("summary") or "Done.", "steps": history[-12:]}
         if action["action"] == "help":
             outcome = _help(action["reason"], session_id)
             if not outcome.get("success"):
@@ -393,10 +511,11 @@ def _drive(goal, start_url, task_id, session_id):
             history.append("user took over and handed the browser back")
             continue
 
-        if actions.same_step(action, repeated or {}):
+        if actions.same_step(action, repeated or {}) and progress == previous_progress:
             repeat_count += 1
         else:
             repeated, repeat_count = action, 1
+        previous_progress = progress
         if repeat_count >= 3:
             return {"success": False, "url": url,
                     "summary": f"I kept repeating the same step and stopped. Last page: {url}. Steps: {'; '.join(history[-6:])}",
@@ -410,28 +529,49 @@ def _drive(goal, start_url, task_id, session_id):
             history.append("blocked (open): that address is on the local network")
             continue
         label = actions.commit_label(action, snapshot)
-        if label and not _ok(label, url):
+        if label and not _ok(label, url, session_id, action, snapshot):
             history.append(f"the user did not approve: {label[:80]}")
             continue
         if action["action"] == "sign_in":
             outcome = _sign_in(action["name"], task_id, session_id)
             history.append(f"sign_in {action['name']}: " + ("ok" if outcome.get("success") else str(outcome.get("error"))[:160]))
-            time.sleep(0.8)
+            _ready(task_id)
             continue
 
-        result = _do(task_id, action)
+        import re
+        name = re.search(r'"([^"\n]*)"', actions._line(snapshot, action.get("ref", "")))
+        if name:
+            action = {**action, "_name": name.group(1)}
+        try:
+            with action_guard(generation):
+                if _safe_page(task_id) != url:
+                    raise ControlChanged("The page changed during the decision. Observe again.")
+                if action.get("ref") or label:
+                    current = _snapshot_text(_browser(task_id, "snapshot", ["-i", "-c"]))
+                    if label and current != snapshot:
+                        raise ControlChanged("The page changed after approval. Observe and ask again.")
+                    if action.get("ref") and actions._line(current, action["ref"]) != actions._line(snapshot, action["ref"]):
+                        raise ControlChanged("The control changed during the decision. Observe again.")
+                started = time.monotonic()
+                result = _do(task_id, action)
+                _safe_page(task_id)
+                logger.info("browser action=%s elapsed_ms=%.0f", action["action"], (time.monotonic()-started)*1000)
+        except ControlChanged:
+            history.append("page or control changed; taking a fresh observation")
+            continue
         detail = action["action"]
         if action.get("ref"):
             detail += " " + action["ref"]
         elif action.get("text"):
-            detail += " " + action["text"][:60]
+            detail += f" ({len(action['text'])} characters)"
         elif action.get("url"):
             detail += " " + action["url"][:80]
         if not (result or {}).get("success", True):
             detail += " failed: " + str((result or {}).get("error") or "")[:120]
         history.append(detail)
         logger.info("browser_use: %s", detail[:200])
-        time.sleep(0.4 if action["action"] == "scroll" else 0.8)
+        if action["action"] not in ("scroll", "wait"):
+            _ready(task_id)
 
     return {"success": False, "url": _page_url(task_id),
             "summary": "I used the browser for a while and didn't finish. " + (history[-1] if history else ""),

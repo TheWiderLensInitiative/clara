@@ -134,6 +134,7 @@ sealed interface ClaraEvent {
     data class HelpRequested(val help: HelpRequest) : ClaraEvent
     data class HelpResolved(val id: String) : ClaraEvent
     data class CharacterChanged(val style: info.thewiderlens.clara.ui.components.CharacterStyle) : ClaraEvent
+    data object Resync : ClaraEvent
     data object Connected : ClaraEvent
     data class Disconnected(val reason: String) : ClaraEvent
 }

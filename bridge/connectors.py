@@ -135,7 +135,8 @@ def _builtin_clients() -> dict:
     console. Desktop-app clients: Google treats their secret as not confidential; users still approve on the service's
     own screen, with PKCE, from their own PC."""
     try:
-        return json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "builtin_clients.json")))
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "builtin_clients.json")) as source:
+            return json.load(source)
     except (OSError, ValueError):
         return {}
 
@@ -432,7 +433,7 @@ def _when(e, key):
 
 def summarize_event(e):
     return {"id": e["id"], "title": e.get("summary", "(no title)"), "start": _when(e, "start"), "end": _when(e, "end"),
-            "all_day": "date" in (e.get("start") or {}), "location": e.get("location", ""), "description": (e.get("description") or "")[:500],
+            "all_day": "date" in (e.get("start") or {}), "busy": e.get("transparency") != "transparent" and e.get("status") != "cancelled", "location": e.get("location", ""), "description": (e.get("description") or "")[:500],
             "attendees": [a.get("email") for a in e.get("attendees", [])][:20], "link": e.get("htmlLink", "")}
 
 
@@ -445,17 +446,26 @@ def _iso(t: str | None, default: dt.datetime) -> str:
     return d.isoformat()
 
 
-async def calendar_events(store, start=None, end=None, query=None, limit=25):
+async def calendar_events(store, start=None, end=None, query=None, limit=25, all_pages=False):
     now = dt.datetime.now().astimezone()
     params = {"timeMin": _iso(start, now), "timeMax": _iso(end, now + dt.timedelta(days=7)), "singleEvents": "true",
               "orderBy": "startTime", "maxResults": max(1, min(limit, 50))}
     if query:
         params["q"] = query
-    r = await api(store, "google", "GET", f"{CAL}/calendars/primary/events", params=params)
-    return [summarize_event(e) for e in r.get("items", [])]
+    events, seen = [], set()
+    while True:
+        r = await api(store, "google", "GET", f"{CAL}/calendars/primary/events", params=params)
+        events.extend(summarize_event(e) for e in r.get("items", []))
+        token = r.get("nextPageToken")
+        if not all_pages or not token:
+            return events
+        if token in seen:
+            raise RuntimeError("Calendar returned a repeated page token")
+        seen.add(token)
+        params["pageToken"] = token
 
 
-def event_body(title=None, start=None, end=None, all_day=False, location=None, description=None, attendees=None):
+def event_body(title=None, start=None, end=None, all_day=False, location=None, description=None, attendees=None, defaults=True):
     b = {}
     if title is not None:
         b["summary"] = title
@@ -470,11 +480,19 @@ def event_body(title=None, start=None, end=None, all_day=False, location=None, d
             e = dt.datetime.fromisoformat(end) if end else s + dt.timedelta(hours=1)
             e = e if e.tzinfo else e.astimezone()
             b["start"], b["end"] = {"dateTime": s.isoformat()}, {"dateTime": e.isoformat()}
+    if end and not start:
+        if all_day:
+            b["end"] = {"date": end[:10]}
+        else:
+            value = dt.datetime.fromisoformat(end)
+            b["end"] = {"dateTime": (value if value.tzinfo else value.astimezone()).isoformat()}
+    if start and not end and not defaults:
+        b.pop("end", None)
     if location is not None:
         b["location"] = location
     if description is not None:
         b["description"] = description
-    if attendees:
+    if attendees is not None:
         b["attendees"] = [{"email": a} for a in attendees]
     return b
 
@@ -485,7 +503,15 @@ async def calendar_add(store, **fields):
 
 
 async def calendar_update(store, event_id, **fields):
-    e = await api(store, "google", "PATCH", f"{CAL}/calendars/primary/events/{event_id}", json=event_body(**fields))
+    current = await calendar_get(store, event_id)
+    fields.setdefault("all_day", current["all_day"])
+    if fields.get("start") and not fields.get("end"):
+        old_start = dt.datetime.fromisoformat(current["start"])
+        old_end = dt.datetime.fromisoformat(current["end"])
+        new_start = dt.datetime.fromisoformat(fields["start"])
+        end = new_start + (old_end - old_start)
+        fields["end"] = end.date().isoformat() if fields["all_day"] else end.isoformat()
+    e = await api(store, "google", "PATCH", f"{CAL}/calendars/primary/events/{event_id}", json=event_body(defaults=False, **fields))
     return summarize_event(e)
 
 
@@ -501,15 +527,28 @@ async def calendar_get(store, event_id):
 async def free_slots(store, day: str, minutes=60, work_start="09:00", work_end="18:00"):
     """Open gaps on a day between the user's events (inside working hours)."""
     d = dt.date.fromisoformat(day[:10])
-    tz = dt.datetime.now().astimezone().tzinfo
+    from zoneinfo import ZoneInfo
+    # Retain future DST rules rather than today's fixed UTC offset.
+    try:
+        with open("/etc/localtime", "rb") as zone:
+            tz = ZoneInfo.from_file(zone)
+    except OSError:
+        tz = dt.timezone.utc
     ws = dt.datetime.combine(d, dt.time.fromisoformat(work_start), tz)
     we = dt.datetime.combine(d, dt.time.fromisoformat(work_end), tz)
-    events = await calendar_events(store, ws.isoformat(), we.isoformat(), limit=50)
+    events = await calendar_events(store, ws.isoformat(), we.isoformat(), limit=50, all_pages=True)
     busy = []
     for e in events:
-        if e["all_day"]:
+        if not e.get("busy", True):
             continue
-        busy.append((dt.datetime.fromisoformat(e["start"]), dt.datetime.fromisoformat(e["end"])))
+        if e["all_day"]:
+            start = dt.datetime.combine(dt.date.fromisoformat(e["start"]), dt.time(), tz)
+            end = dt.datetime.combine(dt.date.fromisoformat(e["end"]), dt.time(), tz)
+        else:
+            start, end = dt.datetime.fromisoformat(e["start"]), dt.datetime.fromisoformat(e["end"])
+        start, end = max(ws, start), min(we, end)
+        if start < end:
+            busy.append((start, end))
     busy.sort()
     slots, cur = [], ws
     for s, e in busy:

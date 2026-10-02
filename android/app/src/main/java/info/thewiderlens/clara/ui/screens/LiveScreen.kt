@@ -85,19 +85,22 @@ fun LiveScreenPage(state: UiState, api: BridgeApi?, onBack: () -> Unit, startInC
     val scope = rememberCoroutineScope()
 
     DisposableEffect(api) {
+        val streamJob = kotlinx.coroutines.Job(scope.coroutineContext[kotlinx.coroutines.Job])
+        val streamScope = kotlinx.coroutines.CoroutineScope(scope.coroutineContext + streamJob)
         val ws = api?.let { a ->
-            a.http.newWebSocket(
-                Request.Builder().url(a.baseUrl.replaceFirst("http", "ws") + "/v1/screen/stream").build(),
+            info.thewiderlens.clara.data.BrowserConnection(a, streamScope,
                 object : WebSocketListener() {
                     override fun onMessage(webSocket: WebSocket, text: String) {
                         val m = runCatching { JSONObject(text) }.getOrNull() ?: return
                         when (m.optString("type")) {
-                            "frame" -> scope.launch {
+                            "frame" -> streamScope.launch {
                                 val seq = m.optLong("seq")
                                 val md = m.optJSONObject("metadata")
                                 val bmp = withContext(Dispatchers.Default) {
-                                    val bytes = Base64.decode(m.optString("data"), Base64.DEFAULT)
-                                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
+                                    runCatching {
+                                        val bytes = Base64.decode(m.optString("data"), Base64.DEFAULT)
+                                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
+                                    }.getOrNull()
                                 }
                                 if (bmp != null) {
                                     frame = bmp
@@ -121,12 +124,12 @@ fun LiveScreenPage(state: UiState, api: BridgeApi?, onBack: () -> Unit, startInC
                         }
                     }
 
-                    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) { online = false }
-                },
+                    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) { online = false; takeover = false }
+                }, onSocket = { socket = it },
             )
         }
-        socket = ws
-        onDispose { ws?.close(1000, "closed"); socket = null }
+        onDispose {
+            streamJob.cancel(); ws?.close(); socket = null }
     }
 
     fun send(json: String) { socket?.send(json) }
@@ -249,7 +252,7 @@ private fun TakeoverView(
     onMouse: (String, Float, Float, String) -> Unit, onKey: (String, String, Int, String?) -> Unit,
     onType: (String) -> Unit, onHandBack: () -> Unit,
 ) {
-    val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
+    val activity = androidx.activity.compose.LocalActivity.current
     DisposableEffect(Unit) {
         val before = activity?.requestedOrientation
         activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE

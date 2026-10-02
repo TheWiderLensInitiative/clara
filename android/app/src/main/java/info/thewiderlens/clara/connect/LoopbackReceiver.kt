@@ -17,40 +17,58 @@ class LoopbackReceiver(port: Int = 53682) {
     private val server = ServerSocket().apply {
         reuseAddress = true
         bind(java.net.InetSocketAddress(InetAddress.getByName("127.0.0.1"), port), 1)
-        soTimeout = 10 * 60 * 1000
+        soTimeout = 1000
     }
     val redirectUri = "http://127.0.0.1:${server.localPort}/cb"
 
     data class Result(val code: String?, val state: String?, val error: String?)
 
-    suspend fun await(): Result = withContext(Dispatchers.IO) {
-        while (true) {
-            val sock = try { server.accept() } catch (e: SocketTimeoutException) { return@withContext Result(null, null, "timed out") }
-            sock.use { s ->
-                val line = s.getInputStream().bufferedReader().readLine() ?: ""
-                val path = line.split(" ").getOrNull(1) ?: ""
-                if (!path.startsWith("/cb")) {   // e.g. the browser asking for /favicon.ico
-                    s.getOutputStream().write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".toByteArray())
-                    return@use
+    @Volatile private var accepted: java.net.Socket? = null
+
+    suspend fun await(expectedState: String?): Result = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+        continuation.invokeOnCancellation { close() }
+        val worker = Thread {
+            try {
+                require(!expectedState.isNullOrBlank()) { "Sign-in did not include a state token" }
+                val deadline = System.currentTimeMillis() + 10 * 60 * 1000
+                while (continuation.isActive && System.currentTimeMillis() < deadline) {
+                    val socket = try { server.accept() } catch (_: SocketTimeoutException) { continue }
+                    accepted = socket
+                    socket.use { client ->
+                        client.soTimeout = 5000
+                        val line = try {
+                            val input = client.getInputStream()
+                            val bytes = java.io.ByteArrayOutputStream()
+                            while (bytes.size() < 8192) {
+                                val c = input.read()
+                                if (c < 0 || c == 10) break
+                                bytes.write(c)
+                            }
+                            bytes.toString("UTF-8").trimEnd('\r')
+                        } catch (_: SocketTimeoutException) { return@use }
+                        val path = line.split(" ").getOrNull(1) ?: ""
+                        val query = path.substringAfter('?', "").split('&').filter { '=' in it }.associate {
+                            URLDecoder.decode(it.substringBefore('='), "UTF-8") to URLDecoder.decode(it.substringAfter('='), "UTF-8")
+                        }
+                        val valid = path.substringBefore('?') == "/cb" && query["state"] == expectedState &&
+                            (query["code"] != null || query["error"] != null)
+                        val body = if (valid) "Sign-in received. Return to Clara to finish connecting." else "Unrecognized callback. Continue sign-in in your browser."
+                        val data = body.toByteArray()
+                        client.getOutputStream().write(("HTTP/1.1 ${if (valid) "200 OK" else "400 Bad Request"}\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: ${data.size}\r\nConnection: close\r\n\r\n").toByteArray() + data)
+                        if (valid && continuation.isActive) continuation.resumeWith(kotlin.Result.success(Result(query["code"], query["state"], query["error"])))
+                    }
+                    accepted = null
+                    if (!continuation.isActive) break
                 }
-                val q = path.substringAfter('?', "").split('&').filter { '=' in it }
-                    .associate { URLDecoder.decode(it.substringBefore('='), "UTF-8") to URLDecoder.decode(it.substringAfter('='), "UTF-8") }
-                val ok = q["code"] != null && q["error"] == null
-                val html = """<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
-                    <style>body{background:#000;color:#fff;font-family:sans-serif;text-align:center;padding:60px 24px}
-                    a{display:inline-block;margin-top:24px;padding:14px 28px;border-radius:24px;background:linear-gradient(90deg,#0A58E0,#5B3CF5,#D53CD1);color:#fff;text-decoration:none}</style>
-                    </head><body><h2>${if (ok) "Connected ✓" else "Sign-in didn't finish"}</h2>
-                    <p>${if (ok) "You can go back to Clara." else "Go back to Clara and try again."}</p>
-                    <a href="clara://connected">Back to Clara</a>
-                    <script>setTimeout(function(){location.href='clara://connected'},600)</script></body></html>"""
-                val body = html.toByteArray()
-                s.getOutputStream().write(("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: ${body.size}\r\nConnection: close\r\n\r\n").toByteArray() + body)
-                s.getOutputStream().flush()
-                return@withContext Result(q["code"], q["state"], q["error"])
-            }
+                if (continuation.isActive) continuation.resumeWith(kotlin.Result.success(Result(null, null, "timed out")))
+            } catch (error: Exception) {
+                if (continuation.isActive) continuation.resumeWith(kotlin.Result.failure(error))
+            } finally { close() }
         }
-        @Suppress("UNREACHABLE_CODE") Result(null, null, "closed")
+        worker.isDaemon = true
+        worker.name = "clara-oauth-callback"
+        worker.start()
     }
 
-    fun close() = runCatching { server.close() }
+    fun close() { runCatching { accepted?.close() }; runCatching { server.close() } }
 }
