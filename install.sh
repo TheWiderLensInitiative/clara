@@ -145,14 +145,18 @@ if [ ! -x /opt/clara/chrome/chrome ]; then
 fi
 # Google rejects sign-in from Chrome for Testing ("this browser or app may not be secure").
 # Clara drives the normal Chrome build, headed, with one profile that keeps the sign-in.
-if [ ! -x /opt/clara/google-chrome/opt/google/chrome/chrome ]; then
+# The package lands root-only, so the check has to run as root. A user-level
+# test cannot see into that directory and used to stop the install after Chrome
+# had already been unpacked.
+if ! sudo test -x /opt/clara/google-chrome/opt/google/chrome/chrome; then
     command -v Xvfb >/dev/null || sudo apt-get install -y -qq xvfb >/dev/null
     TMPD=$(mktemp -d)
     curl -fsSL -o "$TMPD/chrome.deb" https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
     sudo mkdir -p /opt/clara/google-chrome
     sudo dpkg-deb -x "$TMPD/chrome.deb" /opt/clara/google-chrome
     rm -rf "$TMPD"
-    [ -x /opt/clara/google-chrome/opt/google/chrome/chrome ] || die "Google Chrome didn't install"
+    sudo chmod -R a+rX /opt/clara/google-chrome
+    sudo test -x /opt/clara/google-chrome/opt/google/chrome/chrome || die "Google Chrome didn't install"
 fi
 ok "agent-browser $AGENT_BROWSER_VERSION + Chrome"
 sudo chown -R root:root /opt/clara; sudo chmod -R a+rX,go-w /opt/clara    # Clara can run these, never change them
