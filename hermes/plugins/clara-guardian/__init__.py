@@ -139,12 +139,17 @@ def handle_help(args, session_id=None, **_):
 # on the model choosing to (a small local model often tries to script around it instead).
 HUMAN_CHECK = re.compile(r"i'?m not a robot|recaptcha|hcaptcha|verify (that )?you are (a )?human|are you a robot|"
                          r"checking (if the site connection is secure|your browser)|security check|press (and|&) hold", re.I)
+SIGNIN_BLOCKED = re.compile(r"(this )?browser or app may not be secure|couldn.?t sign you in|try using a different browser", re.I)
 _auto_help_at: Dict[str, float] = {}   # session -> when Guardian last asked, so one stuck page asks only once in 10 minutes
 
 
 def _on_tool_result(tool_name: str = "", result: Any = None, session_id: str = "", **_: Any):
     if not tool_name.startswith("browser") or not isinstance(result, str):
         return None
+    if SIGNIN_BLOCKED.search(result):   # the site refuses sign-in in any automated browser: asking the user won't help
+        return ("[Guardian] This site blocks signing in from automated browsers like yours (Google does this on purpose). "
+                "Don't retry and don't ask the user to take over for it. Stop, and tell the user plainly: this part has to be "
+                "done in their own browser, or through a connected service (Clara menu → Connectors) if there is one.\n\n" + result)
     m = HUMAN_CHECK.search(result)
     if not m or os.path.exists(TAKEOVER) or time.time() - _auto_help_at.get(session_id, 0) < 600:
         return None
