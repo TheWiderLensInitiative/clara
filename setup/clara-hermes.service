@@ -14,8 +14,12 @@ Environment=SHELL=/bin/bash
 Environment=HERMES_HOME=/var/lib/clara/hermes-home
 Environment=HERMES_SKIP_CHMOD=1
 Environment=PATH=/opt/clara/agent-browser/node_modules/.bin:/opt/clara/node/bin:/opt/clara/venv-hermes/bin:/usr/local/bin:/usr/bin:/bin
-Environment=AGENT_BROWSER_EXECUTABLE_PATH=/opt/clara/chrome/chrome
+Environment=AGENT_BROWSER_EXECUTABLE_PATH=/opt/clara/google-chrome/opt/google/chrome/chrome
 Environment=AGENT_BROWSER_STREAM_PORT=9223 AGENT_BROWSER_STREAM_QUALITY=60 AGENT_BROWSER_STREAM_MAX_WIDTH=1280
+Environment=AGENT_BROWSER_HEADED=true
+Environment=AGENT_BROWSER_PROFILE=/var/lib/clara/.browser-profile
+Environment=AGENT_BROWSER_RESTORE=clara
+Environment=AGENT_BROWSER_ARGS=--no-sandbox,--disable-dev-shm-usage,--disable-blink-features=AutomationControlled,--no-first-run,--no-default-browser-check,--start-fullscreen
 ExecStart=/opt/clara/venv-hermes/bin/hermes gateway
 Restart=on-failure
 RestartSec=5

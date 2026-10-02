@@ -11,6 +11,7 @@ CLARA = HOME
 WORKSPACE = os.path.join(HOME, "workspace")
 STATE = "/srv/clara-state"                       # takeover switch: written by the Bridge, read-only to Clara
 PROTECTED = [os.path.join(HOME, "hermes-home"), STATE, "/home",   # her own config/Guardian, the switch, the user's home
+             os.path.join(HOME, ".browser-profile"),                 # persistent Chrome logins
              os.path.join(HOME, ".agent-browser", "auth"), os.path.join(HOME, ".agent-browser", ".encryption-key")]
 FREE_WRITE = [HOME + "/", "/tmp/"]               # her own files: no approval needed (protected paths are checked first)
 

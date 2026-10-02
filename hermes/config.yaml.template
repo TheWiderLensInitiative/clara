@@ -18,7 +18,7 @@ terminal:
   container_disk: 51200
   container_persistent: true
 browser:
-  inactivity_timeout: 900
+  inactivity_timeout: 7200   # the Chrome profile stays; this only closes a browser left idle for 2 hours
 tool_loop_guardrails:
   warnings_enabled: true
   hard_stop_enabled: false
@@ -172,6 +172,7 @@ plugins:
   - clara-guardian
   - clara-link
   - clara-vault
+  - clara-browse
 platforms:
   api_server:
     extra:

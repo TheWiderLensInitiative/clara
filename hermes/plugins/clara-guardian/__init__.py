@@ -37,16 +37,21 @@ def _wait_for_handback():
 
 def _on_pre_tool_call(tool_name: str = "", args: Any = None, **_: Any) -> Optional[Dict[str, str]]:
     global _seen_handback
+    if tool_name.startswith("browser"):
+        _point_at_real_chrome()
     _wait_for_handback()
+    # After the user hands the browser back, the page may have changed. A snapshot is allowed
+    # through (it's how she looks); every other browser action waits until she has looked.
     if tool_name.startswith("browser"):
         hb = _mtime(HANDBACK)
-        if hb > _seen_handback:
+        fresh = hb > _seen_handback and time.time() - hb < 3600
+        if fresh and tool_name in ("browser_snapshot", "browser_vision", "browser_use"):
             _seen_handback = hb
-            if time.time() - hb < 3600:
-                return {"action": "block", "message": (
-                    "The user just took over your browser from their phone and has now handed it back. "
-                    "The page may have changed (they may have logged in, solved a CAPTCHA, or navigated). "
-                    "Take a fresh browser_snapshot and look at the current page before doing anything else.")}
+        elif fresh:
+            return {"action": "block", "message": (
+                "The user just took over your browser from their phone and has now handed it back. "
+                "The page may have changed (they may have logged in, solved a CAPTCHA, or navigated). "
+                "Take a fresh browser_snapshot and look at the current page before doing anything else.")}
     try:
         verdict = rules.decide(tool_name, args if isinstance(args, dict) else {})
     except Exception:
@@ -146,10 +151,23 @@ _auto_help_at: Dict[str, float] = {}   # session -> when Guardian last asked, so
 def _on_tool_result(tool_name: str = "", result: Any = None, session_id: str = "", **_: Any):
     if not tool_name.startswith("browser") or not isinstance(result, str):
         return None
-    if SIGNIN_BLOCKED.search(result):   # the site refuses sign-in in any automated browser: asking the user won't help
-        return ("[Guardian] This site blocks signing in from automated browsers like yours (Google does this on purpose). "
-                "Don't retry and don't ask the user to take over for it. Stop, and tell the user plainly: this part has to be "
-                "done in their own browser, or through a connected service (Clara menu → Connectors) if there is one.\n\n" + result)
+    if SIGNIN_BLOCKED.search(result):
+        # Google says this to automation browsers. Clara's Chrome is a normal headed browser with a
+        # saved profile, so the user signing in once from their phone usually clears it. Ask once.
+        # If they already tried and the page still says it, stop instead of looping.
+        key = (session_id or "") + ":signin"
+        if time.time() - _auto_help_at.get(key, 0) < 900:
+            return ("[Guardian] Google is still refusing sign-in in Clara's browser after you were asked to take over. "
+                    "Don't retry it and don't ask again. Tell the user this sign-in has to be done in their own browser, "
+                    "or through a connected service (Clara menu → Connectors) if the task has one.\n\n" + result)
+        _auto_help_at[key] = time.time()
+        logger.info("guardian: site rejected the automated sign-in; asking the user to sign in")
+        outcome = json.loads(handle_help(
+            {"reason": "Google needs you to sign in. Take over the browser, finish the sign-in, then hand it back."},
+            session_id=session_id))
+        note = ("[Guardian] The page refused an automatic sign-in. " + (outcome.get("message") or outcome.get("error") or "")
+                + " Take a fresh browser_snapshot. If it still says the browser isn't secure, stop and tell the user.")
+        return note + "\n\n" + result
     m = HUMAN_CHECK.search(result)
     if not m or os.path.exists(TAKEOVER) or time.time() - _auto_help_at.get(session_id, 0) < 600:
         return None
@@ -165,6 +183,57 @@ def _on_tool_result(tool_name: str = "", result: Any = None, session_id: str = "
 def register(ctx) -> None:
     global _seen_handback
     _seen_handback = _mtime(HANDBACK)   # don't replay an old handback after a restart
+    _pin_browser()
     ctx.register_hook("pre_tool_call", _on_pre_tool_call)
     ctx.register_hook("transform_tool_result", _on_tool_result)
     ctx.register_tool(name="ask_user_for_browser_help", toolset="clara_guardian", schema=HELP_SCHEMA, handler=handle_help, emoji="🙋")
+
+
+# Official Chrome, not Chrome for Testing. Google refuses sign-in from the testing build.
+# /opt is where install.sh puts it; the hermes-home copy is used until that install has been run.
+_CHROME_CANDIDATES = (
+    "/opt/clara/google-chrome/opt/google/chrome/chrome",
+    "/var/lib/clara/hermes-home/google-chrome/opt/google/chrome/chrome",
+)
+_XVFB_BIN = "/var/lib/clara/hermes-home/xvfb/usr/bin"
+
+
+def _point_at_real_chrome():
+    chrome = next((p for p in _CHROME_CANDIDATES if os.path.isfile(p) and os.access(p, os.X_OK)), "")
+    if chrome:
+        os.environ["AGENT_BROWSER_EXECUTABLE_PATH"] = chrome
+    os.environ["AGENT_BROWSER_HEADED"] = "true"
+    os.environ.setdefault("AGENT_BROWSER_PROFILE", "/var/lib/clara/.browser-profile")
+    os.environ.setdefault("AGENT_BROWSER_RESTORE", "clara")
+    # Hermes leaves AGENT_BROWSER_ARGS alone once it is set, and will not add --no-sandbox itself.
+    # The service sandbox (NoNewPrivileges) makes Chrome's own sandbox fail, so it has to be here.
+    # --start-fullscreen: on a virtual screen Chrome otherwise opens a smaller window than the
+    # stream reports, and taps from the phone land past the real page.
+    os.environ["AGENT_BROWSER_ARGS"] = (
+        "--no-sandbox,--disable-dev-shm-usage,--disable-blink-features=AutomationControlled,"
+        "--no-first-run,--no-default-browser-check,--start-fullscreen"
+    )
+    if os.path.isfile(os.path.join(_XVFB_BIN, "Xvfb")):
+        path = os.environ.get("PATH", "")
+        if _XVFB_BIN not in path.split(":"):
+            os.environ["PATH"] = _XVFB_BIN + ":" + path
+
+
+def _pin_browser():
+    """One Chrome profile for every task, so a sign-in from the phone is still there next time."""
+    _point_at_real_chrome()
+    try:
+        import tools.browser_tool as bt
+    except Exception:
+        return
+    if getattr(bt, "_clara_pinned", False):
+        return
+    original = bt._create_local_session
+
+    def pinned(task_id):
+        info = original(task_id)
+        info["session_name"] = "clara"
+        return info
+
+    bt._create_local_session = pinned
+    bt._clara_pinned = True

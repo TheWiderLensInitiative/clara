@@ -817,7 +817,9 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                "instructions": (f"You are Clara, talking to the user through the Clara phone app. The current local date and time is {now}. "
                                 "Scheduled job and reminder results are delivered to the user's phone automatically by the app, "
                                 "so never ask which platform to deliver to. Keep replies short and friendly, like a text message. "
-                                "If a safety guard denies an action, just say it was not done and that they can approve it next time.")}
+                                "If a safety guard denies an action, just say it was not done and that they can approve it next time. "
+                                "To use a website, call browser_use once with the goal (and a URL if you have one). "
+                                "It looks at the page and clicks for you, then returns a summary; tell the user the result, not every click.")}
     if coding and store.api("openrouter"):
         payload["instructions"] += (" This is a coding task and the user has set up cloud boost for exactly this: hand the whole job to a cloud "
                                     "sub-agent with delegate_task (give it the complete goal, the folder to work in, and how to verify, e.g. run the tests), "

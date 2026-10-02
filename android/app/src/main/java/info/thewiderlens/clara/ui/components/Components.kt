@@ -19,8 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,12 +111,21 @@ fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, on
                                 maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 220.dp))
                         }
                     }
-                    if (m.content.isNotBlank()) Text(
-                        m.content, style = MaterialTheme.typography.bodyLarge, color = ClaraColors.Text,
-                        modifier = Modifier.widthIn(max = 300.dp)
-                            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 20.dp, bottomEnd = 6.dp))
-                            .background(ClaraBrush.bubble).padding(horizontal = 16.dp, vertical = 11.dp),
-                    )
+                    if (m.content.isNotBlank()) {
+                        val context = androidx.compose.ui.platform.LocalContext.current
+                        SelectionContainer {
+                            Text(
+                                m.content, style = MaterialTheme.typography.bodyLarge, color = ClaraColors.Text,
+                                modifier = Modifier.widthIn(max = 300.dp)
+                                    .background(ClaraBrush.bubble, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 20.dp, bottomEnd = 6.dp))
+                                    .padding(horizontal = 16.dp, vertical = 11.dp),
+                            )
+                        }
+                        Text(
+                            "Copy", style = MaterialTheme.typography.labelSmall, color = ClaraColors.Muted,
+                            modifier = Modifier.clickable { copyToClipboard(context, m.content) }.padding(top = 2.dp, end = 4.dp),
+                        )
+                    }
                 }
                 reaction?.let {
                     Text(
@@ -130,17 +138,28 @@ fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, on
             }
         } else {
             val (text, images) = remember(m.content) { splitImages(m.content) }
-            var menu by remember { mutableStateOf(false) }
             var reporting by remember { mutableStateOf(false) }
             Column {
-                if (text.isNotBlank()) Box {
-                    Text(
-                        markdown(text), style = MaterialTheme.typography.bodyLarge, color = ClaraColors.Text,
-                        modifier = Modifier.widthIn(max = 330.dp)
-                            .pointerInput(Unit) { detectTapGestures(onLongPress = { menu = true }) }
-                            .padding(horizontal = 4.dp, vertical = 6.dp),
-                    )
-                    ReplyMenu(text, menu, onDismiss = { menu = false }, onReport = { menu = false; reporting = true })
+                if (text.isNotBlank()) {
+                    // Selectable text: long-press brings up Android's Copy. A clip() or a custom
+                    // long-press here used to swallow that gesture, so nothing could be copied.
+                    SelectionContainer {
+                        Text(
+                            markdown(text), style = MaterialTheme.typography.bodyLarge, color = ClaraColors.Text,
+                            modifier = Modifier.widthIn(max = 330.dp).padding(horizontal = 4.dp, vertical = 6.dp),
+                        )
+                    }
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    Row(Modifier.padding(start = 4.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Text(
+                            "Copy", style = MaterialTheme.typography.labelSmall, color = ClaraColors.Muted,
+                            modifier = Modifier.clickable { copyToClipboard(context, text) }.padding(vertical = 2.dp),
+                        )
+                        Text(
+                            "Report", style = MaterialTheme.typography.labelSmall, color = ClaraColors.Muted,
+                            modifier = Modifier.clickable { reporting = true }.padding(vertical = 2.dp),
+                        )
+                    }
                 }
                 if (load != null) images.forEach { if (isVideoPath(it)) InlineVideo(it, load) else InlineImage(it, load) }
                 val shot = m.meta?.get("browser")
@@ -158,17 +177,12 @@ fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, on
     }
 }
 
-/** Long-press on Clara's reply: copy it, or report it (Google Play's rule for AI-generated content). */
-@Composable
-private fun ReplyMenu(text: String, open: Boolean, onDismiss: () -> Unit, onReport: () -> Unit) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    androidx.compose.material3.DropdownMenu(expanded = open, onDismissRequest = onDismiss) {
-        androidx.compose.material3.DropdownMenuItem(text = { Text("Copy") }, onClick = {
-            context.getSystemService(android.content.ClipboardManager::class.java)
-                .setPrimaryClip(android.content.ClipData.newPlainText("Clara", text))
-            onDismiss()
-        })
-        androidx.compose.material3.DropdownMenuItem(text = { Text("Report this reply") }, onClick = onReport)
+private fun copyToClipboard(context: android.content.Context, text: String) {
+    context.getSystemService(android.content.ClipboardManager::class.java)
+        .setPrimaryClip(android.content.ClipData.newPlainText("Clara", text))
+    // Android 13 and later shows its own "copied" confirmation.
+    if (android.os.Build.VERSION.SDK_INT < 33) {
+        android.widget.Toast.makeText(context, "Copied", android.widget.Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -268,7 +282,9 @@ private fun InlineImage(path: String, load: suspend (String) -> ByteArray?, maxW
 fun WorkingRow(streaming: String, onWatch: (() -> Unit)? = null) {
     Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
         if (streaming.isNotBlank()) {
-            Text(markdown(streaming), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 4.dp))
+            SelectionContainer {
+                Text(markdown(streaming), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 4.dp))
+            }
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TypingDots()

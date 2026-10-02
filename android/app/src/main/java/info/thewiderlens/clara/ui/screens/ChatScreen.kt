@@ -284,7 +284,8 @@ fun ChatScreen(
             TextField(
                 value = input, onValueChange = { input = it },
                 placeholder = { Text("Message Clara…") },
-                modifier = Modifier.weight(1f).clip(RoundedCornerShape(26.dp)),
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(26.dp),
                 maxLines = 5,
                 trailingIcon = {
                     IconButton(onClick = {

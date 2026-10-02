@@ -131,7 +131,7 @@ if [ ! -x /opt/clara/chrome/chrome ]; then
              libxi6 libgtk-3-0t64 libpangocairo-1.0-0 libpango-1.0-0t64 libatk1.0-0t64 libcairo-gobject2 libcairo2t64 \
              libgdk-pixbuf-2.0-0 libxrender1 libasound2t64 libfreetype6 libfontconfig1 libdbus-1-3t64 libnss3 libnss3-tools \
              libnspr4 libatk-bridge2.0-0t64 libdrm2 libxkbcommon0 libatspi2.0-0t64 libcups2t64 libxshmfence1 libgbm1 \
-             fonts-noto-color-emoji fonts-noto-cjk fonts-freefont-ttf; do
+             fonts-noto-color-emoji fonts-noto-cjk fonts-freefont-ttf xvfb; do
         for name in "$p" "${p%t64}"; do
             if apt-cache policy "$name" 2>/dev/null | grep -q 'Candidate: [0-9]'; then PKGS="$PKGS $name"; break; fi
         done
@@ -142,6 +142,17 @@ if [ ! -x /opt/clara/chrome/chrome ]; then
     CHROME=$(find "$TMPH" -type f -name chrome -perm -u+x | head -1)
     [ -n "$CHROME" ] || die "agent-browser didn't download its Chrome"
     sudo cp -a "$(dirname "$CHROME")" /opt/clara/chrome; sudo rm -rf "$TMPH"
+fi
+# Google rejects sign-in from Chrome for Testing ("this browser or app may not be secure").
+# Clara drives the normal Chrome build, headed, with one profile that keeps the sign-in.
+if [ ! -x /opt/clara/google-chrome/opt/google/chrome/chrome ]; then
+    command -v Xvfb >/dev/null || sudo apt-get install -y -qq xvfb >/dev/null
+    TMPD=$(mktemp -d)
+    curl -fsSL -o "$TMPD/chrome.deb" https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    sudo mkdir -p /opt/clara/google-chrome
+    sudo dpkg-deb -x "$TMPD/chrome.deb" /opt/clara/google-chrome
+    rm -rf "$TMPD"
+    [ -x /opt/clara/google-chrome/opt/google/chrome/chrome ] || die "Google Chrome didn't install"
 fi
 ok "agent-browser $AGENT_BROWSER_VERSION + Chrome"
 sudo chown -R root:root /opt/clara; sudo chmod -R a+rX,go-w /opt/clara    # Clara can run these, never change them
