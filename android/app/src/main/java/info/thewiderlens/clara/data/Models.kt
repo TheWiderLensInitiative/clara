@@ -118,6 +118,7 @@ sealed interface ClaraEvent {
     data class Delta(val conversationId: String, val text: String) : ClaraEvent
     data class Completed(val message: Message) : ClaraEvent
     data class RunStarted(val conversationId: String, val runId: String, val route: String) : ClaraEvent
+    data class RunStopping(val conversationId: String) : ClaraEvent
     data class Activity(val conversationId: String, val kind: String, val tool: String?, val detail: String?) : ClaraEvent
     data class ScreenshotAvailable(val conversationId: String) : ClaraEvent
     data class ApprovalRequested(val approval: Approval) : ClaraEvent

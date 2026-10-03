@@ -53,6 +53,7 @@ data class UiState(
     val messages: List<Message> = emptyList(),
     val streaming: String = "",
     val working: Boolean = false,
+    val stopping: Boolean = false,           // Stop was tapped; Clara finishes the step in progress first
     val status: String = "",                 // "Searching the web…"
     val pending: List<Approval> = emptyList(),
     val activity: List<ActivityItem> = emptyList(),
@@ -173,6 +174,7 @@ class ClaraViewModel : ViewModel() {
             val working = if (activityVersion != activityAtLoad) it.working else conv?.activeRun != null
             it.copy(
                 conversationId = cid, messages = (msgs + arrived).distinctBy { m -> m.id }, working = working,
+                stopping = if (activityVersion != activityAtLoad) it.stopping else false,
                 status = if (activityVersion != activityAtLoad) it.status else if (working) "Working on it…" else "", showLive = false,
                 unreadNotifications = if (cid == NOTIFICATIONS_CONVERSATION) 0 else it.unreadNotifications,
             )
@@ -197,7 +199,7 @@ class ClaraViewModel : ViewModel() {
         val a = api ?: return@launchSafe
         val c = a.newConversation()
         if (generation != loadGeneration) return@launchSafe
-        _ui.update { it.copy(conversations = listOf(c) + it.conversations, conversationId = c.id, messages = emptyList(), streaming = "", working = false, status = "", showLive = false) }
+        _ui.update { it.copy(conversations = listOf(c) + it.conversations, conversationId = c.id, messages = emptyList(), streaming = "", working = false, stopping = false, status = "", showLive = false) }
     }
 
     fun refreshActivity() = launchSafe { api?.let { a -> run { val fetched0 = a.activity(); val fetched1 = a.approvals("pending"); _ui.update { it.copy(activity = fetched0, pending = fetched1) } } } }
@@ -257,7 +259,17 @@ class ClaraViewModel : ViewModel() {
         }
     }
 
-    fun stop() = launchSafe { _ui.value.conversationId?.let { api?.stop(it) } }
+    fun stop() = launchSafe {
+        val cid = _ui.value.conversationId ?: return@launchSafe
+        if (_ui.value.stopping) return@launchSafe   // one tap is enough; she stops after the current step
+        _ui.update { it.copy(stopping = true, status = "Stopping…") }
+        try {
+            api?.stop(cid)
+        } catch (error: Exception) {
+            _ui.update { it.copy(stopping = false, status = if (it.working) "Working on it…" else "") }
+            throw error
+        }
+    }
 
     fun answer(approval: Approval, choice: String) = launchSafe {
         val a = api ?: return@launchSafe
@@ -470,10 +482,13 @@ class ClaraViewModel : ViewModel() {
             is ClaraEvent.Delta -> if (ev.conversationId == cur) _ui.update { it.copy(streaming = it.streaming + ev.text) }
             is ClaraEvent.RunStarted -> _ui.update { s ->
                 val convs = s.conversations.map { if (it.id == ev.conversationId) it.copy(activeRun = ev.runId) else it }
-                if (ev.conversationId == cur) s.copy(working = true, conversations = convs) else s.copy(conversations = convs)
+                if (ev.conversationId == cur) s.copy(working = true, stopping = false, conversations = convs) else s.copy(conversations = convs)
             }
-            is ClaraEvent.Activity -> {
+            is ClaraEvent.RunStopping -> if (ev.conversationId == cur) _ui.update { it.copy(stopping = true, status = "Stopping…") }
+            is ClaraEvent.Activity -> if (!_ui.value.stopping) {
                 if (ev.conversationId == cur && ev.kind == "tool.started") _ui.update { it.copy(status = friendlyTool(ev.tool)) }
+                // Laya spotted a website task: show the browser card before Chrome is even up
+                if (ev.conversationId == cur && ev.kind == "browser.opening") _ui.update { it.copy(working = true, status = "Opening my browser…") }
                 // cloud sub-agent steps arrive already phrased, e.g. "☁️ Qwen: running pytest"
                 if (ev.conversationId == cur && ev.kind == "cloud.step" && ev.detail != null) _ui.update { it.copy(status = ev.detail) }
             }
@@ -495,7 +510,7 @@ class ClaraViewModel : ViewModel() {
             is ClaraEvent.Completed -> _ui.update { s ->
                 val convs = s.conversations.map { if (it.id == ev.message.conversationId) it.copy(activeRun = null) else it }
                 if (ev.message.conversationId != cur) s.copy(conversations = convs, unreadNotifications = s.unreadNotifications + 1)
-                else s.copy(conversations = convs, messages = (s.messages + ev.message).distinctBy { it.id }, streaming = "", working = false, status = "", showLive = false,
+                else s.copy(conversations = convs, messages = (s.messages + ev.message).distinctBy { it.id }, streaming = "", working = false, stopping = false, status = "", showLive = false,
                     doneAt = System.currentTimeMillis(), pending = s.pending.filterNot { it.runId != null && it.runId == ev.message.runId })
             }
             is ClaraEvent.CharacterChanged -> {
@@ -538,7 +553,7 @@ fun moodOf(s: UiState, celebrating: Boolean = false): Mood {
         if (s.streaming.isNotBlank()) return Mood.Talking
         return when (s.status) {
             "Searching the web…" -> Mood.Searching
-            "Using the browser…", "Reading a page…", "Looking at the screen…" -> Mood.Browsing
+            "Opening my browser…", "Using the browser…", "Reading a page…", "Looking at the screen…" -> Mood.Browsing
             "Scheduling…" -> Mood.Scheduling
             "Thinking…", "Typing…", "Checking past chats…", "Planning…", "Remembering…", "Studying the image…", "Looking…" -> Mood.Thinking
             else -> Mood.Working

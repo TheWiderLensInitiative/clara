@@ -254,6 +254,7 @@ class BridgeApi(val baseUrl: String, private val token: String?) {
             "notification" -> ClaraEvent.Notification(json.decodeFromJsonElement(o["message"]!!))
             "character.changed" -> ClaraEvent.CharacterChanged(json.decodeFromJsonElement(o["style"]!!))
             "run.started" -> ClaraEvent.RunStarted(s("conversation_id"), s("run_id"), s("route"))
+            "run.stopping" -> ClaraEvent.RunStopping(s("conversation_id"))
             "activity" -> ClaraEvent.Activity(s("conversation_id"), s("kind"), o["tool"]?.jsonPrimitive?.contentOrNull, o["detail"]?.jsonPrimitive?.contentOrNull)
             "screenshot.available" -> ClaraEvent.ScreenshotAvailable(s("conversation_id"))
             "approval.requested" -> ClaraEvent.ApprovalRequested(json.decodeFromJsonElement(o["approval"]!!))

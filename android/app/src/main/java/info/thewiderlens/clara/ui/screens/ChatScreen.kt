@@ -320,12 +320,13 @@ fun ChatScreen(
             Box(
                 Modifier.size(50.dp).clip(CircleShape)
                     .background(if (state.working) ClaraBrush.approval else ClaraBrush.bubble)
-                    .clickable(enabled = canSend || state.working || voiceButton) {
+                    .clickable(enabled = canSend || (state.working && !state.stopping) || voiceButton) {
                         if (canSend) { onSend(input.trim()); input = "" } else if (voiceButton) onVoice() else onStop()
                     },
                 contentAlignment = Alignment.Center,
             ) {
                 if (voiceButton) Icon(ClaraIcons.Waveform, "Voice mode", tint = ClaraColors.Text)
+                else if (state.stopping) androidx.compose.material3.CircularProgressIndicator(Modifier.size(22.dp), color = ClaraColors.Text, strokeWidth = 2.dp)
                 else if (state.working) Icon(Icons.Filled.Close, "Stop", tint = ClaraColors.Text)
                 else Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = ClaraColors.Text.copy(alpha = if (canSend) 1f else 0.4f))
             }

@@ -1,0 +1,4 @@
+• Clara opens her browser right away for website tasks, and moves sliders, picks from dropdowns, scrolls lists and switches tabs
+• She double-checks the page before saying a task is done, and remembers what worked on a site
+• Only risky buttons (buy, send, delete, submit…) ask you first, and she waits for your answer as long as you need
+• Stop shows "Stopping…" right away
