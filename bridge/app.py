@@ -545,7 +545,10 @@ async def _send_message(cid: str, body: MessageIn, dev):
     else:
         coding = source == "make" and CODE_REQUEST.search(text) is not None
         agent_text = (text or "Take a look at this.") + _attachment_note(attachments)
-        _launch_run(cid, _agent(cid, history, agent_text, route_name, coding=coding, voice=body.voice, effort=effort))
+        browse = effort == "quick" and _is_browse(text, route_name, source)
+        if browse:   # show the browser card now; Chrome comes up while the agent hands the job over
+            bus.publish("activity", conversation_id=cid, run_id=None, kind="browser.opening", tool="browser_use", detail="Opening my browser…")
+        _launch_run(cid, _agent(cid, history, agent_text, route_name, coding=coding, voice=body.voice, effort=effort, browse=browse))
     return {"message": user_msg, "route": route_name, "source": source}
 
 
@@ -568,9 +571,17 @@ def _mentions_connected(text):
 RESTYLE_REQUEST = re.compile(r"\b(make yourself|change (your|ur) (look|looks|color|colou?rs|style|outfit|appearance|hair|eyes|shape)|"
                              r"(wear|put on) (some|a|an|the)?\s*(glasses|sunglasses|bow|crown|beanie|hat|scarf|flower|cat ears|bunny ears)|"
                              r"restyle yourself|new look|dress (yourself )?up|turn yourself)\b", re.I)
+# A website task: the browser loop does the step-by-step work, so the agent shouldn't spend a minute planning first.
+BROWSE_REQUEST = re.compile(r"\b(browser|browse|web ?site|web ?page|go to|visit|open (up )?(the |a )?(site|page|link|url))\b|https?://|"
+                            r"\b[a-z0-9][a-z0-9-]*\.(com|org|net|io|ai|dev|info|co|us|uk|ca|app|gov|edu|shop|store)\b", re.I)
 THINK_HARDER = re.compile(r"\b(think (harder|carefully|it through|about it)|take your time|be thorough|in detail|step by step|deep dive|dig into)\b", re.I)
 QUICK_MIN_CONF = float(os.environ.get("CLARA_QUICK_MIN_CONF", "0.8"))   # quick mode only if Laya's P(quick) >= this; otherwise think
 _last_effort: dict = {}   # conversation -> effort of its latest task (follow-ups continue in the same mode)
+
+
+def _is_browse(text, route_name, source) -> bool:
+    """A fresh website task (not a follow-up, file or coding job)."""
+    return route_name == "task" and source not in ("make", "file", "followup", "active_run", "google") and bool(BROWSE_REQUEST.search(text or ""))
 
 
 def _pick_effort(cid, text, route_name, source):
@@ -581,6 +592,9 @@ def _pick_effort(cid, text, route_name, source):
         effort = "quick"
     elif THINK_HARDER.search(text) or source in ("make", "file"):
         effort = "deep"
+    elif _is_browse(text, route_name, source):
+        effort = "quick"
+        store.add_activity(cid, None, "route.effort", None, "quick (a website task: her browser does the step-by-step work)")
     elif source in ("followup", "active_run") and cid in _last_effort:
         effort = _last_effort[cid]
     else:
@@ -949,7 +963,7 @@ def _brief(ev, key):
     return v if isinstance(v, str) else json.dumps(v)[:500] if v else ""
 
 
-async def _agent(cid, history, text, route_name, coding=False, voice=False, effort="deep"):
+async def _agent(cid, history, text, route_name, coding=False, voice=False, effort="deep", browse=False):
     conv_hist = [{"role": m["role"], "content": _history_text(m)} for m in history if m["role"] in ("user", "assistant")]
     now = dt.datetime.now().astimezone().isoformat(timespec="seconds")
     payload = {"input": text, "session_id": cid, "conversation_history": conv_hist,
@@ -979,6 +993,9 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     if route_name == "schedule":
         payload["instructions"] += (" The user is asking about reminders or scheduled jobs. Use the cronjob tool directly to create, "
                                     "change, cancel, or list jobs, then confirm in one friendly sentence with the exact time.")
+    if browse:
+        payload["instructions"] += (" This is a website task: call browser_use right away with the user's whole goal (and the "
+                                    "starting address if they gave one). Don't plan it yourself first; her browser works it out step by step.")
     if effort == "quick" and not coding:
         payload["model"] = "bonsai-fast"   # Hermes model route: same Bonsai, thinking off (see /bonsai/fast)
     jobs_before = await _job_ids()
@@ -1040,7 +1057,7 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                     bus.publish("approval.resolved", conversation_id=cid, run_id=run_id, choice=ev.get("choice"))
                 elif kind in ("run.completed", "run.failed", "run.error", "run.cancelled"):
                     terminal = True
-                    final = ev.get("output") or ev.get("error") or kind
+                    final = ev.get("output") or ev.get("error") or ("Okay, I stopped." if kind == "run.cancelled" else kind)
                     break
     except Exception as e:
         final = f"I lost track of that task: {e}"
@@ -1075,6 +1092,8 @@ async def stop(cid: str, dev=Depends(device)):
     _release_waits(cid)
     if not run_id and not task:
         return {"ok": True}
+    # Hermes stops after the step in progress (a browser look can take ~30 s): say so on every device right away.
+    bus.publish("run.stopping", conversation_id=cid, run_id=run_id)
     if run_id and not run_id.startswith("starting:"):
         response = await hermes.post(f"/v1/runs/{run_id}/stop", timeout=10)
         if response.status_code != 404:

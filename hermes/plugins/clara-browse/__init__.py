@@ -409,7 +409,9 @@ def _tap_text(task_id, text):
 
 
 SLIDER_STATE = """(() => {
-  const el=document.activeElement; if(!el || el===document.body) return null;
+  // Google's sliders keep focus on a child (the dot, tabindex=0), not on the role=slider element itself.
+  const sel='[role=slider],[role=spinbutton],input[type=range]', a=document.activeElement;
+  const el=a && a!==document.body ? (a.closest(sel) || a) : null; if(!el) return null;
   const g=a=>el.getAttribute(a), norm=s=>String(s||'').replace(/\\s+/g,' ').trim();
   const role=g('role')||(el.type==='range'?'slider':el.tagName.toLowerCase());
   return {role, name:norm(g('aria-label')||Array.from(el.labels||[]).map(l=>l.innerText).join(' ')),
@@ -417,11 +419,24 @@ SLIDER_STATE = """(() => {
 })()"""
 
 
+FOCUS_SLIDER_AT = """(() => {
+  const [x,y]=PARAMS, sel='[role=slider],[role=spinbutton],input[type=range]';
+  const hit=document.elementFromPoint(x,y); const el=hit && (hit.closest(sel) || hit.querySelector(sel)); if(!el) return false;
+  const target=el.matches('input,[tabindex]') ? el : el.querySelector('[tabindex],input,button'); if(!target) return false;
+  target.focus(); return el.contains(document.activeElement);
+})()"""
+
+
 def _set_slider(task_id, ref, value, name=""):
     """Focus the slider and step it with the arrow keys until it shows the wanted setting."""
     focused = _browser(task_id, "focus", [ref], timeout=10)
-    if not focused.get("success", False):
-        return {"success": False, "error": "Could not focus the slider"}
+    inside = _eval(task_id, "(() => { const a=document.activeElement; return !!(a && a.closest('[role=slider],[role=spinbutton],input[type=range]')); })()")
+    if not focused.get("success", False) or inside not in (True, "true"):
+        # The slider element itself can't take focus: focus the part of it that can (its dot).
+        box = _browser(task_id, "get", ["box", ref], timeout=10)
+        center = actions.box_center((box or {}).get("data") or {})
+        if not center or _eval(task_id, FOCUS_SLIDER_AT, list(center)) not in (True, "true"):
+            return {"success": False, "error": "Could not focus the slider"}
 
     def read():
         data = (_browser(task_id, "eval", [SLIDER_STATE], timeout=10).get("data") or {}).get("result")

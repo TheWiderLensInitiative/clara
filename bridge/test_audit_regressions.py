@@ -400,6 +400,31 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(app.store.approvals('pending'),[])
         self.assertEqual(app._waiting,{})
 
+    async def test_stop_tells_every_device_right_away(self):
+        app.store.set_active_run(self.cid,'run-a')
+        with patch.object(app,'hermes',httpx.AsyncClient(base_url='http://hermes',transport=httpx.MockTransport(lambda r:httpx.Response(200,json={})))),\
+             patch.object(app.bus,'publish') as publish:
+            await app.stop(self.cid,dev=None)
+        publish.assert_any_call('run.stopping',conversation_id=self.cid,run_id='run-a')
+        with patch.object(app.bus,'publish') as publish:   # nothing running: nothing to announce
+            app.store.set_active_run(self.cid,None);await app.stop(self.cid,dev=None)
+        publish.assert_not_called()
+
+    async def test_website_tasks_skip_the_long_think(self):
+        # 2026-10-02: "Use your browser to create a Google Group" waited 25-73 s on deep thinking before browser_use.
+        laya_stub=types.SimpleNamespace(effort=unittest.mock.Mock(return_value=('deep',0.07)))
+        with patch.object(app,'router',laya_stub):
+            laya=laya_stub.effort
+            for text in ['Use your browser to create a Google Group. Go to groups.google.com.','check the price of AirPods on amazon.com',
+                         'open https://example.com and read me the headline','go to the DMV website and find the hours']:
+                self.assertEqual(app._pick_effort(self.cid,text,'task','laya'),'quick',text)
+            laya.assert_not_called()
+            self.assertEqual(app._pick_effort(self.cid,'write a script that scrapes example.com','task','make'),'deep')
+            self.assertEqual(app._pick_effort(self.cid,'Use your browser, and think it through step by step','task','laya'),'deep')
+            self.assertEqual(app._pick_effort(self.cid,'go to the website again','task','followup'),app._last_effort.get(self.cid,'deep'))
+            self.assertEqual(app._pick_effort(self.cid,'plan my week around my goals','task','laya'),'deep')
+            self.assertEqual(app._pick_effort(self.cid,'what is on that website','chat','laya'),'chat')
+
     async def test_help_and_vault_waits_end_on_stop(self):
         app.store.set_active_run(self.cid,'run-a')
         help_task=asyncio.create_task(app.ask_for_help(app.HelpIn(reason='captcha',conversation_id=self.cid),ok=True))
