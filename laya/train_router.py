@@ -9,6 +9,8 @@ from laya.agent import _fix_tokenizer_config
 from laya.common import build_model, build_sequence, render_options, proper_reward, QTYPES
 from router_spec import QUESTION, state
 from effort_spec import EFFORT_Q
+from need_spec import NEED_Q
+from followup_spec import FOLLOWUP_Q, followup_state
 
 EPOCHS, MICRO_BATCH, GRAD_ACCUM, GROUP_SIZE = 3, 8, 4, 4
 LR_ENCODER, LR_HEAD, SIGMA_START, SIGMA_END, SMOOTH = 2.5e-5, 1.0e-4, 0.4, 0.1, 0.05
@@ -34,14 +36,16 @@ def main(train_path, out_dir):
     model_dir = snapshot_download("convaiinnovations/laya"); _fix_tokenizer_config(model_dir)
     tok = AutoTokenizer.from_pretrained(os.path.join(model_dir, "tokenizer"))
     cfg = json.load(open(os.path.join(model_dir, "rl_agent_config.json")))
-    # two questions share the model: "route" (chat/task/schedule) and "effort" (quick/deep); each line says which (default route)
-    specs = {"route": QUESTION, "effort": EFFORT_Q}
+    # four questions share the model: route (chat/task/schedule), effort (quick/deep), need (what kind of help) and
+    # followup (continue/new, which also sees Clara's last reply); each line says which (default route)
+    specs = {"route": QUESTION, "effort": EFFORT_Q, "need": NEED_Q, "followup": FOLLOWUP_Q}
     items = []
     for line in open(train_path):
         ex = json.loads(line); spec = specs[ex.get("question", "route")]
         keys = list(spec["criteria"]); q = {"t": "choice", "ins": spec["instructions"], "crit": spec["criteria"]}
         tgt = [SMOOTH / (len(keys) - 1)] * len(keys); tgt[keys.index(ex["label"])] = 1 - SMOOTH
-        seq, markers = build_sequence(tok, state(ex["text"]), q, cfg["max_len"], cfg["head_max_len"])
+        st = followup_state(ex["text"], ex.get("last")) if ex.get("question") == "followup" else state(ex["text"])
+        seq, markers = build_sequence(tok, st, q, cfg["max_len"], cfg["head_max_len"])
         if len(markers) == len(render_options(q)): items.append({"ids": seq, "markers": markers, "qtype": QTYPES["choice"], "target": tgt})
     random.Random(20260922).shuffle(items); n_cal = max(30, len(items) // 10)
     calib, train = items[:n_cal], items[n_cal:]
@@ -89,7 +93,7 @@ def main(train_path, out_dir):
     os.makedirs(out_dir, exist_ok=True)
     save_file({k: v.half().contiguous().cpu() for k, v in model.state_dict().items()}, os.path.join(out_dir, "model.safetensors"))
     model.encoder.config.save_pretrained(os.path.join(out_dir, "encoder")); tok.save_pretrained(os.path.join(out_dir, "tokenizer"))
-    cfg.update(fine_tuned=True, model_name="laya-clara-router-v2", temperature=temps); cfg.pop("temperature_by_options", None)
+    cfg.update(fine_tuned=True, model_name="laya-clara-router-v3", temperature=temps, questions=sorted(specs))   # the Bridge checks this; cfg.pop("temperature_by_options", None)
     json.dump(cfg, open(os.path.join(out_dir, "rl_agent_config.json"), "w"), indent=2); print("saved", out_dir)
 
 if __name__ == "__main__":

@@ -21,7 +21,10 @@ BROKER_KEY = _p("CLARA_BROKER_KEY", DATA / "broker.key")           # encrypts sa
 IDENTITY_CACHE = _p("CLARA_IDENTITY_CACHE", DATA / "identity.json")
 VOICE_DIR = _p("CLARA_VOICE_DIR", DATA / "voice")                   # Kokoro model files
 FONT_DIR = _p("CLARA_FONT_DIR", DATA / "fonts")                     # caption fonts for social videos
-ROUTER_MODEL = _p("CLARA_ROUTER_MODEL", DATA / "laya-for-clara")    # the fine-tuned Laya router
+ROUTER_MODEL = _p("CLARA_ROUTER_MODEL", DATA / "laya-for-clara")    # the fine-tuned Laya router: route + effort
+# Laya v3 answers the newer questions (need, followup). It routes as accurately as v2, but its probabilities all sit
+# near 0.8, so it can't say "unsure" and the Bonsai second opinion would run on every message: route stays with v2.
+NEED_MODEL = _p("CLARA_NEED_MODEL", DATA / "laya-for-clara-v3")
 WORKSPACE = _p("CLARA_WORKSPACE", "/var/lib/clara/workspace")
 STATE_DIR = _p("CLARA_STATE_DIR", "/srv/clara-state")
 HERMES_HOME = _p("HERMES_HOME", "/var/lib/clara/hermes-home")

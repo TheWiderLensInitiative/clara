@@ -1,0 +1,50 @@
+{"text": "find me a table for two on OpenTable this saturday around 7", "label": "browser"}
+{"text": "Use your browser to create a Google Group named Clara Support", "label": "browser"}
+{"text": "log into my Xfinity account and download last month's bill", "label": "browser"}
+{"text": "order more of the dog food I bought on chewy last time", "label": "browser"}
+{"text": "go on ticketmaster and see if there are 2 seats left for the hawks game, grab them if under $80", "label": "browser"}
+{"text": "change my netflix plan to the basic one", "label": "browser"}
+{"text": "fill out the contact form on clara.thewiderlens.info with a test message", "label": "browser"}
+{"text": "whats the weather gonna be like tomorrow in atlanta", "label": "search"}
+{"text": "Find the best budget 24GB GPU", "label": "search"}
+{"text": "who won the falcons game last night", "label": "search"}
+{"text": "look up reviews for the moto g stylus 2025 and summarize them", "label": "search"}
+{"text": "how much is a PS5 going for right now", "label": "search"}
+{"text": "research the best time of year to visit japan and give me the pros and cons", "label": "search"}
+{"text": "what's the latest news about the RTX 5090", "label": "search"}
+{"text": "anything important in my inbox today", "label": "email_calendar"}
+{"text": "reply to Sam's email and tell him thursday works", "label": "email_calendar"}
+{"text": "am I free friday afternoon", "label": "email_calendar"}
+{"text": "put dentist on my calendar next tuesday at 3", "label": "email_calendar"}
+{"text": "draft an email to my landlord about the broken heater", "label": "email_calendar"}
+{"text": "move my 2pm meeting to 4", "label": "email_calendar"}
+{"text": "find the email from amazon about my refund", "label": "email_calendar"}
+{"text": "play some lofi on spotify", "label": "apps"}
+{"text": "turn off the living room lights", "label": "apps"}
+{"text": "add buy milk to my todoist", "label": "apps"}
+{"text": "post the reel on Instagram and Facebook", "label": "apps"}
+{"text": "send a message in the family telegram group saying I'm running late", "label": "apps"}
+{"text": "set the thermostat to 70", "label": "apps"}
+{"text": "upload the video you made to my youtube channel as unlisted", "label": "apps"}
+{"text": "how much free disk space do I have", "label": "computer"}
+{"text": "Install the cowsay program on your computer", "label": "computer"}
+{"text": "clean up my Downloads folder, delete anything older than 6 months", "label": "computer"}
+{"text": "organize my photos folder by year", "label": "computer"}
+{"text": "is my computer running hot? check the gpu temp", "label": "computer"}
+{"text": "find the pdf I saved last week about my car insurance", "label": "computer"}
+{"text": "update all the programs on the pc", "label": "computer"}
+{"text": "draw me a cartoon cat wearing headphones", "label": "create"}
+{"text": "make a 15 second video ad for my bakery", "label": "create"}
+{"text": "write a python script that renames my files by date", "label": "create"}
+{"text": "build me a simple website for my lawn care business", "label": "create"}
+{"text": "design a logo for The Wider Lens", "label": "create"}
+{"text": "my flask app crashes on startup, can you fix it", "label": "create"}
+{"text": "make a wallpaper for my phone with purple mountains", "label": "create"}
+{"text": "remember that my sister's birthday is march 3rd", "label": "memory"}
+{"text": "don't forget I'm allergic to shellfish", "label": "memory"}
+{"text": "what do you remember about me", "label": "memory"}
+{"text": "forget what I told you about my old job", "label": "memory"}
+{"text": "keep in mind I prefer window seats", "label": "memory"}
+{"text": "remember my wifi password is on the fridge note, not the router", "label": "memory"}
+{"text": "convert this recipe to metric for me and save it", "label": "other"}
+{"text": "plan a 3 day trip to savannah for me and my wife", "label": "other"}

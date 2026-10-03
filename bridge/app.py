@@ -502,6 +502,7 @@ async def _send_message(cid: str, body: MessageIn, dev):
             return {"message": user_msg, "route": "video", "source": "retry"}
     checkin = _open_checkin(history)
     goal_context = ""
+    need, need_conf = "", 0.0   # Laya's "what kind of help", set when she routes the message
 
     if checkin and not attachments and not conv["active_run"] and not MAKE_REQUEST.search(text) and not NEEDS_TOOLS.search(text):
         route_name, source = "chat", "checkin"     # answering Clara's goal check-in
@@ -515,7 +516,7 @@ async def _send_message(cid: str, body: MessageIn, dev):
         route_name, source = "chat", "photo"       # just a photo: Clara looks and responds
     elif conv["active_run"]:
         route_name, source = "task", "active_run"  # follow-ups ("yes do it") go back to the running agent
-    elif _is_agent_followup(history, text):
+    elif await _agent_followup(history, text):
         route_name, source = "task", "followup"    # "yes go ahead" right after an agent reply needs that context
     elif (CONNECT_REQUEST.search(text) and _connector_view("google")["connected"]) or _mentions_connected(text):
         route_name, source = "task", "google"      # email / calendar need the agent's connector tools
@@ -529,13 +530,16 @@ async def _send_message(cid: str, body: MessageIn, dev):
         r = await _router_call(router.route, text)
         store.log_route(user_msg["id"], text, r)
         route_name, source = r.route, r.source
+        need, need_conf = getattr(r, "need", ""), getattr(r, "need_conf", 0.0)
+        if need and route_name == "task":
+            store.add_activity(cid, None, "route.need", None, f"{need} (Laya: {need_conf:.2f})")
         if only_images and route_name == "task" and PHOTO_QUESTION.search(text) and not NEEDS_TOOLS.search(text):
             route_name, source = "chat", "photo"   # "what is this?" about a photo: Bonsai's vision answers directly
     store._x("UPDATE messages SET route = ? WHERE id = ?", (route_name, user_msg["id"]))  # drives the 👀 / ⏰ reaction
     user_msg["route"] = route_name
     bus.publish("message.routed", conversation_id=cid, message_id=user_msg["id"], route=route_name, source=source)
 
-    effort = await _route_effort(cid, text, route_name, source)
+    effort = await _route_effort(cid, text, route_name, source, need, need_conf)
     if route_name != "chat":
         store._x("UPDATE messages SET meta = ? WHERE id = ?", (json.dumps({"effort": effort}), user_msg["id"]))
     if route_name == "schedule" and not attachments and not conv["active_run"] and REMIND_REQUEST.search(text):
@@ -545,7 +549,7 @@ async def _send_message(cid: str, body: MessageIn, dev):
     else:
         coding = source == "make" and CODE_REQUEST.search(text) is not None
         agent_text = (text or "Take a look at this.") + _attachment_note(attachments)
-        browse = effort == "quick" and _is_browse(text, route_name, source)
+        browse = effort == "quick" and _is_browse(text, route_name, source, need, need_conf)
         if browse:   # show the browser card now; Chrome comes up while the agent hands the job over
             bus.publish("activity", conversation_id=cid, run_id=None, kind="browser.opening", tool="browser_use", detail="Opening my browser…")
         _launch_run(cid, _agent(cid, history, agent_text, route_name, coding=coding, voice=body.voice, effort=effort, browse=browse))
@@ -579,12 +583,17 @@ QUICK_MIN_CONF = float(os.environ.get("CLARA_QUICK_MIN_CONF", "0.8"))   # quick 
 _last_effort: dict = {}   # conversation -> effort of its latest task (follow-ups continue in the same mode)
 
 
-def _is_browse(text, route_name, source) -> bool:
-    """A fresh website task (not a follow-up, file or coding job)."""
-    return route_name == "task" and source not in ("make", "file", "followup", "active_run", "google") and bool(BROWSE_REQUEST.search(text or ""))
+NEED_MIN = float(os.environ.get("CLARA_NEED_MIN", "0.6"))   # Laya's probability needed to trust her "what kind of help"
 
 
-def _pick_effort(cid, text, route_name, source):
+def _is_browse(text, route_name, source, need="", need_conf=0.0) -> bool:
+    """A fresh website task (not a follow-up, file or coding job): the keyword rule or Laya ("browser") says so."""
+    if route_name != "task" or source in ("make", "file", "followup", "active_run", "google"):
+        return False
+    return bool(BROWSE_REQUEST.search(text or "")) or (need == "browser" and need_conf >= NEED_MIN)
+
+
+def _pick_effort(cid, text, route_name, source, need="", need_conf=0.0):
     """quick = Bonsai without thinking (seconds), deep = with thinking. Only tasks get a choice."""
     if route_name == "chat":
         return "chat"
@@ -592,7 +601,7 @@ def _pick_effort(cid, text, route_name, source):
         effort = "quick"
     elif THINK_HARDER.search(text) or source in ("make", "file"):
         effort = "deep"
-    elif _is_browse(text, route_name, source):
+    elif _is_browse(text, route_name, source, need, need_conf):
         effort = "quick"
         store.add_activity(cid, None, "route.effort", None, "quick (a website task: her browser does the step-by-step work)")
     elif source in ("followup", "active_run") and cid in _last_effort:
@@ -626,6 +635,27 @@ MEMORY_REQUEST = re.compile(r"\b(remember|don'?t forget|do not forget|keep in mi
 OFFER = re.compile(r"\b(want me to|should i|shall i|would you like me to|do you want me to|i can .{0,60}(if you('d)? like|want))\b[^?]*\?", re.I)
 YES = re.compile(r"^\W*(yes|yeah|yep|yup|sure|ok(ay)?|please|go ahead|do it|sounds good|let'?s do it|absolutely|definitely)\b.{0,60}$", re.I)
 THANKS = re.compile(r"^\W*((thank(s| you)( so much| a lot)?|thx|ty|appreciate it|much appreciated)(,? clara)?)\W*$", re.I)
+
+
+FOLLOWUP_MIN = float(os.environ.get("CLARA_FOLLOWUP_MIN", "0.6"))   # Laya's P(continue) needed to send it back to the task
+
+
+async def _agent_followup(history, text):
+    """Laya reads Clara's last task reply next to the new message; the keyword rules remain for "yes" to an offer,
+    plain thanks, and models that weren't trained for this."""
+    if THANKS.search(text):
+        return False
+    last = next((m for m in reversed(history) if m["role"] == "assistant"), None)
+    fresh = bool(last and last["route"] in ("task", "schedule") and time.time() - last["created"] < FOLLOWUP_WINDOW)
+    if fresh and router is not None and getattr(router, "knows_need", False):
+        try:
+            choice, p_continue = await _router_call(router.followup, text, last["content"])
+        except Exception:
+            choice = None
+        if choice is not None:
+            offered_yes = OFFER.search(last["content"][-300:]) and YES.search(text)
+            return bool(offered_yes) or p_continue >= FOLLOWUP_MIN
+    return _is_agent_followup(history, text)
 
 
 def _is_agent_followup(history, text):

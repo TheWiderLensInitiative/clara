@@ -55,6 +55,12 @@ class Stream:
 def response(status, data):
     return httpx.Response(status, json=data, request=httpx.Request('POST','https://test.invalid'))
 
+class LayaSpecTests(unittest.TestCase):
+    def test_bridge_asks_exactly_what_laya_was_trained_on(self):
+        for name in ('router_spec.py','effort_spec.py','need_spec.py','followup_spec.py'):
+            self.assertEqual((ROOT/'bridge'/name).read_text(),(ROOT/'laya'/name).read_text(),name)
+
+
 class PolicyTests(unittest.TestCase):
     def test_submission_gate(self):
         for label in ['Publish','Post','Remove','Save','Continue']:
@@ -424,6 +430,37 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(app._pick_effort(self.cid,'go to the website again','task','followup'),app._last_effort.get(self.cid,'deep'))
             self.assertEqual(app._pick_effort(self.cid,'plan my week around my goals','task','laya'),'deep')
             self.assertEqual(app._pick_effort(self.cid,'what is on that website','chat','laya'),'chat')
+
+    async def test_laya_browser_need_opens_the_fast_lane(self):
+        # No keyword (no "browser", no site name): Laya's need answer alone sends it down the website lane.
+        laya_stub=types.SimpleNamespace(effort=unittest.mock.Mock(return_value=('deep',0.07)))
+        with patch.object(app,'router',laya_stub):
+            self.assertEqual(app._pick_effort(self.cid,'book me a table for two saturday at 7','task','laya','browser',0.91),'quick')
+            self.assertEqual(app._pick_effort(self.cid,'book me a table for two saturday at 7','task','laya','browser',0.40),'deep')   # unsure: think
+            self.assertEqual(app._pick_effort(self.cid,'book me a table for two saturday at 7','task','laya','search',0.95),'deep')
+        self.assertTrue(app._is_browse('book me a table','task','laya','browser',0.9))
+        self.assertFalse(app._is_browse('book me a table','task','followup','browser',0.9))
+
+    async def test_laya_decides_followups(self):
+        import time as _t
+        last={'role':'assistant','route':'task','created':_t.time()-60,'content':"I found the RTX 3090 for $649 used. Want me to watch the price?"}
+        history=[{'role':'user','route':'task','created':_t.time()-120,'content':'find a 3090'},last]
+        def stub(p): return types.SimpleNamespace(knows_need=True,followup=unittest.mock.Mock(return_value=('continue' if p>0.5 else 'new',p)))
+        with patch.object(app,'router',stub(0.93)):
+            self.assertTrue(await app._agent_followup(history,'does the used one come with a warranty'))   # the old rules say no
+        with patch.object(app,'router',stub(0.08)):
+            self.assertFalse(await app._agent_followup(history,'good morning clara'))
+            self.assertTrue(await app._agent_followup(history,'yes please'))     # "yes" to her offer always continues
+        with patch.object(app,'router',stub(0.99)) as r:
+            self.assertFalse(await app._agent_followup(history,'thank you!'))  # thanks never reaches Laya
+            r.followup.assert_not_called()
+        old=dict(last,created=_t.time()-3600)                                   # an hour ago: not a follow-up at all
+        with patch.object(app,'router',stub(0.99)) as r:
+            self.assertFalse(await app._agent_followup([history[0],old],'which one'))
+            r.followup.assert_not_called()
+        with patch.object(app,'router',types.SimpleNamespace(knows_need=False)):   # untrained model: the keyword rules
+            self.assertTrue(await app._agent_followup(history,'do it'))
+            self.assertFalse(await app._agent_followup(history,'does the used one come with a warranty'))
 
     async def test_help_and_vault_waits_end_on_stop(self):
         app.store.set_active_run(self.cid,'run-a')

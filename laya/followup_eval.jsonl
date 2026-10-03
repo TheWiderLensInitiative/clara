@@ -1,0 +1,36 @@
+{"last": "Here are three Latin dishes you could make tonight: arroz con pollo, black bean soup, and chicken tinga. Want me to find recipes online for any of them?", "text": "can you also", "label": "continue"}
+{"last": "Here are three Latin dishes you could make tonight: arroz con pollo, black bean soup, and chicken tinga. Want me to find recipes online for any of them?", "text": "yes the chicken tinga", "label": "continue"}
+{"last": "Done. Your reminder to call Mom is set for 6pm today.", "text": "thank you!", "label": "new"}
+{"last": "Done. Your reminder to call Mom is set for 6pm today.", "text": "make it 7 instead", "label": "continue"}
+{"last": "You have 212 GB free on your main drive and 1.1 TB on the second one.", "text": "what's taking up the most space", "label": "continue"}
+{"last": "You have 212 GB free on your main drive and 1.1 TB on the second one.", "text": "tell me a joke", "label": "new"}
+{"last": "I found the RTX 3090 for $649 used on eBay and $699 refurbished at Micro Center.", "text": "which one has the better warranty", "label": "continue"}
+{"last": "I found the RTX 3090 for $649 used on eBay and $699 refurbished at Micro Center.", "text": "what's the weather tomorrow", "label": "new"}
+{"last": "The group \"Clara Support\" is created. Who can post is set to Group managers.", "text": "change who can post to anyone on the web", "label": "continue"}
+{"last": "The group \"Clara Support\" is created. Who can post is set to Group managers.", "text": "awesome good job", "label": "new"}
+{"last": "I drafted a reply to Sam saying Thursday works. Want me to send it?", "text": "send it", "label": "continue"}
+{"last": "I drafted a reply to Sam saying Thursday works. Want me to send it?", "text": "no wait", "label": "continue"}
+{"last": "I drafted a reply to Sam saying Thursday works. Want me to send it?", "text": "actually say friday", "label": "continue"}
+{"last": "I couldn't finish signing in: the site asked for a code from your phone.", "text": "why did it fail", "label": "continue"}
+{"last": "I couldn't finish signing in: the site asked for a code from your phone.", "text": "try again, I'll take over for the code", "label": "continue"}
+{"last": "Today: dentist at 3pm and team call at 5pm. No new important emails.", "text": "what about tomorrow", "label": "continue"}
+{"last": "Today: dentist at 3pm and team call at 5pm. No new important emails.", "text": "good morning clara", "label": "new"}
+{"last": "Today: dentist at 3pm and team call at 5pm. No new important emails.", "text": "play some jazz", "label": "new"}
+{"last": "The living room lights are off.", "text": "the kitchen too", "label": "continue"}
+{"last": "The living room lights are off.", "text": "how do vaccines work", "label": "new"}
+{"last": "Here's your picture of a cartoon cat with headphones.", "text": "make it purple", "label": "continue"}
+{"last": "Here's your picture of a cartoon cat with headphones.", "text": "lol love it", "label": "new"}
+{"last": "Here's your picture of a cartoon cat with headphones.", "text": "now one of a dog", "label": "continue"}
+{"last": "I set the country to Canada and clicked Play. The page says 'canvas PLAY clicked'.", "text": "ok thanks", "label": "new"}
+{"last": "I installed cowsay. Running it prints a cow saying hello.", "text": "uninstall it", "label": "continue"}
+{"last": "I installed cowsay. Running it prints a cow saying hello.", "text": "im kinda bored today", "label": "new"}
+{"last": "I posted the reel to Instagram and Facebook. Instagram link: instagram.com/reel/abc", "text": "how many views does it have", "label": "continue"}
+{"last": "I posted the reel to Instagram and Facebook. Instagram link: instagram.com/reel/abc", "text": "remind me to call the bank at 4", "label": "new"}
+{"last": "Should I book the 7:30 table at Antico for two?", "text": "yeah", "label": "continue"}
+{"last": "Should I book the 7:30 table at Antico for two?", "text": "nah", "label": "continue"}
+{"last": "Should I book the 7:30 table at Antico for two?", "text": "is there anything earlier", "label": "continue"}
+{"last": "Your Downloads folder is clean: I deleted 312 files older than 6 months (4.2 GB).", "text": "do the same for my desktop", "label": "continue"}
+{"last": "Your Downloads folder is clean: I deleted 312 files older than 6 months (4.2 GB).", "text": "what's 15% of 240", "label": "new"}
+{"last": "The top headlines are about the storm in Florida, the Fed rate decision, and the Hawks trade.", "text": "tell me more about the first one", "label": "continue"}
+{"last": "The top headlines are about the storm in Florida, the Fed rate decision, and the Hawks trade.", "text": "i'm feeling stressed", "label": "new"}
+{"last": "I found 3 emails from Amazon about your refund. The latest says it was issued on Sept 28.", "text": "how much was it", "label": "continue"}

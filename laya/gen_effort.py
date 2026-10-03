@@ -27,14 +27,15 @@ def check(text):
               "Answer with one word: quick or deep.")
     w = llm(prompt, think=False, max_tokens=5, temp=0).strip().lower().strip(".")
     return w if w in EFFORTS else None
-random.seed(int(sys.argv[2]) if len(sys.argv) > 2 else 0)
-out = open(sys.argv[1], "a"); kept = dropped = 0
-for i in range(int(sys.argv[3]) if len(sys.argv) > 3 else 60):
-    label = ["quick", "deep"][i % 2]
-    items = ask(label, random.choice(STYLES), random.choice(TOPICS), n=14)
-    for s in items:
-        if True:   # the no-thinking checker shares the quick-bias we're training away, so labels come from the generator
-            out.write(json.dumps({"text": s, "label": label}) + "\n"); out.flush(); kept += 1
-        else:
-            dropped += 1
-    print(i, label, "kept", kept, "dropped", dropped, flush=True)
+if __name__ == "__main__":
+    random.seed(int(sys.argv[2]) if len(sys.argv) > 2 else 0)
+    out = open(sys.argv[1], "a"); kept = dropped = 0
+    for i in range(int(sys.argv[3]) if len(sys.argv) > 3 else 60):
+        label = ["quick", "deep"][i % 2]
+        items = ask(label, random.choice(STYLES), random.choice(TOPICS), n=14)
+        for s in items:
+            if True:   # the no-thinking checker shares the quick-bias we're training away, so labels come from the generator
+                out.write(json.dumps({"text": s, "label": label}) + "\n"); out.flush(); kept += 1
+            else:
+                dropped += 1
+        print(i, label, "kept", kept, "dropped", dropped, flush=True)

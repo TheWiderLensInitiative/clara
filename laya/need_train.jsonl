@@ -1,0 +1,892 @@
+{"text": "Log into my OpenTable account and book a table at The Local for 4 people on Friday at 7 PM under the name Alex", "label": "browser", "question": "need"}
+{"text": "Go to my Amazon account, add the blue running shoes from the search results to my cart, and proceed to checkout with the saved card", "label": "browser", "question": "need"}
+{"text": "Open my Ticketmaster account, find the next concert for my favorite artist, and purchase two VIP tickets", "label": "browser", "question": "need"}
+{"text": "Access my bank's online portal, log in, and navigate to the bill pay section to pay my electricity bill", "label": "browser", "question": "need"}
+{"text": "Go to the Etsy website, find a specific handmade ceramic mug, add it to my cart, and check out using my saved payment method", "label": "browser", "question": "need"}
+{"text": "Log into my school portal, navigate to the course registration page, and select the three courses I need for next semester", "label": "browser", "question": "need"}
+{"text": "Open Craigslist, search for apartments in my area, and save three listings that meet the criteria of 2 bedrooms and under $1500/month", "label": "browser", "question": "need"}
+{"text": "Go to my utility provider's website, log in, and change my service plan to the cheaper green energy option", "label": "browser", "question": "need"}
+{"text": "Access my Google Groups account and post a message in the 'Project Team' group asking for feedback on the latest draft by tomorrow", "label": "browser", "question": "need"}
+{"text": "Log into my Netflix account, find the movie I've been watching, and continue playing it from where I left off", "label": "browser", "question": "need"}
+{"text": "Go to the local library's website, log in to my account, and place holds on the two books I requested last week", "label": "browser", "question": "need"}
+{"text": "Open my university's online store, log in, and purchase the required textbook for my biology class", "label": "browser", "question": "need"}
+{"text": "Find the current air quality index for my location and check local news for any air quality alerts.", "label": "search", "question": "need"}
+{"text": "Search for the best running routes near my home and look up recent reviews of the trailheads.", "label": "search", "question": "need"}
+{"text": "Look up the current price of a specific running shoe model and compare it across online retailers.", "label": "search", "question": "need"}
+{"text": "Check the weather forecast for the next 7 days to plan a weekly gym session outdoors.", "label": "search", "question": "need"}
+{"text": "Search for the latest news about the city's new health center opening.", "label": "search", "question": "need"}
+{"text": "Find the latest scores for the local marathon and check community reviews of the event.", "label": "search", "question": "need"}
+{"text": "Look up the current price of a smart home fitness tracker and compare it with other models.", "label": "search", "question": "need"}
+{"text": "Search for the best local running clubs in my area and check their recent activity on social media.", "label": "search", "question": "need"}
+{"text": "Check the current news for any health-related warnings or updates in my region.", "label": "search", "question": "need"}
+{"text": "Find the latest reviews for a new fitness app that tracks sleep quality and heart rate.", "label": "search", "question": "need"}
+{"text": "Book my Tuesday lunch", "label": "email_calendar", "question": "need"}
+{"text": "Find my free Thursday slots", "label": "email_calendar", "question": "need"}
+{"text": "Move dentist to 10am", "label": "email_calendar", "question": "need"}
+{"text": "Check if Sarah replied", "label": "email_calendar", "question": "need"}
+{"text": "Draft refund request email", "label": "email_calendar", "question": "need"}
+{"text": "See my Friday meetings", "label": "email_calendar", "question": "need"}
+{"text": "Find cheapest flight price", "label": "email_calendar", "question": "need"}
+{"text": "Cancel that subscription renewal", "label": "email_calendar", "question": "need"}
+{"text": "Sort inbox by price", "label": "email_calendar", "question": "need"}
+{"text": "Add meeting to calendar", "label": "email_calendar", "question": "need"}
+{"text": "Reschedule 1pm to 2pm", "label": "email_calendar", "question": "need"}
+{"text": "Find 2 hour free block", "label": "email_calendar", "question": "need"}
+{"text": "Turn off the living room smart lights and set the thermostat to 68 degrees after I finish watching the weather on the browser.", "label": "apps", "question": "need"}
+{"text": "Post a video of the local sunrise to Instagram using the photos I just took, then update my weather forecast in the calendar.", "label": "apps", "question": "need"}
+{"text": "Save this weather report to the Notion page for local events and share it in the team Slack channel.", "label": "apps", "question": "need"}
+{"text": "Upload the local hiking trail video to YouTube and attach the location data from the camera roll.", "label": "apps", "question": "need"}
+{"text": "Set the thermostat to 72 degrees, start a local weather playlist on Spotify, and log the task in Todoist.", "label": "apps", "question": "need"}
+{"text": "Send the local festival schedule to the family Telegram group and add it to the OneDrive folder.", "label": "apps", "question": "need"}
+{"text": "Post a picture of the local sunset to Facebook and schedule it to appear in 30 minutes.", "label": "apps", "question": "need"}
+{"text": "Update the local weather forecast in the calendar and set a reminder in Todoist for the next weekend trip.", "label": "apps", "question": "need"}
+{"text": "Share the local community event on the Notion page and notify the friends on Discord.", "label": "apps", "question": "need"}
+{"text": "Save the local weather data to Dropbox and create a GitHub repository for the local temperature analysis.", "label": "apps", "question": "need"}
+{"text": "Post the local restaurant review to Twitter and add the weather notes to the Notion journal.", "label": "apps", "question": "need"}
+{"text": "Set the smart lights to a warm tone, play local weather radio on Spotify, and log the local event in Todoist.", "label": "apps", "question": "need"}
+{"text": "yo, check if my laptop's actually still got any free disk space or if i need to start deleting some old projects before this download blows up", "label": "computer", "question": "need"}
+{"text": "can you open the terminal and run a command to see what's using up all my system resources right now because it's lagging bad", "label": "computer", "question": "need"}
+{"text": "i need to install that new audio editing software you recommended but first check if my current drivers are up to date and won't cause any issues", "label": "computer", "question": "need"}
+{"text": "what's the total size of the folder on my desktop named 'old_mixes' and if it's over 10gb just move it to the external drive i plugged in", "label": "computer", "question": "need"}
+{"text": "run a quick system update check via the command line and let me know if there are any critical patches pending", "label": "computer", "question": "need"}
+{"text": "i want to update my spotify desktop app to the latest version but it's been stuck on 'checking for updates' for ten minutes, what's going on under the hood", "label": "computer", "question": "need"}
+{"text": "open my local audio file library and sort all my mp3s by file size so i can see which ones are eating up the most storage", "label": "computer", "question": "need"}
+{"text": "check if there are any background processes in the system tray that are playing music when they shouldn't be, maybe i left something running", "label": "computer", "question": "need"}
+{"text": "what's my current system info like cpu usage and ram allocation right now because the spotify app is crashing every time i try to open it", "label": "computer", "question": "need"}
+{"text": "i found a bunch of temp files in my cache folder that are like 5gb, can you delete those and free up some disk space for me", "label": "computer", "question": "need"}
+{"text": "run a command in the terminal to check if my spotify desktop app is actually connected to my local server or if it's running on some weird external node", "label": "computer", "question": "need"}
+{"text": "i want to install a new plugin for my audio workstation but it needs a specific runtime environment, can you check if i have the right dependencies installed already?", "label": "computer", "question": "need"}
+{"text": "Create a Python script that automatically renames my downloaded assignment files using the date and course code in the filename.", "label": "create", "question": "need"}
+{"text": "Generate a custom logo for my student club that incorporates an open book and a lightbulb, and save it as a high-res PNG.", "label": "create", "question": "need"}
+{"text": "Write a basic JavaScript function to fix the bug where my class website's attendance tracker isn't saving the latest student names.", "label": "create", "question": "need"}
+{"text": "Create a short, silent 10-second GIF of a stylized pencil writing the word 'Pass' in a checkered pattern.", "label": "create", "question": "need"}
+{"text": "Build a simple HTML and CSS page that displays my upcoming exam dates in a visually appealing, color-coded timeline.", "label": "create", "question": "need"}
+{"text": "Design a mobile app mockup for a study-group scheduler that includes a calendar view and a chat window.", "label": "create", "question": "need"}
+{"text": "Write a Bash script that monitors my hard drive's free space and creates a text file alert if it drops below 50%.", "label": "create", "question": "need"}
+{"text": "Generate an animated background image with slowly drifting geometric shapes that loops seamlessly for my presentation screen.", "label": "create", "question": "need"}
+{"text": "Create a Python class to organize my digital textbook files by subject and chapter, moving them into a new directory structure.", "label": "create", "question": "need"}
+{"text": "Write a small React component to fix the issue where my project's login button doesn't submit the form on mobile devices.", "label": "create", "question": "need"}
+{"text": "Make a vector logo for my thesis project that features a DNA helix intertwined with a compass needle.", "label": "create", "question": "need"}
+{"text": "Develop a Python script to parse the text from my scanned lecture PDFs and create a searchable, formatted Markdown file.", "label": "create", "question": "need"}
+{"text": "remember that I hate when the kitchen lights go purple, make it warm white instead", "label": "memory", "question": "need"}
+{"text": "forget about that weird thermostat calibration thing you did last week, it was a fluke", "label": "memory", "question": "need"}
+{"text": "recall what I told you about my coffee preferences so you don't brew the wrong strength", "label": "memory", "question": "need"}
+{"text": "remember my wife's birthday is in March, set a reminder on the calendar app", "label": "memory", "question": "need"}
+{"text": "don't forget I'm allergic to pollen, don't schedule outdoor stuff in May", "label": "memory", "question": "need"}
+{"text": "recall the password I gave you for the smart lock so I can unlock it remotely", "label": "memory", "question": "need"}
+{"text": "remember that I only want the living room thermostat set to 72 degrees when I'm home", "label": "memory", "question": "need"}
+{"text": "forget the old house layout in your memory, I moved the bookshelf to the other wall", "label": "memory", "question": "need"}
+{"text": "recall the last time I said I wanted the porch light to turn on at sunset", "label": "memory", "question": "need"}
+{"text": "remember that I don't use the guest WiFi for work stuff, keep that separate", "label": "memory", "question": "need"}
+{"text": "don't forget my name is Sarah so you can greet me correctly in the smart speaker", "label": "memory", "question": "need"}
+{"text": "recall the setting I mentioned where I want all lights to dim when the movie starts", "label": "memory", "question": "need"}
+{"text": "convert my grocery list from imperial to metric units", "label": "other", "question": "need"}
+{"text": "remind me to pay the electric bill at 5pm", "label": "other", "question": "need"}
+{"text": "what is 15% of 240.50?", "label": "other", "question": "need"}
+{"text": "search for the best coffee shop near my office", "label": "other", "question": "need"}
+{"text": "open my notes app and write down these 3 ideas", "label": "other", "question": "need"}
+{"text": "book a table for 2 at the restaurant from that article", "label": "other", "question": "need"}
+{"text": "Can you log into my OpenTable account, find the 'Sushi Zen' restaurant in Brooklyn, and book a table for four people this Saturday at 7 PM?", "label": "browser", "question": "need"}
+{"text": "Please go to my bank's online portal, sign in, and click through to the card management page to order a replacement debit card for the one that was lost.", "label": "browser", "question": "need"}
+{"text": "Navigate to Ticketmaster and search for the 'Bruno Mars' tour dates in my city, then select the tickets and proceed to the checkout page.", "label": "browser", "question": "need"}
+{"text": "Log in to my Amazon account, find the specific running shoes I viewed last week, add them to my cart, and apply the discount code 'FIT20' before hitting checkout.", "label": "browser", "question": "need"}
+{"text": "Open my gym's member portal, sign in, and schedule a session with my personal trainer for next Tuesday morning by clicking through the booking interface.", "label": "browser", "question": "need"}
+{"text": "Go to the local university's student health center website, log in with my student ID, and fill out the form to schedule an appointment for a physical examination.", "label": "browser", "question": "need"}
+{"text": "Access the local utility company's customer portal, log in, and navigate to the account settings to change the auto-renewal plan to a lower-tier energy usage package.", "label": "browser", "question": "need"}
+{"text": "Log in to the local gym's app via the browser and book a private session with a physical therapist for lower back pain by clicking through the booking flow.", "label": "browser", "question": "need"}
+{"text": "Navigate to the local sports shop's website, search for running shoes, filter by size and brand, and add a pair to my cart and proceed to checkout.", "label": "browser", "question": "need"}
+{"text": "Log in to the local gym's website, find the 'Advanced Stretching' class, and book a spot in it for next Sunday by clicking through the class list and booking page.", "label": "browser", "question": "need"}
+{"text": "Access the local school's parent portal, log in, and navigate to the health services page to request a vaccination form for my child by clicking through the required menus.", "label": "browser", "question": "need"}
+{"text": "Go to the local sports shop's website, sign in to my account, and book a pair of new running shoes in a larger size by clicking through the product pages and selecting the size.", "label": "browser", "question": "need"}
+{"text": "yo, what's the deal with the rain in the city tonight? like, do i actually need an umbrella or are we getting like, a solid downpour?", "label": "search", "question": "need"}
+{"text": "hey, i'm thinking of grabbing dinner in downtown tonight. can you find me a few places with decent reviews for italian food that are open late?", "label": "search", "question": "need"}
+{"text": "what's the weather in seattle like right now? like, temp and all, since i'm trying to decide if i should wear my jacket to the meeting.", "label": "search", "question": "need"}
+{"text": "quick one, what's the current price of bitcoin? i'm just curious what the market's doing today.", "label": "search", "question": "need"}
+{"text": "can you look up the latest news on that new ai model just dropped? i saw it everywhere but want the actual facts.", "label": "search", "question": "need"}
+{"text": "what time does the sun go down in my neighborhood tomorrow? i need to plan a sunset hike.", "label": "search", "question": "need"}
+{"text": "hey, find me reviews on that new electric car model i keep seeing in ads. i'm trying to see if it's worth the hype.", "label": "search", "question": "need"}
+{"text": "what's the weather forecast for the weekend? specifically saturday, since i'm thinking of going to the beach.", "label": "search", "question": "need"}
+{"text": "look up the current stock price for apple. just a quick check before i update my spreadsheet.", "label": "search", "question": "need"}
+{"text": "what's the local news about the road closure on main street? i need to know if it affects my commute today.", "label": "search", "question": "need"}
+{"text": "can you find out what's playing at the local movie theater tonight? like, what are the showtimes and what's new this week?", "label": "search", "question": "need"}
+{"text": "what's the air quality index in my area right now? i need to know if it's safe to go running outside.", "label": "search", "question": "need"}
+{"text": "can u check my cal for tomorrow and find 30 min to send that follow up email?", "label": "email_calendar", "question": "need"}
+{"text": "find the invite for my dentist appt in my cal and move it to next wed 2pm, then email my doc the new time.", "label": "email_calendar", "question": "need"}
+{"text": "sort my un-read emails by date and send a reply to the last one from jess asking about the meeting.", "label": "email_calendar", "question": "need"}
+{"text": "search my cal for the next 2 weeks to find a free slot to block off for video editing, then email the team.", "label": "email_calendar", "question": "need"}
+{"text": "what time did i schedule that client call in my cal? send the link to the meeting to the client via email.", "label": "email_calendar", "question": "need"}
+{"text": "look up my cal for friday and if i dont have a meeting at 3pm, book a video call with the director and send the invite.", "label": "email_calendar", "question": "need"}
+{"text": "find all emails from my landlord in the last month and send him a reply about the rent increase, then add the date to my cal.", "label": "email_calendar", "question": "need"}
+{"text": "can u look at my schedule this week and if there is a gap, book a 1hr block to post my new video, then email my editor?", "label": "email_calendar", "question": "need"}
+{"text": "check my inbox for the password reset email, and while im at it, find the calendar invite for the all hands and move it 15 min later.", "label": "email_calendar", "question": "need"}
+{"text": "sort my emails by sender and find the one from the studio, then reply that i can make the 4pm video review and add it to my cal.", "label": "email_calendar", "question": "need"}
+{"text": "see if i have any free time this afternoon in my cal, and if so, send an email to the client proposing that time for the video call.", "label": "email_calendar", "question": "need"}
+{"text": "find the email with the video link from the client, save the time from the cal for the meeting, and email a calendar invite for next week.", "label": "email_calendar", "question": "need"}
+{"text": "Could you please check my Notion database and update the status of the project tasks to 'done' for today's deadline?", "label": "apps", "question": "need"}
+{"text": "Please use my smart thermostat to set the temperature to 68 degrees while I am in a meeting, and switch it back to auto after 2 hours?", "label": "apps", "question": "need"}
+{"text": "Can you post the latest update from my GitHub repository to my company Slack channel to let the team know the build is deployed?", "label": "apps", "question": "need"}
+{"text": "Would you mind uploading the latest video file from my computer to YouTube as a draft without publishing it yet?", "label": "apps", "question": "need"}
+{"text": "Please send a Telegram message to my friend reminding him to bring snacks to the game night at 8 PM?", "label": "apps", "question": "need"}
+{"text": "I need you to create a new section in Notion called 'Q3 Marketing Plan' and populate it with the data from my Dropbox spreadsheet.", "label": "apps", "question": "need"}
+{"text": "Could you schedule a new event in my calendar for 3 PM with a note that I need to bring the presentation from my OneDrive?", "label": "apps", "question": "need"}
+{"text": "Please check my Todoist list and move all tasks tagged with 'urgent' to the top of today's to-do list.", "label": "apps", "question": "need"}
+{"text": "Can you share the song currently playing on my Spotify playlist with my colleagues via a Slack message?", "label": "apps", "question": "need"}
+{"text": "I would like you to upload the project summary document from my computer to my shared Dropbox folder and notify the team on Slack.", "label": "apps", "question": "need"}
+{"text": "Please set the smart lights in the living room to 'movie mode' and pause the current episode on Spotify while I am in a call.", "label": "apps", "question": "need"}
+{"text": "Could you post a photo from my camera roll to Instagram and tag my friends from the recent team outing in the caption?", "label": "apps", "question": "need"}
+{"text": "help me free up disk space before i deploy to prod tonight", "label": "computer", "question": "need"}
+{"text": "can you run a script in terminal to check if my ports are open?", "label": "computer", "question": "need"}
+{"text": "my laptop is lagging, show me what processes are eating up ram", "label": "computer", "question": "need"}
+{"text": "i need to install a new c++ library, guide me through the terminal steps", "label": "computer", "question": "need"}
+{"text": "check my c drive disk usage, i dont know where all this junk is coming from", "label": "computer", "question": "need"}
+{"text": "i forgot how to check my system info, is there a command for that?", "label": "computer", "question": "need"}
+{"text": "run a terminal command to see if my firewall is actually blocking anything", "label": "computer", "question": "need"}
+{"text": "my files are scattered, can you help me organize my desktop folder?", "label": "computer", "question": "need"}
+{"text": "can you check my disk usage and delete old temp files to free space?", "label": "computer", "question": "need"}
+{"text": "i need to uninstall a bloatware app, do it via command prompt", "label": "computer", "question": "need"}
+{"text": "my pc is running hot, can you check the temperature via terminal?", "label": "computer", "question": "need"}
+{"text": "check if my cpu and gpu drivers are up to date using a terminal script", "label": "computer", "question": "need"}
+{"text": "Fix weather app crash", "label": "create", "question": "need"}
+{"text": "Logo for bakery", "label": "create", "question": "need"}
+{"text": "Bug in local maps", "label": "create", "question": "need"}
+{"text": "Rain video render", "label": "create", "question": "need"}
+{"text": "Website for cafe", "label": "create", "question": "need"}
+{"text": "Snowfall picture gen", "label": "create", "question": "need"}
+{"text": "Script for transit", "label": "create", "question": "need"}
+{"text": "Bug in calendar app", "label": "create", "question": "need"}
+{"text": "Lighthouse logo design", "label": "create", "question": "need"}
+{"text": "Fog animation make", "label": "create", "question": "need"}
+{"text": "Website for museum", "label": "create", "question": "need"}
+{"text": "Bug in weather radar", "label": "create", "question": "need"}
+{"text": "remember my knee hurts when i sit too long and dont put workouts near my desk", "label": "memory", "question": "need"}
+{"text": "don't forget i'm lactose free so check the grocery list before i order", "label": "memory", "question": "need"}
+{"text": "recall my favorite running shoes size and brand for that new order i sent", "label": "memory", "question": "need"}
+{"text": "forget my old password for that streaming app i cancelled last month", "label": "memory", "question": "need"}
+{"text": "remember i prefer no notifications after 10pm so turn off my smart lights", "label": "memory", "question": "need"}
+{"text": "recall my doctor's appointment date and add a reminder to my calendar", "label": "memory", "question": "need"}
+{"text": "forget my preference for spicy food in the last few restaurant orders", "label": "memory", "question": "need"}
+{"text": "remember i have a peanut allergy and make sure the next meal plan is safe", "label": "memory", "question": "need"}
+{"text": "recall my gym schedule and tell me if i missed my last session", "label": "memory", "question": "need"}
+{"text": "don't forget to email my manager about the sick leave tomorrow", "label": "memory", "question": "need"}
+{"text": "remember my coffee shop order is extra shot no sugar and put it in the app", "label": "memory", "question": "need"}
+{"text": "forget the old wifi password for my laptop and set the new one", "label": "memory", "question": "need"}
+{"text": "recall my birthday is next friday and remind me to order a cake", "label": "memory", "question": "need"}
+{"text": "remember i hate my phone pinging at night so keep it on silent after 9", "label": "memory", "question": "need"}
+{"text": "don't forget my meditation routine is 10 mins before bed, add it to calendar", "label": "memory", "question": "need"}
+{"text": "recall my favorite book series and check if the next one is in the library app", "label": "memory", "question": "need"}
+{"text": "forget my old address so updates to my shipping profile are correct", "label": "memory", "question": "need"}
+{"text": "remember my water intake goal is 3l and set a smart bottle reminder", "label": "memory", "question": "need"}
+{"text": "recall my yoga mat is in the closet and i left it there last week", "label": "memory", "question": "need"}
+{"text": "don't forget to block out the next hour for my doctor video call", "label": "memory", "question": "need"}
+{"text": "remember i prefer short meetings so set the timer for 15 mins when i say so", "label": "memory", "question": "need"}
+{"text": "forget my old gym membership and cancel it through the connected app", "label": "memory", "question": "need"}
+{"text": "recall my sleep goal is 8 hours and check if i hit it last night", "label": "memory", "question": "need"}
+{"text": "remember to take my vitamin d in the morning with breakfast", "label": "memory", "question": "need"}
+{"text": "forget my previous gym workout plan and start the new one from last month", "label": "memory", "question": "need"}
+{"text": "recall my favorite podcast and subscribe me to it in the app", "label": "memory", "question": "need"}
+{"text": "don't forget to water the plants in the living room every tuesday", "label": "memory", "question": "need"}
+{"text": "remember i have a bad knee on the left so avoid high impact cardio", "label": "memory", "question": "need"}
+{"text": "forget the old password for my email and reset it to the new one", "label": "memory", "question": "need"}
+{"text": "recall my favorite coffee recipe and put it in the notes app", "label": "memory", "question": "need"}
+{"text": "don't forget to pay the electric bill by the 5th", "label": "memory", "question": "need"}
+{"text": "remember to stretch my neck after every hour at work", "label": "memory", "question": "need"}
+{"text": "forget my old phone number in the contact list and update it", "label": "memory", "question": "need"}
+{"text": "recall my favorite gym playlist and queue it up when i start running", "label": "memory", "question": "need"}
+{"text": "don't forget to set the thermostat to 68 when i leave the house", "label": "memory", "question": "need"}
+{"text": "Hey I need you to pull up my step counter from today and then open the spreadsheet in my local drive to update the nutrition log cell for breakfast", "label": "other", "question": "need"}
+{"text": "Go to my browser history and find that nutrition article I was reading last night and save it to the read later tab while also blocking the site so it does not load again during my work hours", "label": "other", "question": "need"}
+{"text": "Find the recipe I bookmarked in the browser for the chicken salad and extract the ingredients then cross reference them with the shopping list app to see what is already in the list and move the new ones to the top", "label": "other", "question": "need"}
+{"text": "Book table OpenTable", "label": "browser", "question": "need"}
+{"text": "Buy shirt Amazon", "label": "browser", "question": "need"}
+{"text": "Subscribe Twitch stream", "label": "browser", "question": "need"}
+{"text": "Comment Reddit thread", "label": "browser", "question": "need"}
+{"text": "Book concert Ticketmaster", "label": "browser", "question": "need"}
+{"text": "Set Twitch settings", "label": "browser", "question": "need"}
+{"text": "Order pizza Domino's", "label": "browser", "question": "need"}
+{"text": "Create Twitter account", "label": "browser", "question": "need"}
+{"text": "Watch Netflix movie", "label": "browser", "question": "need"}
+{"text": "latest stock price", "label": "search", "question": "need"}
+{"text": "weather forecast tomorrow", "label": "search", "question": "need"}
+{"text": "top news headlines", "label": "search", "question": "need"}
+{"text": "current flight times", "label": "search", "question": "need"}
+{"text": "movie ticket prices", "label": "search", "question": "need"}
+{"text": "book author bio", "label": "search", "question": "need"}
+{"text": "sports score update", "label": "search", "question": "need"}
+{"text": "new phone reviews", "label": "search", "question": "need"}
+{"text": "best coffee shop reviews", "label": "search", "question": "need"}
+{"text": "current gas prices", "label": "search", "question": "need"}
+{"text": "election polling data", "label": "search", "question": "need"}
+{"text": "latest tech release news", "label": "search", "question": "need"}
+{"text": "Draft a polite reply to the invoice email I just received, and schedule a follow-up meeting for next Tuesday at 10 AM on my calendar.", "label": "email_calendar", "question": "need"}
+{"text": "Find the last email I sent about the Q3 report, copy its content, and create a draft for my manager.", "label": "email_calendar", "question": "need"}
+{"text": "Look for two open slots in my calendar this week and send a meeting invitation to Sarah for one of them.", "label": "email_calendar", "question": "need"}
+{"text": "Move my 3 PM doctor appointment to Thursday at 11 AM and let the office know via email.", "label": "email_calendar", "question": "need"}
+{"text": "Search my sent emails for the password reset link from the cloud provider, then send it to myself.", "label": "email_calendar", "question": "need"}
+{"text": "Find the next available time after 2 PM today for a 45-minute meeting and invite John, Alice, and Bob.", "label": "email_calendar", "question": "need"}
+{"text": "Delete the newsletter emails in my inbox and archive any emails from the vendor I haven't replied to in a month.", "label": "email_calendar", "question": "need"}
+{"text": "Check my schedule for conflicts today, reschedule the 1:30 PM team meeting to 3:30 PM, and email an update to the attendees.", "label": "email_calendar", "question": "need"}
+{"text": "Find the email thread about the flight booking and send a confirmation request to the airline.", "label": "email_calendar", "question": "need"}
+{"text": "List all meetings for this afternoon, move the client call to 4 PM, and send an updated calendar invite.", "label": "email_calendar", "question": "need"}
+{"text": "Search my inbox for 'contract' and draft a reply agreeing to the terms, then schedule a 15-minute reminder.", "label": "email_calendar", "question": "need"}
+{"text": "Find the next free slot in the next 2 hours for a 20-minute call and email the time to my colleague.", "label": "email_calendar", "question": "need"}
+{"text": "Could you please set my thermostat to 18 degrees and turn on the living room smart lights to a dimmed brightness while I'm resting?", "label": "apps", "question": "need"}
+{"text": "Please upload this video file to YouTube and then send the link to my personal Telegram channel so I can share it.", "label": "apps", "question": "need"}
+{"text": "Could you sync my latest workout notes from Notion into my Todoist list so I don't forget to log them?", "label": "apps", "question": "need"}
+{"text": "Please download this latest code update from my GitHub repository and move it to my Dropbox folder for safekeeping.", "label": "apps", "question": "need"}
+{"text": "Could you send a quick Slack message to the development team that I will be offline for a fitness session?", "label": "apps", "question": "need"}
+{"text": "Please post this new workout routine to Instagram and use the hashtag #FitLife to reach more people.", "label": "apps", "question": "need"}
+{"text": "Could you upload my fitness vlog to YouTube and then post a teaser to Discord to let the community know?", "label": "apps", "question": "need"}
+{"text": "Please sync my new training schedule from Todoist into Notion for better visualization of the week.", "label": "apps", "question": "need"}
+{"text": "Could you send a reminder about my upcoming health check-up via Telegram and then mark it in my Notion planner?", "label": "apps", "question": "need"}
+{"text": "Please upload my latest progress photos to Dropbox and share the album link on Facebook?", "label": "apps", "question": "need"}
+{"text": "Could you set the smart lights to a bright, energetic mode and turn on my Spotify playlist for a morning workout?", "label": "apps", "question": "need"}
+{"text": "Please send this fitness article from my OneDrive notes to Slack so the team can review the new protocols.", "label": "apps", "question": "need"}
+{"text": "Could you please write a Python script that parses my attached quarterly sales CSV and generates a new Excel file with a pivot table summarizing revenue by region?", "label": "create", "question": "need"}
+{"text": "Would you mind creating a simple HTML and CSS landing page for my freelance design portfolio that highlights my latest three case studies?", "label": "create", "question": "need"}
+{"text": "I would appreciate it if you could fix the bug in my JavaScript React component that is causing the user profile dropdown menu to not close correctly on mobile devices.", "label": "create", "question": "need"}
+{"text": "Could you create a custom Python script that automates my weekly invoice processing by reading my email attachments and filing them into the appropriate folders based on client name?", "label": "create", "question": "need"}
+{"text": "Please write a bash script that monitors my server logs and sends a Slack alert if the error rate exceeds a certain threshold for more than five minutes.", "label": "create", "question": "need"}
+{"text": "Would you be able to create a small Node.js API that connects to my Notion database and returns a JSON summary of my open to-do items for the current week?", "label": "create", "question": "need"}
+{"text": "Could you please write a Python program that scrapes product prices from a specific e-commerce website and updates my local inventory spreadsheet accordingly every hour?", "label": "create", "question": "need"}
+{"text": "I would like you to create a Python script that connects to my smart home hub to automatically adjust the thermostat based on the forecast temperature from my calendar's upcoming travel plans.", "label": "create", "question": "need"}
+{"text": "Please write a simple Python script that reads my calendar events for next month and creates a new Outlook email with a draft itinerary for each business trip?", "label": "create", "question": "need"}
+{"text": "Could you create a JavaScript utility function that formats and validates my user input data before sending it to the backend for my new e-commerce website?", "label": "create", "question": "need"}
+{"text": "Would you mind writing a Python script that takes the photos from my latest business trip and uses a template to create a formatted PDF report with captions for each image?", "label": "create", "question": "need"}
+{"text": "Please create a Python script that connects to my browser history and creates a new folder on my computer containing only the links from the last 24 hours for research purposes.", "label": "create", "question": "need"}
+{"text": "remember that I always want to split the electricity bill with Dave half and half", "label": "memory", "question": "need"}
+{"text": "don't forget to check my browser history to see which streaming sites I visited last month", "label": "memory", "question": "need"}
+{"text": "recall the password I told you for the bank portal when I saved it last week", "label": "memory", "question": "need"}
+{"text": "remember to turn on the smart lights in the kitchen when I get home from work", "label": "memory", "question": "need"}
+{"text": "forget about the old grocery list I made for the birthday party three weeks ago", "label": "memory", "question": "need"}
+{"text": "remember that I hate when you auto reply to emails from unknown senders", "label": "memory", "question": "need"}
+{"text": "recall the name of that app I used to track my spending last year", "label": "memory", "question": "need"}
+{"text": "don't forget to set a reminder on my calendar for the dentist appointment next tuesday", "label": "memory", "question": "need"}
+{"text": "remember to close the browser tabs I have open after we finish this conversation", "label": "memory", "question": "need"}
+{"text": "recall the wifi password I gave you for the guest network at the office", "label": "memory", "question": "need"}
+{"text": "forget to log me out of the shopping app after you place that order for me", "label": "memory", "question": "need"}
+{"text": "remember that my car needs an oil change around the first of every month", "label": "memory", "question": "need"}
+{"text": "I'd like you to go to my Etsy shop account, find my 'Vintage Leather Wallets' listing, and change the price to $45.00 and update the stock to 5 units.", "label": "browser", "question": "need"}
+{"text": "Please open my bank's online portal in a private browser session, log in securely, and locate the statement for my savings account from last month to download it as a PDF.", "label": "browser", "question": "need"}
+{"text": "Can you navigate to my school's student portal, find the 'Course Registration' section, and select the advanced calculus lecture for next semester to add it to my cart?", "label": "browser", "question": "need"}
+{"text": "I want you to go to my local utility company's website, sign in, and schedule a meter replacement appointment for the first Tuesday of next month between 9 and 11 AM.", "label": "browser", "question": "need"}
+{"text": "Could you open the Ticketmaster app in the browser, select the 'Live Music' category, and add the concert tickets for Friday night's show to my account so I can check out later?", "label": "browser", "question": "need"}
+{"text": "Please take me to my Craigslist account, find the listing I posted for my old bicycle, and edit the description to mention it has a new chain and tires.", "label": "browser", "question": "need"}
+{"text": "I'd appreciate it if you could open my Amazon account, go to my 'Wishlist', remove the broken keyboard, and add the blue ergonomic mouse I saved from the search results.", "label": "browser", "question": "need"}
+{"text": "Can you open the Google Groups website, join the 'Local History Enthusiasts' group, and change my profile settings to make my public posts visible only to members?", "label": "browser", "question": "need"}
+{"text": "Please open my OpenTable account, look at the 'My Reservations' page, and reschedule the dinner for next Thursday to a 7 PM slot instead of 8 PM.", "label": "browser", "question": "need"}
+{"text": "Could you please look up the latest confirmed attendance figures and box office revenue for the films currently playing in theaters this weekend?", "label": "search", "question": "need"}
+{"text": "I would like you to search for the current live standings and recent injury reports for the top five teams in the European Championship soccer league.", "label": "search", "question": "need"}
+{"text": "Please find out what the current average price of a round-trip economy flight from Chicago to New York is for next Tuesday.", "label": "search", "question": "need"}
+{"text": "Can you research and summarize the most recent expert reviews and critical consensus for the new sci-fi movie released last week?", "label": "search", "question": "need"}
+{"text": "I need you to search for the live weather forecast and severe storm alerts for the entire Pacific Northwest region for the next 48 hours.", "label": "search", "question": "need"}
+{"text": "Could you look up the current stock price and today's trading volume for the most recent Apple quarterly earnings report?", "label": "search", "question": "need"}
+{"text": "Please find the latest breaking news regarding the international summit on climate change that is being held in London.", "label": "search", "question": "need"}
+{"text": "I would appreciate it if you could search for the current top-grossing video game sales rankings for the current month.", "label": "search", "question": "need"}
+{"text": "Can you search for the real-time fuel prices at the nearest major gas stations in the downtown district?", "label": "search", "question": "need"}
+{"text": "Please look up the live score and current halftime statistics for the NBA playoffs game between the Lakers and the Celtics.", "label": "search", "question": "need"}
+{"text": "I would like you to search for the current exchange rate of the British Pound to the US Dollar as it stands right now.", "label": "search", "question": "need"}
+{"text": "Could you find the latest official press release from the World Health Organization regarding the new seasonal flu strain?", "label": "search", "question": "need"}
+{"text": "Could you please check my email for any responses from my thesis advisor and draft a polite reply?", "label": "email_calendar", "question": "need"}
+{"text": "Please add a meeting to my calendar at 3 PM tomorrow to review my course syllabus with the department head.", "label": "email_calendar", "question": "need"}
+{"text": "I would like you to find two open slots in my schedule this week to schedule a tutoring session with a classmate.", "label": "email_calendar", "question": "need"}
+{"text": "Could you search my inbox for the recent lecture notes I requested from the professor and forward them to my study group?", "label": "email_calendar", "question": "need"}
+{"text": "Please look at my upcoming calendar for this semester and identify any conflicts with my scheduled lab practicals.", "label": "email_calendar", "question": "need"}
+{"text": "I need you to draft an email to the registrar asking for a correction to my official transcript details.", "label": "email_calendar", "question": "need"}
+{"text": "Please find a free time slot between 2 and 4 PM tomorrow to book a room for my final presentation.", "label": "email_calendar", "question": "need"}
+{"text": "Could you review my calendar for next week and reschedule my lunch appointment to match my new lecture times?", "label": "email_calendar", "question": "need"}
+{"text": "Please look through my email to confirm the final deadline for my group project and add it to my calendar.", "label": "email_calendar", "question": "need"}
+{"text": "I would like you to send an email to my co-author regarding the missing data for the school experiment report.", "label": "email_calendar", "question": "need"}
+{"text": "Could you check my calendar to see when I have the most free time this weekend to study for the upcoming exam?", "label": "email_calendar", "question": "need"}
+{"text": "Please draft a polite email to the library staff requesting an extension for the book I borrowed for my class.", "label": "email_calendar", "question": "need"}
+{"text": "Can you turn off the living room smart lights and drop the thermostat to 68 degrees to save energy before I sleep?", "label": "apps", "question": "need"}
+{"text": "Please find my latest project notes in Notion, export them to PDF, and upload the file to my OneDrive folder for the team?", "label": "apps", "question": "need"}
+{"text": "Will you check if my pull request on GitHub is ready for review and notify me via Telegram if the CI passes?", "label": "apps", "question": "need"}
+{"text": "Could you send a reminder to my Spotify playlist for the 'Focus' session and start playing it after I log out of Slack?", "label": "apps", "question": "need"}
+{"text": "Please post the summary of our last Discord server meeting to X with a link to the Notion page where I saved the action items.", "label": "apps", "question": "need"}
+{"text": "Can you check if there are any urgent messages in Slack or Discord that need a response before I leave the office?", "label": "apps", "question": "need"}
+{"text": "Please find the video draft in my Dropbox, upload it to YouTube, and share the link to the project group on Slack.", "label": "apps", "question": "need"}
+{"text": "Can you adjust the bedroom smart lights to a warm mood and set the thermostat to 72 degrees for the movie night I'm starting on Spotify?", "label": "apps", "question": "need"}
+{"text": "Will you archive the old project files in Notion and move them to the 'Archive' folder in OneDrive, then delete them from my local computer?", "label": "apps", "question": "need"}
+{"text": "Please check my calendar for conflicts and if there are none, send a confirmation to the client on Slack and update the status in Todoist.", "label": "apps", "question": "need"}
+{"text": "Can you upload the new photos from my camera to Dropbox, then create a highlight reel using them and post it to Instagram?", "label": "apps", "question": "need"}
+{"text": "Please check if my GitHub repository has any open issues and send a summary of them to me on Telegram, and also adjust the office lights to 'Work' mode.", "label": "apps", "question": "need"}
+{"text": "check disk space on c drive i think its low", "label": "computer", "question": "need"}
+{"text": "delete old files in downloads folder its full", "label": "computer", "question": "need"}
+{"text": "can you install the latest version of 7zip", "label": "computer", "question": "need"}
+{"text": "run system info command in terminal", "label": "computer", "question": "need"}
+{"text": "find where my big project folder is on this computer", "label": "computer", "question": "need"}
+{"text": "clear browser cache and temp files to free up space", "label": "computer", "question": "need"}
+{"text": "show me installed programs i dont use anymore", "label": "computer", "question": "need"}
+{"text": "move my old work emails out of inbox to archive", "label": "computer", "question": "need"}
+{"text": "check if my email app is updated to latest", "label": "computer", "question": "need"}
+{"text": "show me disk usage by folder in home dir", "label": "computer", "question": "need"}
+{"text": "run defrag on my main drive", "label": "computer", "question": "need"}
+{"text": "find and delete old temp files in system32", "label": "computer", "question": "need"}
+{"text": "Fix broken booking script", "label": "create", "question": "need"}
+{"text": "Build travel website", "label": "create", "question": "need"}
+{"text": "Create flight tracker app", "label": "create", "question": "need"}
+{"text": "Repair hotel finder bug", "label": "create", "question": "need"}
+{"text": "Code luggage tracker", "label": "create", "question": "need"}
+{"text": "Make trip logo", "label": "create", "question": "need"}
+{"text": "Script route optimizer", "label": "create", "question": "need"}
+{"text": "Fix map display", "label": "create", "question": "need"}
+{"text": "Build weather widget", "label": "create", "question": "need"}
+{"text": "Create itinerary generator", "label": "create", "question": "need"}
+{"text": "Fix map plugin", "label": "create", "question": "need"}
+{"text": "Make packing checklist app", "label": "create", "question": "need"}
+{"text": "How do I convert the 12.5 hours of work I logged in my timesheet to dollars for the final invoice?", "label": "other", "question": "need"}
+{"text": "Is there a way to automate sending the weekly sales report to the sales team every Monday at 9 AM using the connected apps?", "label": "other", "question": "need"}
+{"text": "What's the current time in Tokyo, and can you set a reminder on my phone for my call with the client at 2:00 PM?", "label": "other", "question": "need"}
+{"text": "Can you log into my OpenTable account, select the 8 PM slot for Saturday at that new Italian place in downtown, and complete the reservation for my group of four?", "label": "browser", "question": "need"}
+{"text": "Please sign in to my Amazon account, add the stainless steel refrigerator filters to my cart, apply my Prime discount, and proceed to checkout using my saved payment method.", "label": "browser", "question": "need"}
+{"text": "Can you access my utility provider's portal, locate my current bill, and walk me through the steps to enroll in the automatic low-flow showerhead rebate program?", "label": "browser", "question": "need"}
+{"text": "I need you to log into my school's parent portal, find the parent-teacher conference scheduling page, and book the Tuesday morning slot with my daughter's math teacher.", "label": "browser", "question": "need"}
+{"text": "Go to the Ticketmaster site, search for the concert at the local arena this weekend, select the $150 GA tickets, and apply the student discount code I just emailed myself.", "label": "browser", "question": "need"}
+{"text": "Can you sign in to my local library's website, search their online catalog for that mystery novel, and reserve two physical copies for pickup at my branch?", "label": "browser", "question": "need"}
+{"text": "Please navigate to my bank's online banking portal, go to the wire transfer section, and set up a new payee for the plumber to send the deposit tomorrow.", "label": "browser", "question": "need"}
+{"text": "Log into my Etsy account and find the shop that sells the ceramic vase I like, add the blue glaze option to my cart, and complete the purchase with my saved card.", "label": "browser", "question": "need"}
+{"text": "Can you open my Craigslist listing for the couch, edit the price to $80, and update the description to mention it has a hidden storage compartment?", "label": "browser", "question": "need"}
+{"text": "I want you to sign into my gym's web app, find the schedule for the yoga class, and reserve a mat slot for the 7 AM session on Sunday.", "label": "browser", "question": "need"}
+{"text": "Please log into my hotel booking site, search for a room in the city center for next Friday, select the standard king with a view, and book it using the points from my last stay.", "label": "browser", "question": "need"}
+{"text": "Can you access my local theater's website, look up the movie showtimes for the weekend, pick the 4:00 PM showing, and add three seats in row D to my online account?", "label": "browser", "question": "need"}
+{"text": "Latest Apple stock price", "label": "search", "question": "need"}
+{"text": "Flight prices New York Tokyo", "label": "search", "question": "need"}
+{"text": "Best pizza in Austin reviews", "label": "search", "question": "need"}
+{"text": "Weather forecast for Friday", "label": "search", "question": "need"}
+{"text": "Current gold price", "label": "search", "question": "need"}
+{"text": "Who won the Super Bowl", "label": "search", "question": "need"}
+{"text": "Netflix vs Disney Plus costs", "label": "search", "question": "need"}
+{"text": "S&P 500 closing price today", "label": "search", "question": "need"}
+{"text": "Cheapest flight to Denver", "label": "search", "question": "need"}
+{"text": "Best budget laptops 2024", "label": "search", "question": "need"}
+{"text": "Top rated CRM software reviews", "label": "search", "question": "need"}
+{"text": "Hey, check my calendar for this afternoon and draft a short email to Sarah saying I can't make the 2pm sync because my thermostat is acting up and I need to fix it, then send it to the team channel", "label": "email_calendar", "question": "need"}
+{"text": "I need to reschedule my dentist appointment on Tuesday to Thursday, check if I have any free time after 3pm then add the meeting and let my wife know via email that I moved it", "label": "email_calendar", "question": "need"}
+{"text": "Search my inbox for the invoice from the plumber, reply to it asking for a lower price and attach the photo of the leak I saved on my computer", "label": "email_calendar", "question": "need"}
+{"text": "Look at my calendar for next week and find a free slot before noon to put a 30 minute standup with the marketing team, then email them the invite", "label": "email_calendar", "question": "need"}
+{"text": "Cancel my coffee chat with Mike tomorrow and send him a polite email saying my smart home network went down so I need to reschedule", "label": "email_calendar", "question": "need"}
+{"text": "Remind me to email the electrician about the outlet sparks tomorrow at 9am by adding a task to my calendar and drafting the message about the buzzing sound", "label": "email_calendar", "question": "need"}
+{"text": "Find any double bookings in my calendar for the next two weeks and email me a summary of which ones I need to resolve", "label": "email_calendar", "question": "need"}
+{"text": "Move my one-on-one with the boss from 10am to 11am tomorrow and email the new time to the whole department saying the room got double booked", "label": "email_calendar", "question": "need"}
+{"text": "Draft an email to my landlord saying the heater is too cold in the living room so I need a repair before Friday, and put a reminder on my calendar to follow up if I don't hear back", "label": "email_calendar", "question": "need"}
+{"text": "Check if I have a free hour this weekend to block out for writing my report and add it to my calendar then send an email to my manager saying I need that time to focus", "label": "email_calendar", "question": "need"}
+{"text": "Look through my emails for the flight confirmation and reschedule my meeting with the travel agent to tomorrow morning to fix the itinerary", "label": "email_calendar", "question": "need"}
+{"text": "Sort my calendar by the next five meetings and send me an email with the details so I can print it for my smart display at the kitchen counter", "label": "email_calendar", "question": "need"}
+{"text": "help me free up disk space before i download that new chef program", "label": "computer", "question": "need"}
+{"text": "where did i put the folder with my meal prep recipes on the desktop?", "label": "computer", "question": "need"}
+{"text": "can you run the terminal and check if my system is running hot while i bake?", "label": "computer", "question": "need"}
+{"text": "i need to update that grocery list app, its lagging bad", "label": "computer", "question": "need"}
+{"text": "delete the old grocery lists in downloads and empty trash to save space", "label": "computer", "question": "need"}
+{"text": "install that new smart scale app on my pc for tracking macros", "label": "computer", "question": "need"}
+{"text": "show me the system info so i know if this new blender app will run", "label": "computer", "question": "need"}
+{"text": "move my baking recipes from the desktop to the documents folder", "label": "computer", "question": "need"}
+{"text": "check my disk usage and delete temp files before i update windows", "label": "computer", "question": "need"}
+{"text": "open the terminal and install python for that new recipe tracker script", "label": "computer", "question": "need"}
+{"text": "can you run a virus scan on the new food delivery program i just downloaded?", "label": "computer", "question": "need"}
+{"text": "show me the folder path for my digital shopping list app", "label": "computer", "question": "need"}
+{"text": "Could you please write a Python script to convert all my image files in the Documents folder into GIFs?", "label": "create", "question": "need"}
+{"text": "I need you to create a simple HTML and CSS landing page for my new freelance portfolio website.", "label": "create", "question": "need"}
+{"text": "Can you generate a JavaScript function that fixes this memory leak bug in my Node.js server code?", "label": "create", "question": "need"}
+{"text": "Please design a new logo using the color scheme of my company and save it as a PNG.", "label": "create", "question": "need"}
+{"text": "Would you be able to write a shell script to automate the backup of my external drive every night?", "label": "create", "question": "need"}
+{"text": "I would like you to create a basic React component for a shopping cart interface.", "label": "create", "question": "need"}
+{"text": "Could you please write a SQL query to generate a monthly sales report from my database?", "label": "create", "question": "need"}
+{"text": "Please create a small Python tool that renames all my photo files based on the EXIF date data.", "label": "create", "question": "need"}
+{"text": "I need you to write a TypeScript utility function for input validation on my web form.", "label": "create", "question": "need"}
+{"text": "Can you please create a simple regex script to clean up the spam emails in my inbox?", "label": "create", "question": "need"}
+{"text": "Would you be able to code a Node.js API endpoint for me to handle user login requests?", "label": "create", "question": "need"}
+{"text": "Please help me write a shell script to monitor my system disk usage and notify me if it exceeds 90%.", "label": "create", "question": "need"}
+{"text": "remember my favorite artist", "label": "memory", "question": "need"}
+{"text": "forget that preference", "label": "memory", "question": "need"}
+{"text": "recall my last song", "label": "memory", "question": "need"}
+{"text": "remember my commute playlist", "label": "memory", "question": "need"}
+{"text": "don't forget my genre", "label": "memory", "question": "need"}
+{"text": "recall my sleep album", "label": "memory", "question": "need"}
+{"text": "remember my workout track", "label": "memory", "question": "need"}
+{"text": "forget the skipped song", "label": "memory", "question": "need"}
+{"text": "recall my top five", "label": "memory", "question": "need"}
+{"text": "remember my podcast host", "label": "memory", "question": "need"}
+{"text": "don't forget my mix", "label": "memory", "question": "need"}
+{"text": "recall my last queue", "label": "memory", "question": "need"}
+{"text": "hey can u book a table for 4 next thur? need to check my cal first so i dont double book with the sales sync", "label": "other", "question": "need"}
+{"text": "send that invoice to jay and cc me but make sure u use the new payment portal link i saved in my notes app", "label": "other", "question": "need"}
+{"text": "whats on my cal for next tuesday? if its clear could u grab a parking pass at the office app too", "label": "other", "question": "need"}
+{"text": "what did i pay for on my credit card last month? i need the total for the budget sheet im working on", "label": "other", "question": "need"}
+{"text": "remind me to check the gas station app for the coupon code i mentioned last week, and put it in my wallet", "label": "other", "question": "need"}
+{"text": "can u check if the server room ac is still on? i think it was acting up and the temp is getting weird", "label": "other", "question": "need"}
+{"text": "what time is the train to nyc if i leave work at 5? i need to catch the 5:30 pm flight", "label": "other", "question": "need"}
+{"text": "can u find the recipe for that pasta i made last tuesday? i want to make it again for dinner", "label": "other", "question": "need"}
+{"text": "Open my AWS console, navigate to the IAM users list, and create a new user with programmatic access permissions for S3 and EC2.", "label": "browser", "question": "need"}
+{"text": "Visit the Stack Overflow site, log in, and post a new question asking about a React state management issue, attaching the code snippet I saved.", "label": "browser", "question": "need"}
+{"text": "Open the GitLab dashboard, navigate to my project, and merge the pull request titled 'Fix login bug' after reviewing the diffs.", "label": "browser", "question": "need"}
+{"text": "Go to the Jira board for our app, find the ticket 'JIRA-1042', update the status to 'In Progress', and add a comment saying I've started coding the fix.", "label": "browser", "question": "need"}
+{"text": "Visit the npm package page for 'react-router-dom', click the 'Install' button in the sidebar, and copy the exact command into my terminal.", "label": "browser", "question": "need"}
+{"text": "Open the CodeSandbox editor for my project, click the 'Publish' icon, and change the visibility setting to 'Public' so I can share the link.", "label": "browser", "question": "need"}
+{"text": "yo, quick search on the web to find out which coffee bean is actually the cheapest right now, i'm trying to make my notes on budget spending more accurate", "label": "search", "question": "need"}
+{"text": "can you look up the weather in tokyo real quick? need that info to update the weather column in my grocery to-do list", "label": "search", "question": "need"}
+{"text": "search for the current score of that game between the lakers and celtics, i'm using it to update my sports betting notes", "label": "search", "question": "need"}
+{"text": "find the latest news on the iphone 15 pro release date, i need it for my tech watchlist notes", "label": "search", "question": "need"}
+{"text": "look up the current price of a flight to nyc, i'm updating the travel expense sheet in my notes app", "label": "search", "question": "need"}
+{"text": "search for the top 3 restaurants near my office, i want to add the ratings to my work lunch to-do list", "label": "search", "question": "need"}
+{"text": "can you research the current air quality index for my city? putting that in the daily checklist notes", "label": "search", "question": "need"}
+{"text": "search for the latest review on the new noise cancelling headphones, need the rating for my shopping list", "label": "search", "question": "need"}
+{"text": "look up the current exchange rate from euros to usd, adding that to my finance notes for the trip", "label": "search", "question": "need"}
+{"text": "find out how long the new movie is running, need the runtime for my movie night to-do list", "label": "search", "question": "need"}
+{"text": "search for the current price of gas in my zip code, updating the car maintenance budget notes", "label": "search", "question": "need"}
+{"text": "look up the current airfare to london, need the price for the honeymoon planning to-do list", "label": "search", "question": "need"}
+{"text": "Book gym appointment", "label": "email_calendar", "question": "need"}
+{"text": "Check yoga schedule", "label": "email_calendar", "question": "need"}
+{"text": "Find free workout slot", "label": "email_calendar", "question": "need"}
+{"text": "Move morning run call", "label": "email_calendar", "question": "need"}
+{"text": "Reschedule physio appointment", "label": "email_calendar", "question": "need"}
+{"text": "Draft dietitian email", "label": "email_calendar", "question": "need"}
+{"text": "See health provider slots", "label": "email_calendar", "question": "need"}
+{"text": "Book follow-up appointment", "label": "email_calendar", "question": "need"}
+{"text": "Find free gym time", "label": "email_calendar", "question": "need"}
+{"text": "Send diet report", "label": "email_calendar", "question": "need"}
+{"text": "Check fitness class schedule", "label": "email_calendar", "question": "need"}
+{"text": "Find open wellness slot", "label": "email_calendar", "question": "need"}
+{"text": "Spotify, play lofi", "label": "apps", "question": "need"}
+{"text": "Smart lights, dim", "label": "apps", "question": "need"}
+{"text": "Dropbox, sync folder", "label": "apps", "question": "need"}
+{"text": "Notion, open dashboard", "label": "apps", "question": "need"}
+{"text": "Thermostat, set 72", "label": "apps", "question": "need"}
+{"text": "Todoist, add call", "label": "apps", "question": "need"}
+{"text": "GitHub, fetch PR", "label": "apps", "question": "need"}
+{"text": "Slack, ping team", "label": "apps", "question": "need"}
+{"text": "Telegram, send photo", "label": "apps", "question": "need"}
+{"text": "YouTube, upload video", "label": "apps", "question": "need"}
+{"text": "OneDrive, move file", "label": "apps", "question": "need"}
+{"text": "Discord, mute channel", "label": "apps", "question": "need"}
+{"text": "Can you check if there is enough free space on my C: drive to install the latest updates for the sports betting apps I recently downloaded?", "label": "computer", "question": "need"}
+{"text": "How do I use the terminal on my computer to install the new Python library required for the football analytics script I found?", "label": "computer", "question": "need"}
+{"text": "Can you tell me the system information of my PC to see if my hardware can handle running the high-resolution video editing software I want to use for sports highlights?", "label": "computer", "question": "need"}
+{"text": "What is the path to the folder where my computer stores the system logs from the last update?", "label": "computer", "question": "need"}
+{"text": "Can you help me find and delete the temporary files in my computer's disk to free up space for the new game I'm waiting for the release of?", "label": "computer", "question": "need"}
+{"text": "How can I check the disk space usage in my computer's file explorer to make sure I have enough room for the new video compression tool I'm installing?", "label": "computer", "question": "need"}
+{"text": "Can you list all the recently installed programs on my computer that relate to the new sports league I started watching?", "label": "computer", "question": "need"}
+{"text": "Can you run a command in the terminal to check if my computer's RAM is running at the optimal speed for the new streaming software I plan to install?", "label": "computer", "question": "need"}
+{"text": "What is the current disk space usage on my computer, and can you recommend which folders I should empty to make room for the new sports news app I want to install?", "label": "computer", "question": "need"}
+{"text": "Can you help me open the command prompt and run a command to check for any system updates that might be required to install the new sports video editing software?", "label": "computer", "question": "need"}
+{"text": "Can you check the system information on my computer to see if the graphics card is compatible with the new sports streaming application I'm trying to install?", "label": "computer", "question": "need"}
+{"text": "Can you use the terminal on my computer to run a command that will display the version number of the operating system to ensure it is compatible with the new sports news app I'm installing?", "label": "computer", "question": "need"}
+{"text": "Could you please create a short Python script to automatically format my latest sports news article into a concise summary for my personal dashboard?", "label": "create", "question": "need"}
+{"text": "Would it be possible to create a simple React app that displays live NBA scores and updates them every minute using the official API?", "label": "create", "question": "need"}
+{"text": "Please create a Python script that scrapes the latest soccer news headlines and appends them to my personal blog's RSS feed.", "label": "create", "question": "need"}
+{"text": "Can you write a Python script to generate a custom sports logo using the latest news headlines and team colors for my fan page?", "label": "create", "question": "need"}
+{"text": "Could you please create a simple script that checks the latest sports news and sends an email notification if a specific team wins?", "label": "create", "question": "need"}
+{"text": "Would it be possible to create a small app that displays the latest sports news in a scrollable feed on my smart home TV?", "label": "create", "question": "need"}
+{"text": "Please create a script that monitors the latest sports news and sends a push notification to my smart watch if a specific player is mentioned?", "label": "create", "question": "need"}
+{"text": "Could you write a Python script that generates a custom sports video thumbnail using the latest news headlines and team logos?", "label": "create", "question": "need"}
+{"text": "Please create a simple app that displays the latest sports news in a scrollable feed on my personal website.", "label": "create", "question": "need"}
+{"text": "Would it be possible to create a Python script that generates a custom sports video thumbnail using the latest news headlines and team logos?", "label": "create", "question": "need"}
+{"text": "Could you please create a script that monitors the latest sports news and sends a push notification to my smart watch if a specific player is mentioned?", "label": "create", "question": "need"}
+{"text": "Please write a Python script that generates a custom sports video thumbnail using the latest news headlines and team logos?", "label": "create", "question": "need"}
+{"text": "Can you remember that I prefer to book direct flights with United Airlines and save that preference for future bookings?", "label": "memory", "question": "need"}
+{"text": "Do you remember to cancel the recurring meeting on my calendar every third Friday because I take those days off?", "label": "memory", "question": "need"}
+{"text": "Please recall the password for my Netflix account and log into it in the browser now.", "label": "memory", "question": "need"}
+{"text": "Can you remember that I have a severe nut allergy and filter all food delivery app options to exclude nuts?", "label": "memory", "question": "need"}
+{"text": "Do you remember to set the smart home lights to dim automatically at 9 PM on weekdays?", "label": "memory", "question": "need"}
+{"text": "Please recall the name of the hotel where I stayed in Kyoto last year and add it to my travel wishlist app.", "label": "memory", "question": "need"}
+{"text": "Can you remember that I want to receive flight price drop alerts for my upcoming trip to Paris?", "label": "memory", "question": "need"}
+{"text": "Do you remember to block notifications from non-work emails between 6 PM and 7 AM?", "label": "memory", "question": "need"}
+{"text": "Please recall the model number of my laptop and update the system to ensure compatibility with the new driver?", "label": "memory", "question": "need"}
+{"text": "Can you remember to set a reminder on my calendar to buy travel adapters before my next international flight?", "label": "memory", "question": "need"}
+{"text": "Do you remember to turn off the smart home thermostat when I leave for work every morning?", "label": "memory", "question": "need"}
+{"text": "Please recall my favorite movie genre and recommend 3 new releases in that category on the streaming app.", "label": "memory", "question": "need"}
+{"text": "Check current flight prices", "label": "search", "question": "need"}
+{"text": "Is it snowing today?", "label": "search", "question": "need"}
+{"text": "Latest Tesla Model 3 price", "label": "search", "question": "need"}
+{"text": "Compare iPhone vs Pixel 15", "label": "search", "question": "need"}
+{"text": "Best coffee beans review", "label": "search", "question": "need"}
+{"text": "Today's stock price", "label": "search", "question": "need"}
+{"text": "Movie reviews tonight", "label": "search", "question": "need"}
+{"text": "Gas prices near me", "label": "search", "question": "need"}
+{"text": "Latest Apple TV show rating", "label": "search", "question": "need"}
+{"text": "Current weather in Tokyo", "label": "search", "question": "need"}
+{"text": "Used laptop price check", "label": "search", "question": "need"}
+{"text": "Best streaming deals today", "label": "search", "question": "need"}
+{"text": "Can you check my calendar for next Tuesday and draft an email to Sarah confirming the meeting time?", "label": "email_calendar", "question": "need"}
+{"text": "Please find a slot in my calendar for next Friday that doesn't conflict with anything, then send an email invite to the team.", "label": "email_calendar", "question": "need"}
+{"text": "Search my email for any invoices sent last month and check my calendar to see if I have any meetings scheduled for that same week to send the invoice.", "label": "email_calendar", "question": "need"}
+{"text": "Look at my upcoming meetings in my calendar this week and draft an email to my manager asking to move the 3 PM block to the next available free time.", "label": "email_calendar", "question": "need"}
+{"text": "Are there any free hours in my calendar tomorrow afternoon where I could fit a 30-minute call, and if so, can you draft the email to the client to propose that time?", "label": "email_calendar", "question": "need"}
+{"text": "Check my email inbox for the restaurant reservation confirmation and then look at my calendar to see what time the restaurant is on the list, and draft an email to move the reservation to a later date if my calendar is too packed.", "label": "email_calendar", "question": "need"}
+{"text": "Can you check my calendar for any existing meetings with John and if not, find a free time slot for a 45-minute meeting next week and draft an email to propose it?", "label": "email_calendar", "question": "need"}
+{"text": "Review my calendar for any conflicts with the weather forecast for next Sunday's outdoor event and if there's a storm, check my email for the vendor's cancellation policy and draft an email to reschedule.", "label": "email_calendar", "question": "need"}
+{"text": "Look for any unsent drafts in my email and check if any of them relate to a meeting already on my calendar, and if so, delete the draft and send the email to update the meeting time.", "label": "email_calendar", "question": "need"}
+{"text": "Can you check my calendar for any time off next month and if I have a vacation day, draft an email to my boss and the team to notify them of my absence, and then find a free time slot to catch up on emails while I'm away?", "label": "email_calendar", "question": "need"}
+{"text": "Search my calendar for any meetings I have with the local bakery this month and if there are any, check my email for any past orders from them and draft an email to confirm the new delivery date based on their availability.", "label": "email_calendar", "question": "need"}
+{"text": "Are there any double-booked meetings in my calendar this week, and if so, can you find a free time slot for the most important one and draft an email to the other participants to move it?", "label": "email_calendar", "question": "need"}
+{"text": "yo, check if my c drive is choking on that 500mb update i'm stuck on and kill whatever process is hogging the RAM so i can actually install my new map app", "label": "computer", "question": "need"}
+{"text": "my terminal is acting all weird since the last update, run some basic system info check to see if my network drivers are still working right for that wifi router i got from the airport", "label": "computer", "question": "need"}
+{"text": "can you dig into my downloads folder and find all those 2k24 game files i saved from last week's road trip? i need to delete them to free up disk space before i install the new travel planning software", "label": "computer", "question": "need"}
+{"text": "something's eating up my storage and i only have room for one more program, find the biggest junk files in my user folder and show me the system info so i know what i'm dealing with before i start cleaning", "label": "computer", "question": "need"}
+{"text": "i need to update my terminal settings but i'm scared i'll mess up my ssh config from last year's trip to asia, can you check what's currently running in the terminal and back up my current system state before i make changes?", "label": "computer", "question": "need"}
+{"text": "my laptop's been lagging so bad during that virtual meeting last night it felt like i was on a dialup connection in a hotel lobby, run a full system info dump and see if any background processes are stealing my cpu like that sketchy app i installed from that unknown site", "label": "computer", "question": "need"}
+{"text": "i accidentally deleted half my travel photos from last month's hiking trip and they were in a weird subfolder i can't remember the name of, search my entire user directory for any .jpg files from the last 30 days and show me what's actually on my disk before i panic", "label": "computer", "question": "need"}
+{"text": "need to know exactly how much disk space i've got left because i'm about to download a 10gb video tutorial on off-road driving for my next adventure, but first check if any of my old browser cache folders are taking up space i don't need", "label": "computer", "question": "need"}
+{"text": "my terminal keeps crashing whenever i try to run that bash script i wrote for tracking fuel costs during last month's road trip, check my system logs to see what error codes are popping up and why my cpu usage is spiking so high when it runs", "label": "computer", "question": "need"}
+{"text": "i need to move all my old itinerary spreadsheets from that random temp folder in my documents directory to my main travel folder, but first show me the current disk usage breakdown so i know i won't be running out of space after the move", "label": "computer", "question": "need"}
+{"text": "can you check what's actually running in the background on my system because my laptop got so hot during that long flight it was basically a toaster, and then show me which programs are using the most ram so i can kill anything i don't need before i install my new packing list app", "label": "computer", "question": "need"}
+{"text": "my system info page is giving me weird numbers after i updated my graphics driver last month, run a quick check to see if my cpu and gpu temps are normal, and then find all those old .bak files scattered in my folders that i don't need taking up space on my disk", "label": "computer", "question": "need"}
+{"text": "Create a Python script that scrapes pricing from three specific e-commerce sites and logs the differences in a CSV file.", "label": "create", "question": "need"}
+{"text": "Generate a logo vector file for my new freelance consulting brand that incorporates a minimalist geometric shape.", "label": "create", "question": "need"}
+{"text": "Write a short HTML and JavaScript app for my team to rate our weekly client feedback sessions.", "label": "create", "question": "need"}
+{"text": "Fix the null-pointer exception in the main function of my recent Node.js project.", "label": "create", "question": "need"}
+{"text": "Create a 15-second animated GIF of my logo transitioning from black and white to brand colors.", "label": "create", "question": "need"}
+{"text": "Build a simple React component that displays a user's recent calendar events in a card layout.", "label": "create", "question": "need"}
+{"text": "Write a bash script to automatically rename and organize incoming photos based on the date they were taken.", "label": "create", "question": "need"}
+{"text": "Create a landing page in HTML for the new feature I announced in my latest product update.", "label": "create", "question": "need"}
+{"text": "Fix the styling issue where the navigation bar overlaps the hero section on mobile devices.", "label": "create", "question": "need"}
+{"text": "Generate a PNG image of a professional team photo mockup for the 'About Us' page of my website.", "label": "create", "question": "need"}
+{"text": "Write a Python script to parse the latest email thread and extract all attached file names into a list.", "label": "create", "question": "need"}
+{"text": "Create a small video clip showing the new onboarding flow in our mobile app for the user manual.", "label": "create", "question": "need"}
+{"text": "remember i hate rainy days so dont schedule my hikes when the forecast is bad", "label": "memory", "question": "need"}
+{"text": "forget what i said about liking thunderstorms im just cranky lately", "label": "memory", "question": "need"}
+{"text": "recall my usual coffee order for the cafe on 5th street next time i say iced", "label": "memory", "question": "need"}
+{"text": "remember my dog barks at the doorbell so set the smart lock to not alert me if it's me", "label": "memory", "question": "need"}
+{"text": "don't forget i have a hearing test at 2pm and need the volume down on the smart speaker", "label": "memory", "question": "need"}
+{"text": "remember i left the garage door open last night so please close it when you get a chance", "label": "memory", "question": "need"}
+{"text": "recall my sister's birthday is in june and remind me to order the card from our app", "label": "memory", "question": "need"}
+{"text": "forget my old work email address i switched to the corporate one already", "label": "memory", "question": "need"}
+{"text": "remember i always take the scenic route to the beach on fridays so route me there", "label": "memory", "question": "need"}
+{"text": "don't forget i have a nut allergy so filter out the nut photos i save for the meal app", "label": "memory", "question": "need"}
+{"text": "recall that i prefer the window seat when i book flights to nyc via the travel site", "label": "memory", "question": "need"}
+{"text": "remember my mom likes her calendar in a large font so sync the big text settings over", "label": "memory", "question": "need"}
+{"text": "open my browser and go to the campus bookstore site and add that blue hoodie to the cart since its on sale but only if my bank account balance is above five hundred dollars", "label": "other", "question": "need"}
+{"text": "find that article i read about the local library opening and put the link in the notes app for the group chat with my study partners", "label": "other", "question": "need"}
+{"text": "Could you please search for the current weather and air quality in my neighborhood to help me decide how to set the thermostat temperature today?", "label": "search", "question": "need"}
+{"text": "Please look up the latest news about any reported power outages or grid issues in my city so I know if my smart home backup is needed.", "label": "search", "question": "need"}
+{"text": "I would like you to search for the current energy rates in my region and compare them to last month's prices to see if switching to night cooling is cost-effective.", "label": "search", "question": "need"}
+{"text": "Can you search for recent reviews of smart light bulbs from different brands to see which ones integrate best with my current home hub?", "label": "search", "question": "need"}
+{"text": "Please find information on the latest building codes regarding smart thermostat installation in my area to ensure I am compliant.", "label": "search", "question": "need"}
+{"text": "I would like you to search for the most common troubleshooting tips for when smart home devices lose their internet connection.", "label": "search", "question": "need"}
+{"text": "Please look up the current UV index and sunrise times for the coming week to help me plan automatic light schedules.", "label": "search", "question": "need"}
+{"text": "Could you search for a comparison of the latest features in smart home security cameras that include motion detection and remote viewing?", "label": "search", "question": "need"}
+{"text": "I would like you to search for the best practices in home energy conservation that could help lower my thermostat's energy consumption.", "label": "search", "question": "need"}
+{"text": "Please look up the latest news about any cybersecurity vulnerabilities affecting major smart home manufacturers.", "label": "search", "question": "need"}
+{"text": "Can you search for the current price of smart home sensors and identify the best value options for monitoring room temperature?", "label": "search", "question": "need"}
+{"text": "I would like you to search for the latest scientific studies on how ambient lighting colors affect human sleep quality and productivity.", "label": "search", "question": "need"}
+{"text": "Book 3pm meeting", "label": "email_calendar", "question": "need"}
+{"text": "Reschedule lunch for Friday", "label": "email_calendar", "question": "need"}
+{"text": "Email Bob the docs", "label": "email_calendar", "question": "need"}
+{"text": "Find time for call", "label": "email_calendar", "question": "need"}
+{"text": "Reply to Sarah", "label": "email_calendar", "question": "need"}
+{"text": "Check 9am slot", "label": "email_calendar", "question": "need"}
+{"text": "Move dentist to Monday", "label": "email_calendar", "question": "need"}
+{"text": "Draft follow-up email", "label": "email_calendar", "question": "need"}
+{"text": "Clear calendar Wednesday", "label": "email_calendar", "question": "need"}
+{"text": "Send invite to team", "label": "email_calendar", "question": "need"}
+{"text": "Book dentist slot", "label": "email_calendar", "question": "need"}
+{"text": "Move meeting to 2pm", "label": "email_calendar", "question": "need"}
+{"text": "Turn off thermostat", "label": "apps", "question": "need"}
+{"text": "Notion, new project", "label": "apps", "question": "need"}
+{"text": "Todoist, add task", "label": "apps", "question": "need"}
+{"text": "GitHub, push commit", "label": "apps", "question": "need"}
+{"text": "Slack, reply done", "label": "apps", "question": "need"}
+{"text": "Discord, ping team", "label": "apps", "question": "need"}
+{"text": "Telegram, send file", "label": "apps", "question": "need"}
+{"text": "Dropbox, upload report", "label": "apps", "question": "need"}
+{"text": "Instagram, post photo", "label": "apps", "question": "need"}
+{"text": "Create a Python script that organizes my Documents folder into subfolders by file type and date modified.", "label": "create", "question": "need"}
+{"text": "Build a React web app that connects to my local API to display real-time stock prices from my saved watchlist.", "label": "create", "question": "need"}
+{"text": "Fix the bug in my Java script where the image renderer crashes when processing files larger than 5MB.", "label": "create", "question": "need"}
+{"text": "Create a JavaScript extension for my browser that auto-fills my login form from my saved credentials.", "label": "create", "question": "need"}
+{"text": "Write a C# program that generates a PDF summary of my monthly calendar events and email attachments.", "label": "create", "question": "need"}
+{"text": "Develop a Node.js backend service that syncs my smart home thermostat settings with my work schedule.", "label": "create", "question": "need"}
+{"text": "Create an HTML/CSS/JS single-page application for tracking my personal fitness goals with a simple dashboard.", "label": "create", "question": "need"}
+{"text": "Fix the error in my PHP script that fails to upload large video files to my local server.", "label": "create", "question": "need"}
+{"text": "Make a Python utility that renames all files in a folder to match the metadata from my linked music library.", "label": "create", "question": "need"}
+{"text": "Create a simple Python GUI app that monitors my CPU usage and alerts me if it exceeds 90% for more than 2 minutes.", "label": "create", "question": "need"}
+{"text": "Write a PowerShell script that backs up my entire C: drive to an external drive and compresses the archive.", "label": "create", "question": "need"}
+{"text": "Build a lightweight web dashboard using my local database to visualize my personal finance transactions.", "label": "create", "question": "need"}
+{"text": "Remember that I always prefer to draft my Discord DMs before sending them to avoid typos.", "label": "memory", "question": "need"}
+{"text": "Recall my previous Slack handle so I can mention it in this new channel announcement.", "label": "memory", "question": "need"}
+{"text": "Don't forget that I use my Telegram Premium subscription for file transfers, so check for active premium status before starting.", "label": "memory", "question": "need"}
+{"text": "Remember that I keep my Telegram backup in a specific local folder; restore it if I ever lose my phone.", "label": "memory", "question": "need"}
+{"text": "Forget any previous notes about my Discord server roles since I just transferred admin rights to a friend.", "label": "memory", "question": "need"}
+{"text": "Recall the last time I messaged Sarah on Telegram and draft a follow-up based on that conversation.", "label": "memory", "question": "need"}
+{"text": "Remember that I mute all non-essential Slack DMs to stay focused during work hours.", "label": "memory", "question": "need"}
+{"text": "Don't forget to remind me to send the voice memo to the group chat on Discord when I finish this recording.", "label": "memory", "question": "need"}
+{"text": "Recall my preferred font for Telegram attachments so I can match the styling of my latest design brief.", "label": "memory", "question": "need"}
+{"text": "Remember that I delete old Discord history every month to save disk space on my computer.", "label": "memory", "question": "need"}
+{"text": "Forget any saved credentials for my Telegram 2FA app, as I just switched to a new hardware key.", "label": "memory", "question": "need"}
+{"text": "Remember that I want the assistant to log every new Discord invite request I receive for later review.", "label": "memory", "question": "need"}
+{"text": "can you convert my miles to kilometers for that road trip i planned, and also check the gas prices at stations near the highway exit?", "label": "other", "question": "need"}
+{"text": "wait, i need to calculate how much i spend on coffee based on my last month's bank app transactions, then suggest a cheaper brand", "label": "other", "question": "need"}
+{"text": "yo, check if my smart fridge is out of milk, and if so, add it to my grocery list app and text my roommate to pick some up", "label": "other", "question": "need"}
+{"text": "hey, i wrote some random ideas about a vacation in my notes app, can you help me organize them into a rough itinerary and check flight prices for next month?", "label": "other", "question": "need"}
+{"text": "Yo, log into my Amazon account and snag that deal on the noise-canceling headphones I added to the cart last month, then check if the price dropped since I saved it.", "label": "browser", "question": "need"}
+{"text": "Hey, hop onto my school portal and submit that final lab report for Bio 101 before the 11 PM deadline, using the PDF I just exported to the desktop.", "label": "browser", "question": "need"}
+{"text": "Open Ticketmaster for me and grab 4 seats for the Friday show in the center section, using my saved card info, so I can finally get that band tickets.", "label": "browser", "question": "need"}
+{"text": "Log into the local utility company site and switch my electricity plan to the green energy option, then download the confirmation for my files.", "label": "browser", "question": "need"}
+{"text": "Go to Etsy and order that custom leather wallet I favorited two weeks ago, using the promo code I saved in the notes app.", "label": "browser", "question": "need"}
+{"text": "Sign in to my OpenTable account and book a table for 6 at that new bistro downtown for Saturday 8 PM, and email myself the confirmation.", "label": "browser", "question": "need"}
+{"text": "Log into the bank portal and transfer $500 from my checking to savings, then screenshot the receipt and save it to my finance folder.", "label": "browser", "question": "need"}
+{"text": "Open the Airbnb site and book that cabin in the mountains for next weekend, using the saved payment info, and send the booking details to my calendar.", "label": "browser", "question": "need"}
+{"text": "Go to the Craigslist listings and find a 3-bedroom apartment in the east side under $1800, then save the listing to my 'Housing' folder.", "label": "browser", "question": "need"}
+{"text": "Log into the gym app on the web and update my membership plan to the annual one, and take a screenshot of the new billing details.", "label": "browser", "question": "need"}
+{"text": "Open the Netflix site and change the default adult profile to 'Kids' so my niece doesn't see the mature stuff, and save the new settings.", "label": "browser", "question": "need"}
+{"text": "Go to the local coffee shop's website and order a large oat milk latte for pickup at 9 AM tomorrow, using my saved order, and get the confirmation code.", "label": "browser", "question": "need"}
+{"text": "Move meeting to Friday", "label": "email_calendar", "question": "need"}
+{"text": "Free time for flight", "label": "email_calendar", "question": "need"}
+{"text": "Check calendar availability", "label": "email_calendar", "question": "need"}
+{"text": "Schedule flight ticket call", "label": "email_calendar", "question": "need"}
+{"text": "Find open slot today", "label": "email_calendar", "question": "need"}
+{"text": "Move hotel meeting back", "label": "email_calendar", "question": "need"}
+{"text": "See next week plans", "label": "email_calendar", "question": "need"}
+{"text": "Schedule airport pickup reminder", "label": "email_calendar", "question": "need"}
+{"text": "Find free time tomorrow", "label": "email_calendar", "question": "need"}
+{"text": "Add visa interview call", "label": "email_calendar", "question": "need"}
+{"text": "Check return flight email", "label": "email_calendar", "question": "need"}
+{"text": "Schedule flight change call", "label": "email_calendar", "question": "need"}
+{"text": "yo, check if my latest commit on that repo on github is actually merged yet, and if it is, ping my team on slack saying it's live", "label": "apps", "question": "need"}
+{"text": "i need to upload that video to youtube real quick, can you grab it from my dropbox, trim the intro, and push it up?", "label": "apps", "question": "need"}
+{"text": "turn off the thermostat and lights in the bedroom because i'm going to bed, and put spotify in night mode", "label": "apps", "question": "need"}
+{"text": "hey, i want to post that meme on instagram, make sure it matches the vibe of my last few posts, and also tag my friend from discord", "label": "apps", "question": "need"}
+{"text": "my todoist list is a mess, can you pull it up from notion, clean up the old stuff, and sync it back so it's actually usable", "label": "apps", "question": "need"}
+{"text": "check if that file is still in my dropbox, if it is, send it to my buddy on telegram as soon as you can", "label": "apps", "question": "need"}
+{"text": "i got a slack notification that looks important from that client, can you pull it up, summarize it for me, and then post a quick reply saying i'm on it?", "label": "apps", "question": "need"}
+{"text": "hey, i think my github action failed on the main branch, can you check the logs and if it's just a typo, fix it and push it up?", "label": "apps", "question": "need"}
+{"text": "i need to post that update on x for the new feature, can you check if my last few posts are doing okay and help me phrase this one to match?", "label": "apps", "question": "need"}
+{"text": "turn the lights in the kitchen on, set the thermostat to 70, and start that lofi playlist on spotify, i'm about to cook", "label": "apps", "question": "need"}
+{"text": "can you check if my notion workspace has any overdue tasks for next week and sync them into todoist so i can actually see them?", "label": "apps", "question": "need"}
+{"text": "i just finished editing that video, upload it to youtube from my one drive, add a cool title, and post the link on discord in the dev channel", "label": "apps", "question": "need"}
+{"text": "clear disk space", "label": "computer", "question": "need"}
+{"text": "update system drivers", "label": "computer", "question": "need"}
+{"text": "check terminal errors", "label": "computer", "question": "need"}
+{"text": "find large local files", "label": "computer", "question": "need"}
+{"text": "restart computer now", "label": "computer", "question": "need"}
+{"text": "run defragmentation tool", "label": "computer", "question": "need"}
+{"text": "check boot disk", "label": "computer", "question": "need"}
+{"text": "delete temp cache files", "label": "computer", "question": "need"}
+{"text": "list installed programs", "label": "computer", "question": "need"}
+{"text": "check system temperature", "label": "computer", "question": "need"}
+{"text": "clear local browser cache", "label": "computer", "question": "need"}
+{"text": "check disk usage", "label": "computer", "question": "need"}
+{"text": "Create a Python script that scrapes the weather forecast API for my local zip code and generates a custom SVG weather icon that matches the current conditions.", "label": "create", "question": "need"}
+{"text": "Write a JavaScript snippet to fix the bug in my local weather dashboard where the temperature unit isn't updating when I switch to Celsius.", "label": "create", "question": "need"}
+{"text": "Create a simple HTML page that displays a live weather widget for the nearest landmarks to my home, including a small map of the local area.", "label": "create", "question": "need"}
+{"text": "Design a logo for a local coffee shop that incorporates a stylized weather cloud and the name 'Sunny Side Up' using vector art.", "label": "create", "question": "need"}
+{"text": "Generate a short video montage of local landmarks in my city, overlaid with current weather conditions and the time of day.", "label": "create", "question": "need"}
+{"text": "Create a React component that fetches and displays a forecast for the user's current location, including a fallback image if the weather is obscured.", "label": "create", "question": "need"}
+{"text": "Fix a bug in the weather alert notification system where it doesn't trigger correctly when severe weather is detected in nearby districts.", "label": "create", "question": "need"}
+{"text": "Make a custom wallpaper for my computer that shows a serene local landscape with accurate weather reflections, such as rain or sunshine.", "label": "create", "question": "need"}
+{"text": "Build a small app that predicts the best time for outdoor activities based on local weather patterns and schedules them in my calendar.", "label": "create", "question": "need"}
+{"text": "Create a Python script that analyzes local weather data and generates a report on how it affects the nearby park's accessibility.", "label": "create", "question": "need"}
+{"text": "Write a CSS style to dynamically change the background color of my browser extension based on the current local weather conditions.", "label": "create", "question": "need"}
+{"text": "Develop a simple web app that displays a live weather map of the local area, allowing users to pan and zoom for a detailed view.", "label": "create", "question": "need"}
+{"text": "Please remember that I am allergic to shellfish, so please filter out any seafood recipes you pull up from the web next time.", "label": "memory", "question": "need"}
+{"text": "I would like you to forget that I have a standing preference for organic produce, as I have decided to switch to conventional items this quarter.", "label": "memory", "question": "need"}
+{"text": "Could you recall the specific brand of olive oil I used last month, and use it as the default for all future grocery list templates you generate?", "label": "memory", "question": "need"}
+{"text": "Don't forget that my smart home hub is currently in 'do not disturb' mode, so please ensure you only adjust the kitchen temperature if I explicitly ask.", "label": "memory", "question": "need"}
+{"text": "Please remember that I prefer to receive my weekly grocery reminders on my calendar for Saturdays at 9 AM, not via email.", "label": "memory", "question": "need"}
+{"text": "Can you recall the last recipe I bookmarked on the browser for sourdough starter, and fetch the ingredients from my current shopping app?", "label": "memory", "question": "need"}
+{"text": "Please forget my previous note that I want to save my high-res cooking videos to the external drive, as I no longer need that storage space.", "label": "memory", "question": "need"}
+{"text": "I'd like you to remember that I am lactose intolerant, so please always replace any dairy calls in any recipe you search for with plant-based alternatives.", "label": "memory", "question": "need"}
+{"text": "Please recall the specific email thread with the grocery store where I negotiated a discount, and use that contact info for future order confirmations.", "label": "memory", "question": "need"}
+{"text": "Could you please remember that I want to delete the browser history for all recipe searches I made yesterday to keep my feed clean?", "label": "memory", "question": "need"}
+{"text": "Please remember that my smart fridge is always set to 3 degrees Celsius, and don't forget to verify it's still on that setting before I start my weekly meal prep.", "label": "memory", "question": "need"}
+{"text": "Can you recall my favorite tomato sauce recipe from last month and use those exact measurements when you draft the shopping list for my next dinner party?", "label": "memory", "question": "need"}
+{"text": "can you make a spreadsheet of all the albums i bought last year and sort them by the number of tracks and then put a link to the cheapest one on a sale into my shopping cart", "label": "other", "question": "need"}
+{"text": "find me a recipe for pasta that uses stuff i already have in the fridge and then play some lofi beats while i cook and set a timer for 20 mins", "label": "other", "question": "need"}
+{"text": "Could you please log into my OpenTable account and check the availability for a table for four next Friday at 7:00 PM at that Italian place we went to last month?", "label": "browser", "question": "need"}
+{"text": "I'd like you to open my Ticketmaster page, find the show at Madison Square Garden this Saturday, and select the two tickets in the lower bowl closest to the center line.", "label": "browser", "question": "need"}
+{"text": "Please navigate to my Amazon account, look at the item in my cart, and if it's in stock, go through the checkout process to finalize the order using my saved payment method.", "label": "browser", "question": "need"}
+{"text": "Can you sign in to my school portal and download the latest syllabus for my history class, then save that file directly to my desktop folder?", "label": "browser", "question": "need"}
+{"text": "I need you to log into Etsy and search for a custom wooden photo frame, find one that fits our 5x7 picture, and add it to the cart so we can review it later.", "label": "browser", "question": "need"}
+{"text": "Please log in to my utility company's portal to check my current bill details and then click through to the autopay settings to confirm that automatic billing is turned on.", "label": "browser", "question": "need"}
+{"text": "Could you open the Airbnb website, sign into my account, and find that listing in Lisbon we looked at last summer, then check the calendar to see if those dates are still available?", "label": "browser", "question": "need"}
+{"text": "I'd like you to log in to my bank's online banking site and locate the recent transaction from the grocery store yesterday, and then click through to the customer support page to flag it as a duplicate charge.", "label": "browser", "question": "need"}
+{"text": "Please navigate to the movie theater's website for the new release this weekend, sign in as me, and select the 9:15 PM showtime with the most open seats available in the VIP section.", "label": "browser", "question": "need"}
+{"text": "Can you log into my local library's online portal and search for that book by the author I mentioned, then add it to my online wishlist so it holds it for me when it comes in?", "label": "browser", "question": "need"}
+{"text": "I want you to go to the restaurant's official website, find their menu, look up the wine pairings for the pasta special, and then click through to the reservation form to request a table for two.", "label": "browser", "question": "need"}
+{"text": "Please log in to my airline account and locate the flight to Denver, then navigate to the 'My Trips' page and select the option to check in early so I have a digital boarding pass ready.", "label": "browser", "question": "need"}
+{"text": "Can you check my calendar for any double-booked slots this week and draft a polite email to the affected clients to suggest new times?", "label": "email_calendar", "question": "need"}
+{"text": "What is the first free hour in my calendar tomorrow afternoon, and can you send an email to Sarah with the proposed meeting invite for that slot?", "label": "email_calendar", "question": "need"}
+{"text": "Search my inbox for the latest invoice from Acme Corp and if you find it, add a calendar reminder for next Friday at 10 AM to process the payment.", "label": "email_calendar", "question": "need"}
+{"text": "Is there any overlap between the marketing review on Tuesday and the client call on Thursday? If so, can you move the client call to the first free slot on Friday and email the client the updated time?", "label": "email_calendar", "question": "need"}
+{"text": "Find the email from the legal team regarding the contract revision and if it includes a date, add it to my calendar as a hard deadline.", "label": "email_calendar", "question": "need"}
+{"text": "Are there any unanswered emails from my boss from the last three days? If so, summarize the threads and send me a draft reply for the one asking about the Q3 forecast.", "label": "email_calendar", "question": "need"}
+{"text": "Check my calendar for the next 48 hours and block out 30 minutes of free time in the evening to send out the monthly newsletter draft.", "label": "email_calendar", "question": "need"}
+{"text": "Did I miss any calendar invitations since I was out of the office? If there are any conflicts with my existing meetings, email the organizers to propose rescheduling.", "label": "email_calendar", "question": "need"}
+{"text": "Look at my upcoming meetings for next week and find the largest gap between them, then draft an email to the team proposing that time for a deep work session.", "label": "email_calendar", "question": "need"}
+{"text": "Search my calendar for any meetings marked as 'optional' and if I have an email draft open about a project, can you attach it to the next optional meeting invite?", "label": "email_calendar", "question": "need"}
+{"text": "If my 2:00 PM meeting with the design team is canceled, find the next available slot in my calendar this week and email the team the new time.", "label": "email_calendar", "question": "need"}
+{"text": "Can you scan my inbox for any 'Action Required' tags on emails and sort them by date, then add a calendar entry for the earliest one with a 15-minute prep time before the deadline?", "label": "email_calendar", "question": "need"}
+{"text": "What's the weather like today, and could you send me a Spotify playlist for a rainy walk in the park?", "label": "apps", "question": "need"}
+{"text": "I'm heading out to the local coffee shop in 20 minutes; can you turn on the thermostat to 21 degrees and play a chill playlist on Spotify?", "label": "apps", "question": "need"}
+{"text": "Can you upload a video of the local sunrise to my YouTube channel and tag it with today's weather?", "label": "apps", "question": "need"}
+{"text": "Please turn off the smart lights in the living room and post a photo of the sunset in the garden to Instagram.", "label": "apps", "question": "need"}
+{"text": "What's the forecast for this weekend, and can you add a 'weather check' task to my Todoist list?", "label": "apps", "question": "need"}
+{"text": "I'm leaving for the local museum; can you turn on the thermostat to 25 degrees and share my location via Telegram?", "label": "apps", "question": "need"}
+{"text": "Can you play a focus playlist on Spotify and post a status update about the current weather on Slack?", "label": "apps", "question": "need"}
+{"text": "It's raining here; please turn on the smart lights to 50% brightness and upload a video of the rain to YouTube.", "label": "apps", "question": "need"}
+{"text": "Could you create a Notion page with today's weather forecast and set a reminder in Todoist to check the forecast tomorrow?", "label": "apps", "question": "need"}
+{"text": "I'm heading to the local library; can you turn on the thermostat to 22 degrees and send a message to my Discord channel about the weather?", "label": "apps", "question": "need"}
+{"text": "What's the weather like in the neighborhood, and can you post a short video of it to Facebook?", "label": "apps", "question": "need"}
+{"text": "Please turn off the smart lights and upload a photo of the local street to YouTube as a weather update.", "label": "apps", "question": "need"}
+{"text": "yo, whip up a little python script for my ecobee that makes the lights pulse if the temp goes above 78", "label": "create", "question": "need"}
+{"text": "can you code me a tiny web dashboard that shows my smart home energy usage in a cool neon dashboard?", "label": "create", "question": "need"}
+{"text": "bro make me a custom 4k video of my living room with the lights on but no one in it for my portfolio", "label": "create", "question": "need"}
+{"text": "fix the bug where my home assistant app crashes when i try to automate the thermostat and lights together", "label": "create", "question": "need"}
+{"text": "create a sleek logo for my new smart home startup that uses the colors of my current lighting setup", "label": "create", "question": "need"}
+{"text": "write me a bash script that turns off all the smart lights and locks the door when i get home", "label": "create", "question": "need"}
+{"text": "make a short animated logo for my new home automation brand using my current room photos", "label": "create", "question": "need"}
+{"text": "code me a little app that controls my smart plugs based on my calendar events", "label": "create", "question": "need"}
+{"text": "can you generate a 10 second video of my new smart home setup with cool lighting effects for my instagram story?", "label": "create", "question": "need"}
+{"text": "fix the issue in my python script where the smart bulb api keeps timing out when i try to change the hue", "label": "create", "question": "need"}
+{"text": "create a custom python script that syncs my smart home devices with my spotify playlist based on the mood", "label": "create", "question": "need"}
+{"text": "make me a simple web app that shows my smart home stats in a dashboard format", "label": "create", "question": "need"}
+{"text": "remember that I hate getting surprise bills from the water company", "label": "memory", "question": "need"}
+{"text": "don't forget to recall which streaming service I cancelled last month, I keep asking my wife", "label": "memory", "question": "need"}
+{"text": "remember that my mom's birthday is next month and she loves the fancy coffee gift cards", "label": "memory", "question": "need"}
+{"text": "stop asking me for my Wi-Fi password, remember it's the one with the numbers in it", "label": "memory", "question": "need"}
+{"text": "remember that I'm on a tight budget this month because of that car repair", "label": "memory", "question": "need"}
+{"text": "don't forget to recall that I left the smart plugs in the office on, turn them off", "label": "memory", "question": "need"}
+{"text": "remember that my dentist appointment is next Tuesday and I need to reschedule it", "label": "memory", "question": "need"}
+{"text": "recall that I'm saving up for a vacation to Japan, so skip the luxury subscriptions", "label": "memory", "question": "need"}
+{"text": "remember that I never want to pay for the gym if I don't use it more than twice a month", "label": "memory", "question": "need"}
+{"text": "don't forget to remind me that the credit card bill is due in two weeks", "label": "memory", "question": "need"}
+{"text": "remember that I hate paying extra shipping fees, always pick free shipping", "label": "memory", "question": "need"}
+{"text": "recall that I moved my phone number last year so update that in my contacts", "label": "memory", "question": "need"}
+{"text": "Search for flight options to Tokyo next month under $1500, open the cheapest one in my browser, and save the link to my travel notes", "label": "other", "question": "need"}
+{"text": "Organize my scattered notes on 'Project Alpha' into a single document, highlight the action items, and add a task for each to my to-do list", "label": "other", "question": "need"}
+{"text": "Find 3 recipes with low carbs from my saved recipes, convert the measurements for 2 people instead of 4, and add them to my meal plan notes", "label": "other", "question": "need"}
+{"text": "Search for the best coffee shops near my office, open the reviews for the top 3, and save the names and addresses to a new note", "label": "other", "question": "need"}
+{"text": "Could you please log into my OpenTable account and check if there is an available table for Friday at 7 PM, and if so, book it for four people?", "label": "browser", "question": "need"}
+{"text": "I need you to access my Amazon account, add the specific office chair I bookmarked last week to my cart, and proceed to checkout using my saved payment method.", "label": "browser", "question": "need"}
+{"text": "Please sign into Ticketmaster and search for the upcoming concert in Chicago; once found, select the VIP section and purchase two tickets for me.", "label": "browser", "question": "need"}
+{"text": "Please navigate to the local Craigslist listing for the apartment I saved, and submit the rental application form using the details from my resume.", "label": "browser", "question": "need"}
+{"text": "Could you open my bank's online banking portal and check the current balance, then transfer $500 to my savings account to ensure it's ready for next month's bill?", "label": "browser", "question": "need"}
+{"text": "Please log in to the school portal for my daughter, and submit her essay for the English class using the document I have ready.", "label": "browser", "question": "need"}
+{"text": "I want to book a table at a restaurant in New York, could you please open OpenTable, select 'The Lobster Club', and book a table for 2 at 8 PM for Sunday?", "label": "browser", "question": "need"}
+{"text": "Please sign into my Etsy account and reorder the last item I purchased, using the saved payment information and shipping address.", "label": "browser", "question": "need"}
+{"text": "Could you please access the web portal for my internet service provider to pay off the current bill and set up auto-payment for the next cycle?", "label": "browser", "question": "need"}
+{"text": "Please log into the online portal for my gym and update my membership details to reflect the new address and phone number.", "label": "browser", "question": "need"}
+{"text": "I need you to use the web version of my online shopping cart from Target to add a new item and then apply the promo code 'SUMMER20' before proceeding to checkout.", "label": "browser", "question": "need"}
+{"text": "Please sign into the university's online library system and search for the paper I need for my thesis, then save the PDF to my local computer.", "label": "browser", "question": "need"}
+{"text": "current flight prices", "label": "search", "question": "need"}
+{"text": "today weather forecast", "label": "search", "question": "need"}
+{"text": "best hotel reviews", "label": "search", "question": "need"}
+{"text": "local restaurant scores", "label": "search", "question": "need"}
+{"text": "train schedules update", "label": "search", "question": "need"}
+{"text": "car rental prices", "label": "search", "question": "need"}
+{"text": "city event listings", "label": "search", "question": "need"}
+{"text": "passage visa requirements", "label": "search", "question": "need"}
+{"text": "exchange rates USD", "label": "search", "question": "need"}
+{"text": "museum opening hours", "label": "search", "question": "need"}
+{"text": "tour guide recommendations", "label": "search", "question": "need"}
+{"text": "flight delay status", "label": "search", "question": "need"}
+{"text": "can u check my cal for tomorrows open slots im gonna need to book the dentist", "label": "email_calendar", "question": "need"}
+{"text": "move my 4pm call to 5 on friday and email the client about the delay", "label": "email_calendar", "question": "need"}
+{"text": "sort my inbox by unread and delete the marketing spam from last week", "label": "email_calendar", "question": "need"}
+{"text": "find a gap in my schedule this week to put in a 30 min run", "label": "email_calendar", "question": "need"}
+{"text": "draft a reply to mom saying i cant make saturdays but i will call her", "label": "email_calendar", "question": "need"}
+{"text": "add a reminder to my cal for the smart bulb install next thursday", "label": "email_calendar", "question": "need"}
+{"text": "search my sent emails for that invoice number and forward it to my accountant", "label": "email_calendar", "question": "need"}
+{"text": "see what time my dentist appt is and move it to early am if possible", "label": "email_calendar", "question": "need"}
+{"text": "email my landlord about the thermostat being off but keep the temp at 68", "label": "email_calendar", "question": "need"}
+{"text": "look at my upcoming meetings and cancel the redundant one on tuesday", "label": "email_calendar", "question": "need"}
+{"text": "find all unread emails with 'invoice' in subject and add to cal to pay them", "label": "email_calendar", "question": "need"}
+{"text": "draft a quick email to the electrician to confirm the light switch job", "label": "email_calendar", "question": "need"}
+{"text": "Free up 5GB of disk space by moving old browser cache files to the trash and deleting files in the Downloads folder larger than 500MB.", "label": "computer", "question": "need"}
+{"text": "Check the current disk space usage on the C: drive and identify which folders are taking up the most storage, then show me a pie chart of the top 5.", "label": "computer", "question": "need"}
+{"text": "Open the terminal and run a system diagnostics command to check for any corrupted system files, then log the results to a new text file on my desktop.", "label": "computer", "question": "need"}
+{"text": "List all the executable files (.exe) in my C:\\ProgramData folder and move the ones not modified in the last 6 months to a new folder called 'OldExecs' in my Documents.", "label": "computer", "question": "need"}
+{"text": "Check the installed list of programs and uninstall any software that was installed after January 1st of this year but hasn't been opened in over 30 days.", "label": "computer", "question": "need"}
+{"text": "Create a new text file on the Desktop named 'SystemInfo.txt', run the systeminfo command, and paste the full output into that file.", "label": "computer", "question": "need"}
+{"text": "Find all files with the extension .tmp in the C:\\Users\\YourName\\AppData folder and delete them, then run a disk cleanup to free up any additional temporary space.", "label": "computer", "question": "need"}
+{"text": "Open the command prompt as administrator and check the status of all Windows services that are currently running, then save the output to a CSV file on my Desktop.", "label": "computer", "question": "need"}
+{"text": "Identify which folder in my C:\\Users\\YourName\\ folder is consuming the most disk space, and move all subfolders older than 90 days to an external drive connection point if one is detected.", "label": "computer", "question": "need"}
+{"text": "Run a disk defragmentation tool on the D: drive, and while it's running, monitor the progress in the system tray and notify me when it hits 100%.", "label": "computer", "question": "need"}
+{"text": "Check the system logs for any errors related to the disk or file system, and if any are found, create a detailed report in a markdown file on my Desktop.", "label": "computer", "question": "need"}
+{"text": "List the total size of all files in my C:\\Users\\YourName\\Pictures\\ folder, and if the total exceeds 50GB, move all files from 2019 or earlier to a new folder called 'OldPictures' in my Downloads directory.", "label": "computer", "question": "need"}
+{"text": "hey can u make a quick python script to scrape my linkedin connections and put em in a csv? i need it by tom", "label": "create", "question": "need"}
+{"text": "can you generate a logo for my startup? make it a blue owl with a leaf, svg format please", "label": "create", "question": "need"}
+{"text": "write me some js to fix this login button bug, it keeps getting stuck on loading", "label": "create", "question": "need"}
+{"text": "make me a video ad for my coffee shop? 15 sec clip, just the latte being poured and steam", "label": "create", "question": "need"}
+{"text": "u can build a tiny web page for my birthday party? just a countdown timer to 8pm, make it cute", "label": "create", "question": "need"}
+{"text": "fix this css issue on my portfolio site, the hero image is overlapping the text on mobile", "label": "create", "question": "need"}
+{"text": "make a png of a sunset over the mountains, like an impressionist style, for my wall art", "label": "create", "question": "need"}
+{"text": "can you script a bash file to backup my whole desktop folder to cloud drive every sunday? add some logging too", "label": "create", "question": "need"}
+{"text": "make a gif of my dog doing a flip for my instagram story, from the video i sent you yesterday", "label": "create", "question": "need"}
+{"text": "write me a small node app to auto-reply to emails from 'bob' with a template i'll attach", "label": "create", "question": "need"}
+{"text": "can you design a simple icon set for my new todo list app? make it minimal and flat design", "label": "create", "question": "need"}
+{"text": "fix this python bug in my bot, it crashes when a user sends an empty message, keep the same logic", "label": "create", "question": "need"}
+{"text": "remember that I'm allergic to penicillin for when u book my next doc appt", "label": "memory", "question": "need"}
+{"text": "don't forget i left the kitchen light on on thursday, just turn it off from the smart home hub", "label": "memory", "question": "need"}
+{"text": "recall what i said about my favorite coffee order, then check if that local cafe is still open", "label": "memory", "question": "need"}
+{"text": "remember i hate having my screen brightened on its own, just turn off the auto-brightness for the laptop", "label": "memory", "question": "need"}
+{"text": "don't forget to log me out of that old cloud storage account when u open the browser next time", "label": "memory", "question": "need"}
+{"text": "remember i'm gonna be at the gym till 6, so just block off my calendar for the next hour", "label": "memory", "question": "need"}
+{"text": "don't forget i told u my dog's name is Biscuit, use that instead of 'pet' when u're talking to the vet app", "label": "memory", "question": "need"}
+{"text": "recall if i mentioned my sister's birthday last week, if i did, draft a quick email to wish her happy birthday", "label": "memory", "question": "need"}
+{"text": "remember i want all my receipts saved to a folder called 'taxes', not the inbox", "label": "memory", "question": "need"}
+{"text": "don't forget to mute the tv when i say 'movie mode', u gotta set that up on the smart speaker", "label": "memory", "question": "need"}
+{"text": "remember i'm trying to save $50 a month, so just cancel that subscription i forgot about", "label": "memory", "question": "need"}
+{"text": "don't forget i prefer dark mode on my phone, just make sure u switch it back if it ever goes light again", "label": "memory", "question": "need"}
+{"text": "open my browser and go to that recipe site i saved last week and read out the ingredients list for me while i am standing at the kitchen", "label": "other", "question": "need"}
+{"text": "what is the best time to post that video i just exported based on what you know about my audience on social media", "label": "other", "question": "need"}
+{"text": "convert the video length i just mentioned into seconds so i can set the timer for my edit", "label": "other", "question": "need"}
+{"text": "organize the notes i scribbled about the upcoming product launch video into a structured outline in my notes app", "label": "other", "question": "need"}
+{"text": "Yo, can you hop on OpenTable, find us a spot for 4 at that sushi place downtown, and actually book us a table for next Friday at 7? Just do the whole thing, don't make me click the buttons.", "label": "browser", "question": "need"}
+{"text": "Log into my Airbnb host dashboard, look at that last-minute cancellation, and change the listing status back to active. Just fix it so I'm not getting spam emails.", "label": "browser", "question": "need"}
+{"text": "Go to my Etsy shop, find the 'Vintage Blue Mug' listing, bump the price up to $25, and change the title to say 'Sale' so it pops up. Don't forget to save it.", "label": "browser", "question": "need"}
+{"text": "I need to upload my proof of address to my utility company's portal. Log in, go to 'My Profile', find the upload spot, and drag in the PDF I just saved. Hit submit when you're done.", "label": "browser", "question": "need"}
+{"text": "Hit me up to Ticketmaster and check the inventory for the Foo Fighters show. If they drop any new tickets, add them to my cart and proceed to checkout, but don't hit final payment.", "label": "browser", "question": "need"}
+{"text": "Go to my bank's website, navigate to the transfer page, and send $100 to my sister's account. Type in her name, double-check the details, and hit send. I'm too lazy to do it.", "label": "browser", "question": "need"}
+{"text": "Open my school portal, log in with my student ID, and go to the library reservation page. Find that book on marine biology and hold it for me. Make sure it goes through.", "label": "browser", "question": "need"}
+{"text": "Go to Craigslist, search for 'used bicycle' in my neighborhood, sort by price low to high, and email the seller of the cheapest one saying I'm interested. Don't send it yet, just draft the message in the browser.", "label": "browser", "question": "need"}
+{"text": "Hop onto my car dealer's website, find the truck I looked at yesterday, and click the 'Schedule Test Drive' button. Put me down for Saturday morning and confirm the appointment.", "label": "browser", "question": "need"}
+{"text": "Go to my email provider's web interface, find the folder with the 'Warranty Claims' subject, and click 'Forward' to my tech support email. Type 'Please look at this' in the body and hit send.", "label": "browser", "question": "need"}
+{"text": "Log into the city's online permit portal, go to the 'New Applications' section, and fill out the form for my patio extension. Use the info from my last form and hit 'Submit Application' at the end.", "label": "browser", "question": "need"}
+{"text": "hey can you look up the current price of 12 gigabytes of ram for a desktop and compare it to what's on the market right now because i want to upgrade my machine but dont want to open the browser myself", "label": "search", "question": "need"}
+{"text": "what is the latest news on the iphone 15 pro camera system and are there any reviews that say it's better than the pro max one or is it just marketing fluff", "label": "search", "question": "need"}
+{"text": "do you know what the weather forecast is for tomorrow evening in new york city i'm planning a picnic and want to know if it's going to rain or be windy", "label": "search", "question": "need"}
+{"text": "can you search for the top rated noise cancelling headphones under two hundred dollars and list out the five best options based on recent user feedback", "label": "search", "question": "need"}
+{"text": "what's the current high score on the game tetris on the high score board and can you find who holds the world record for the most consecutive games", "label": "search", "question": "need"}
+{"text": "look into if there's any new software update for the intel chipset manager on my pc and let me know if there are any known bugs reported in the forums", "label": "search", "question": "need"}
+{"text": "find me the latest update on the nba playoffs schedule and who are the top three players in scoring for this specific season", "label": "search", "question": "need"}
+{"text": "can you check the current exchange rate from dollars to euros and also find out what the interest rates are for a standard savings account at major banks right now", "label": "search", "question": "need"}
+{"text": "search for the best time of day to take a walk in the city today to avoid the heat and let me know what the air quality index is for the next few hours", "label": "search", "question": "need"}
+{"text": "what are the reviews for the latest macbook pro and do people say the battery life has improved or if the fan noise is still a big issue", "label": "search", "question": "need"}
+{"text": "look up the ingredients in that specific pasta sauce i bought at the store and see if there are any allergens that i should worry about for my diet", "label": "search", "question": "need"}
+{"text": "can you find the current price of a flight from los angeles to tokyo for next month and compare it with what the same route costs in july", "label": "search", "question": "need"}
+{"text": "Draft an email to my mechanic about the car oil change delay and add a reminder to my calendar.", "label": "email_calendar", "question": "need"}
+{"text": "Check my inbox for any recent emails about vehicle recalls and reply to the one from Toyota.", "label": "email_calendar", "question": "need"}
+{"text": "Look at my calendar for this week and block off two hours for car maintenance on Saturday.", "label": "email_calendar", "question": "need"}
+{"text": "Find the email with the car insurance policy details and set a reminder to update my calendar.", "label": "email_calendar", "question": "need"}
+{"text": "Sort my emails by sender from car dealers and draft a response to the one with the best deal.", "label": "email_calendar", "question": "need"}
+{"text": "See what meetings I have tomorrow and move the one that conflicts with my car repair appointment.", "label": "email_calendar", "question": "need"}
+{"text": "Search my email for any messages about car financing and send a follow-up to the bank.", "label": "email_calendar", "question": "need"}
+{"text": "Add a new meeting to my calendar for the car inspection and notify the participant via email.", "label": "email_calendar", "question": "need"}
+{"text": "Check if I have any unread emails from car-related services and prioritize them in my inbox.", "label": "email_calendar", "question": "need"}
+{"text": "Look at my past emails about car purchases and find the one with the price negotiation details.", "label": "email_calendar", "question": "need"}
+{"text": "Block out time in my calendar for the car wash and email a confirmation to the service.", "label": "email_calendar", "question": "need"}
+{"text": "Review my calendar for upcoming appointments and email a reschedule request if there's a conflict.", "label": "email_calendar", "question": "need"}
+{"text": "yo, hit me up on telegram and post that latest screenshot to the group chat, then hit play on spotify and vibe with lofi beats", "label": "apps", "question": "need"}
+{"text": "can you drop this doc from my dropbox onto my notion page and send a heads up on slack so i dont get flak", "label": "apps", "question": "need"}
+{"text": "push that new code to github and ping the team on discord when it lands, then crank the thermostat down to 65", "label": "apps", "question": "need"}
+{"text": "upload that vlog to youtube and tag it, then post the clip to instagram while i scroll slack", "label": "apps", "question": "need"}
+{"text": "set my todoist for the week and sync it to notion, then send a quick dm on telegram to jake saying im in a meeting", "label": "apps", "question": "need"}
+{"text": "light up the living room smart lights to orange mode, put on a spotify playlist for cooking, and upload the recipe to notion", "label": "apps", "question": "need"}
+{"text": "send that file from onedrive to slack #general, then post the update on x so the devs know its done", "label": "apps", "question": "need"}
+{"text": "check my github PRs, post a status on discord, and send a reminder to myself on telegram in 2 hours", "label": "apps", "question": "need"}
+{"text": "grab that clip from dropbox, edit it quick, post it to facebook, and send the link over to slack", "label": "apps", "question": "need"}
+{"text": "turn the thermostat up to 72, start a spotify focus playlist, and dump all my new todos into todoist", "label": "apps", "question": "need"}
+{"text": "send the invoice from onedrive to the client on telegram, and post a 'new release' update on github", "label": "apps", "question": "need"}
+{"text": "grab the latest report from notion, post it to slack, and upload the full PDF to youtube for the archive", "label": "apps", "question": "need"}
+{"text": "Create a custom HTML5 script that patches the lag spike in my local Minecraft server's chunk loader.", "label": "create", "question": "need"}
+{"text": "Fix the rendering bug in my personal portfolio website where the hero video doesn't autoplay on Safari.", "label": "create", "question": "need"}
+{"text": "Write a Python script that scrapes the latest patch notes from the game dev blog and generates a summary email.", "label": "create", "question": "need"}
+{"text": "Create a logo vector for my new indie game studio called 'Pixel Forge' using a pixel art aesthetic.", "label": "create", "question": "need"}
+{"text": "Build a React component that displays a real-time leaderboard from my multiplayer game's API.", "label": "create", "question": "need"}
+{"text": "Create a short 5-second animated GIF of my avatar jumping for my Discord status.", "label": "create", "question": "need"}
+{"text": "Fix the crash in my custom Mod for Factorio that occurs when placing certain machines.", "label": "create", "question": "need"}
+{"text": "Write a bash script to automate the backup of my local game save files to the cloud storage app.", "label": "create", "question": "need"}
+{"text": "Create a 3D texture pack for the weapon in my custom game engine using a procedural shader approach.", "label": "create", "question": "need"}
+{"text": "Fix the connection timeout bug in my Python client for the game's multiplayer socket server.", "label": "create", "question": "need"}
+{"text": "Create an interactive React app that lets me input my game stats and generate a performance radar chart.", "label": "create", "question": "need"}
+{"text": "Write a JavaScript plugin for my browser extension that blocks lag spikes by pausing non-essential assets during gameplay.", "label": "create", "question": "need"}
