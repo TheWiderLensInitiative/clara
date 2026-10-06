@@ -123,6 +123,6 @@ if __name__ == "__main__":
     parser.add_argument("--model",type=Path,required=True)
     parser.add_argument("--report",type=Path,required=True)
     parser.add_argument("--audit",type=Path,help="Additional frozen cases withheld from model development")
-    parser.add_argument("--threads",type=int,default=4)
+    parser.add_argument("--threads",type=int,default=8)
     args=parser.parse_args()
     raise SystemExit(main(args))

@@ -38,7 +38,7 @@ class Router:
         self.cpu_threads = None
         if str(device) == "cpu":
             import torch
-            self.cpu_threads = int(os.environ.get("CLARA_LAYA_THREADS", "4"))
+            self.cpu_threads = int(os.environ.get("CLARA_LAYA_THREADS", "8"))   # 8 of 16: ~350 ms vs ~550 ms at 4, identical answers
             if self.cpu_threads < 1:
                 raise ValueError("CLARA_LAYA_THREADS must be positive")
             torch.set_num_threads(self.cpu_threads)

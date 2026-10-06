@@ -135,8 +135,10 @@ can change predictions even when the labels and descriptions are unchanged.
 Unified routing uses selected-answer probability with a
 candidate default threshold of 0.9; legacy checkpoints retain the entropy gate.
 `CLARA_ROUTER_THRESHOLD` overrides the default, so evaluate any override explicitly.
-CPU serving uses four intra-op threads, matching the evaluator; set
-`CLARA_LAYA_THREADS` to benchmark a different thread budget on another machine.
+CPU serving uses eight intra-op threads, matching the evaluator (on the project's 16-thread
+Ryzen 7 5700: ~350 ms per question versus ~550 ms at four, with identical decisions and
+probabilities on all 342 test messages); set `CLARA_LAYA_THREADS` to benchmark a different
+thread budget on another machine.
 
 Confident need predictions now accompany the Hermes handoff as category-specific
 tool guidance, including non-browser tasks. Low-confidence or unknown categories
