@@ -3281,6 +3281,29 @@ help_request: Optional[dict] = None      # the open request, shown in the app un
 _help_waiters: list = []                  # futures resolved when the user hands control back
 
 
+RISK_MIN = float(os.environ.get("CLARA_RISK_MIN", "0.8"))   # Laya's P(commits) needed to add an approval
+
+
+class RiskIn(BaseModel):
+    control: str
+    site: str = ""
+    page: str = ""
+    dialog: str = ""
+
+
+@app.post("/internal/risk")
+async def internal_risk(body: RiskIn, ok=Depends(link)):
+    """Laya's second opinion on a click the browser's word list didn't flag. It can only add an approval."""
+    if router is None or not getattr(router, "knows_risk", False):
+        return {"risky": False, "p": 0.0, "known": False}
+    try:
+        _, p = await asyncio.wait_for(_router_call(router.risk, body.control, body.site, body.page, body.dialog), 5)
+    except Exception as e:
+        print(f"risk: {type(e).__name__}: {e}", flush=True)
+        return {"risky": False, "p": 0.0, "known": False}
+    return {"risky": p >= RISK_MIN, "p": round(p, 4), "known": True}
+
+
 class ActivityIn(BaseModel):
     conversation_id: Optional[str] = None
     kind: str

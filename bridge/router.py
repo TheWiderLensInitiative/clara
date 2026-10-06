@@ -10,6 +10,7 @@ from router_spec import QUESTION, ROUTES, state
 from effort_spec import EFFORT_Q
 from need_spec import NEED_Q
 from followup_spec import FOLLOWUP_Q, followup_state
+from risk_spec import RISK_Q, risk_state
 from laya_unified import load_agent
 from legacy_laya_spec import LEGACY_QUESTIONS
 
@@ -64,6 +65,7 @@ class Router:
         self.route_threshold = (float(os.environ.get("CLARA_ROUTER_THRESHOLD", self.agent.cfg.get("clara_route_threshold", .9)))
                                 if self.unified else CONFIDENT)
         self.need_agent, self.knows_need = None, False
+        self.knows_risk = self.unified and "risk" in set(self.agent.cfg.get("questions") or [])
         if {"route", "effort", "need", "followup"} <= set(self.agent.cfg.get("questions") or []):
             # A unified checkpoint supplies every decision from one resident model.
             self.need_agent, self.knows_need = self.agent, True
@@ -76,7 +78,8 @@ class Router:
                 "weights_sha256": self.weights_sha256,
                 "configuration_sha256": self.configuration_sha256,
                 "resident_models": 1 + int(self.need_agent is not None and self.need_agent is not self.agent),
-                "questions": sorted({"route", "effort"} | ({"need", "followup"} if self.knows_need else set())),
+                "questions": sorted({"route", "effort"} | ({"need", "followup"} if self.knows_need else set())
+                                    | ({"risk"} if self.knows_risk else set())),
                 "unified_calibration": self.unified,
                 "cpu_threads": self.cpu_threads,
                 "route_confidence_metric": "selected_probability" if self.unified else "normalized_entropy",
@@ -95,6 +98,13 @@ class Router:
         a = self.agent.predict(state(text), {"effort": self.effort_question})["answers"]["effort"]
         # Bridge applies its quick-mode threshold to P(quick), not normalized entropy.
         return a["choice"], float((a.get("probabilities") or {}).get("quick", 0.0))
+
+    def risk(self, control, site="", page="", dialog=""):
+        """Second opinion on a click: (choice, P(commits)), or (None, 0) when the model wasn't trained for it."""
+        if not self.knows_risk:
+            return None, 0.0
+        a = self.agent.predict(risk_state(control, site, page, dialog), {"risk": RISK_Q})["answers"]["risk"]
+        return a["choice"], float((a.get("probabilities") or {}).get("commits", 0.0))
 
     def followup(self, text, last_reply):
         """Does this continue Clara's last task? (choice, P(continue)); unknown on older checkpoints."""

@@ -260,3 +260,19 @@ four questions reuses the same agent object. An older primary checkpoint uses
 the app's existing fallback rules for missing capabilities, never another Laya.
 `bridge/legacy_laya_spec.py` preserves the original input definitions for legacy
 weights; the compact unified questions apply only to unified checkpoints.
+
+## v9: a fifth question, risk (2026-10-06)
+
+`risk` (`risk_spec.py`): would clicking this control commit something the user should approve first? State = the control
+(`button "Done"`), site, page title and any open dialog's text. The browser asks it only for clicks its word list
+(clara-browse `COMMIT`) lets through, and it can only **add** an approval (P(commits) ≥ 0.8), never remove one.
+
+- Data: `risk_data.py` → `risk_train.jsonl` (379) and `risk_eval.jsonl` (92), **hand-written, not model-generated**. One
+  group per page; the test set shares no control name, site or page title with training, and `risk_data.py` refuses to
+  write if any overlap or near-duplicate appears.
+- Training: continued from v8 (`--resume-candidate`, which may now add questions but never change one), distilling
+  route/effort/need/followup at weight 4, 2 epochs, average of epochs 1-2 selected by development log loss. ~15 min.
+- Results: route 40/40, effort 40/40, need 49/50, followup 36/36, challenge 63/64 (all gates pass); risk 80/92 with the
+  bars set before training (≥85%, ≤10% extra approvals). Fresh check 48/48. With the word list, risky test buttons that
+  ask first went from 14/27 to 22/27; safe ones that ask anyway from 4/65 to 7/65. Still missed: "Looks good", "Apply
+  now", "Yes" (delete payee), "Schedule Event", "Request a tour".

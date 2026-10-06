@@ -20,7 +20,8 @@ from prepare_unified import assert_disjoint, state_key
 from laya_contract import QUESTIONS, example_state, schema_hash, ordered_schema_hash
 
 
-def read_splits(folder):
+def read_splits(folder, questions=None):
+    """questions: the ones this split must cover (default all); a parent's older split covers only its own."""
     manifest = json.loads((folder / "manifest.json").read_text())
     splits = {}
     for name in ("train", "dev", "calibration"):
@@ -31,7 +32,7 @@ def read_splits(folder):
         if not splits[name]:
             raise ValueError(f"Empty split: {name}")
     assert_disjoint(splits)
-    for name in QUESTIONS:
+    for name in (questions or QUESTIONS):
         if manifest["question_hashes"].get(name) != schema_hash(name):
             raise ValueError(f"Question schema changed: {name}")
         for split, rows in splits.items():
@@ -67,11 +68,13 @@ def validate_resume(base, cfg, splits, data_manifest):
     record = json.loads(record_path.read_text())
     if file_hash(base / "model.safetensors") != record.get("candidate_weights_sha256"):
         raise ValueError("Parent candidate weights changed")
-    if set(cfg.get("questions") or []) != set(QUESTIONS) or \
-       cfg.get("clara_question_hashes") != {q:schema_hash(q) for q in QUESTIONS} or \
-       cfg.get("clara_ordered_question_hashes") != {q:ordered_schema_hash(q) for q in QUESTIONS}:
-        raise ValueError("Resume requires the same trained questions and answer order")
-    previous, previous_manifest = read_splits(Path(record["arguments"]["splits"]))
+    # Continuing may ADD questions (the parent's are kept and distilled); it may never change a parent question.
+    parent = set(cfg.get("questions") or [])
+    if not parent or not parent <= set(QUESTIONS) or \
+       cfg.get("clara_question_hashes") != {q:schema_hash(q) for q in parent} or \
+       cfg.get("clara_ordered_question_hashes") != {q:ordered_schema_hash(q) for q in parent}:
+        raise ValueError("Resume requires the parent's questions and answer order unchanged (new questions may be added)")
+    previous, previous_manifest = read_splits(Path(record["arguments"]["splits"]), questions=sorted(parent))
     if previous_manifest != record["data"]:
         raise ValueError("Parent split manifest changed")
     seen = {state_key(r) for r in previous["train"]}
@@ -299,7 +302,7 @@ def main(args):
         source_dir.mkdir()
         root = Path(__file__).resolve().parents[1]
         source_files = ["laya/train_unified.py","laya/prepare_unified.py","bridge/laya_contract.py",
-                        "bridge/laya_unified.py"] + [f"bridge/{name}_spec.py" for name in ("router","effort","need","followup")]
+                        "bridge/laya_unified.py"] + [f"bridge/{name}_spec.py" for name in ("router","effort","need","followup","risk")]
         source_hashes = {}
         for relative in source_files:
             source = root / relative

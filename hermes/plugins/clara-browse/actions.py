@@ -349,6 +349,32 @@ def parse_verdict(text: str) -> dict:
     return {"verified": verified is True or str(verified).lower() == "true", "reason": str(data.get("reason") or "")[:300]}
 
 
+def second_opinion_control(action: dict, snapshot: str = ""):
+    """The control to ask Laya about ('button "Done"'), for a click the word list let through; None when there is
+    nothing to ask (not a click, a form setting, or already asking the user)."""
+    if commit_label(action, snapshot):
+        return None
+    kind = action.get("action")
+    if kind == "click":
+        role, name = control(_line(snapshot, action.get("ref") or ""))
+    elif kind == "find":
+        role, name = "control", str(action.get("text") or "")
+    elif kind == "click_at":
+        target = action.get("_target") or {}
+        role, name = str(target.get("role") or target.get("tag") or "control"), str(target.get("name") or "")
+    else:
+        return None
+    if not name or role in SETTING_ROLES:
+        return None
+    return f'{role or "control"} "{name[:120]}"'
+
+
+def dialog_text(snapshot: str) -> str:
+    """The name of an open dialog in the snapshot ("Delete 3 files?"), which changes what OK or Yes means."""
+    found = re.search(r'^\s*-\s*(?:alertdialog|dialog)\s+"([^"]+)"', snapshot or "", re.M)
+    return found.group(1)[:240] if found else ""
+
+
 def step_text(action: dict, snapshot: str = "", result: dict = None, url: str = "") -> str:
     """One browser step as a short sentence for the activity log. Never includes what was typed into a field."""
     kind = action.get("action")

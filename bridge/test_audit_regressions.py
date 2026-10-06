@@ -66,7 +66,7 @@ def response(status, data):
 
 class LayaSpecTests(unittest.TestCase):
     def test_bridge_asks_exactly_what_laya_was_trained_on(self):
-        for name in ('router_spec.py','effort_spec.py','need_spec.py','followup_spec.py'):
+        for name in ('router_spec.py','effort_spec.py','need_spec.py','followup_spec.py','risk_spec.py'):
             self.assertEqual((ROOT/'bridge'/name).read_text(),(ROOT/'laya'/name).read_text(),name)
 
 
@@ -508,6 +508,30 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(await app._suggest_actions(brief,limit=0.05),[])   # too slow: the brief goes out without buttons
         with patch.object(app,'_llm_once',new=AsyncMock(side_effect=RuntimeError('model down'))):
             self.assertEqual(await app._suggest_actions(brief),[])
+
+    async def test_laya_second_opinion_on_clicks(self):
+        stub=types.SimpleNamespace(knows_risk=True,risk=unittest.mock.Mock(return_value=('commits',0.93)))
+        with patch.object(app,'router',stub):
+            out=await app.internal_risk(app.RiskIn(control='button "Done"',site='target.com',page='Order summary'),ok=True)
+            self.assertEqual(out,{'risky':True,'p':0.93,'known':True})
+            stub.risk.return_value=('commits',0.62)       # unsure: no extra approval
+            self.assertFalse((await app.internal_risk(app.RiskIn(control='button "Done"'),ok=True))['risky'])
+            stub.risk.side_effect=RuntimeError('model busy')   # any failure: no extra approval
+            self.assertEqual((await app.internal_risk(app.RiskIn(control='button "Done"'),ok=True))['known'],False)
+        with patch.object(app,'router',types.SimpleNamespace(knows_risk=False)):   # older model: never asked
+            self.assertEqual(await app.internal_risk(app.RiskIn(control='button "Done"'),ok=True),{'risky':False,'p':0.0,'known':False})
+
+    def test_browser_adds_but_never_removes_an_approval(self):
+        snap='- button "Done" [ref=e1]\n- button "Submit" [ref=e2]'
+        with patch.object(browse,'_eval',return_value='Order summary'),patch.object(browse,'_link',return_value={'risky':True,'p':0.9}) as link:
+            self.assertEqual(browse._second_opinion('t',{'action':'click','ref':'@e1'},snap,'https://target.com/cart'),'click "Done"')
+            sent=link.call_args.args[1]
+            self.assertEqual((sent['control'],sent['site'],sent['page']),('button "Done"','target.com','Order summary'))
+            self.assertIsNone(browse._second_opinion('t',{'action':'click','ref':'@e2'},snap,'https://x.com'))   # word list asks anyway
+        with patch.object(browse,'_eval',return_value=''),patch.object(browse,'_link',side_effect=OSError('bridge down')):
+            self.assertIsNone(browse._second_opinion('t',{'action':'click','ref':'@e1'},snap,'https://target.com'))
+        with patch.object(browse,'_eval',return_value=''),patch.object(browse,'_link',return_value={'risky':False,'p':0.2}):
+            self.assertIsNone(browse._second_opinion('t',{'action':'click','ref':'@e1'},snap,'https://target.com'))
 
     async def test_stop_tells_every_device_right_away(self):
         app.store.set_active_run(self.cid,'run-a')

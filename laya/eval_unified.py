@@ -40,6 +40,9 @@ def summarize(rows):
             "accepted":sum(r["accepted"] for r in rows),
             "accepted_errors":sum(r["accepted"] and r["choice"]!=r["gold"] for r in rows),
             "false_quick":sum(r["gold"]=="deep" and r["policy"]=="quick" for r in rows),
+            "false_commits":sum(r["gold"]=="safe" and r["policy"]=="commits" for r in rows),
+            "missed_commits":sum(r["gold"]=="commits" and r["policy"]=="safe" for r in rows),
+            "rows_gold":[r["gold"] for r in rows],
             "brier":brier,"log_loss":nll,"ece_5_equal_width_bins":ece,"calibration_bins":bins,
             "confusion":{k:dict(v) for k,v in confusion.items()},
             "median_ms":statistics.median(latency),"p95_nearest_rank_ms":latency[math.ceil(.95*len(latency))-1],
@@ -57,9 +60,14 @@ def release_checks(summary, unified):
     checks["challenge_total"] = sum(v["policy_correct"] for v in challenge.values()) >= 60
     checks["challenge_each_question"] = all(v["policy_correct"]/v["total"] >= .875 for v in challenge.values())
     checks["challenge_no_false_quick"] = challenge["effort"]["false_quick"] == 0
+    if "risk" in summary:   # bars set before the first risk training run: >= 85% right, <= 10% extra approvals on safe controls
+        risk = summary["risk"]["risk"]
+        safe_total = sum(1 for r in summary["risk"]["risk"]["rows_gold"] if r == "safe")
+        checks["risk_accuracy"] = risk["policy_correct"] / risk["total"] >= .85
+        checks["risk_extra_approvals"] = risk["false_commits"] <= .10 * max(1, safe_total)
     if "fresh_audit" in summary:
         audit = summary["fresh_audit"]
-        checks["fresh_audit_all_questions"] = set(audit) == set(QUESTIONS)
+        checks["fresh_audit_all_questions"] = set(audit) >= set(QUESTIONS) - {"risk"}
         checks["fresh_audit_total"] = (sum(v["policy_correct"] for v in audit.values()) /
                                         max(1,sum(v["total"] for v in audit.values()))) >= .9375
         checks["fresh_audit_each_question"] = all(v["policy_correct"]/v["total"] >= .875 for v in audit.values())
@@ -78,6 +86,8 @@ def main(args):
     sets = {"regression":regression_examples(),"challenge":load_rows([Path(__file__).parent/"unified_challenge.jsonl"])}
     if args.audit:
         sets["fresh_audit"] = load_rows([args.audit])
+    if "risk" in QUESTIONS and (Path(__file__).parent / "risk_eval.jsonl").exists():
+        sets["risk"] = load_rows([Path(__file__).parent / "risk_eval.jsonl"])
     summary, all_rows = {},{}
     for suite,examples in sets.items():
         results = defaultdict(list)
@@ -88,7 +98,8 @@ def main(args):
             ms = (time.perf_counter()-start)*1000
             p = answer["probabilities"]; choice = answer["choice"]
             policy = "quick" if name=="effort" and p["quick"]>=.8 else "deep" if name=="effort" else (
-                     "continue" if name=="followup" and p["continue"]>=.6 else "new" if name=="followup" else choice)
+                     "continue" if name=="followup" and p["continue"]>=.6 else "new" if name=="followup" else (
+                     "commits" if name=="risk" and p["commits"]>=.8 else "safe" if name=="risk" else choice))
             gate_value = p[choice] if unified else answer["confidence"]
             accepted = gate_value>=threshold if name=="route" else p[choice]>=.6 if name=="need" else True
             results[name].append({"text":row["text"],"gold":row["label"],"choice":choice,"policy":policy,

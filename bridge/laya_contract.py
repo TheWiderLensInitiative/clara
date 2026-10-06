@@ -6,8 +6,9 @@ from router_spec import QUESTION, state
 from effort_spec import EFFORT_Q
 from need_spec import NEED_Q
 from followup_spec import FOLLOWUP_Q, followup_state
+from risk_spec import RISK_Q, risk_state
 
-QUESTIONS = {"route": QUESTION, "effort": EFFORT_Q, "need": NEED_Q, "followup": FOLLOWUP_Q}
+QUESTIONS = {"route": QUESTION, "effort": EFFORT_Q, "need": NEED_Q, "followup": FOLLOWUP_Q, "risk": RISK_Q}
 
 
 def schema_hash(name):
@@ -20,5 +21,9 @@ def ordered_schema_hash(name):
 
 
 def example_state(example):
-    return (followup_state(example["text"], example.get("last"))
-            if example.get("question", "route") == "followup" else state(example["text"]))
+    question = example.get("question", "route")
+    if question == "followup":
+        return followup_state(example["text"], example.get("last"))
+    if question == "risk":   # text = the control ('button "Done"'), plus where it is
+        return risk_state(example["text"], example.get("site", ""), example.get("page", ""), example.get("dialog", ""))
+    return state(example["text"])

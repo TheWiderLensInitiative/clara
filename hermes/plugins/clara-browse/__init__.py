@@ -324,6 +324,24 @@ def _report(session_id, text):
         logger.info("browser_use: couldn't log a step: %s", e)
 
 
+def _second_opinion(task_id, action, snapshot, url):
+    """Ask Laya (through the Bridge) about a click the word list let through. Any failure means no extra approval."""
+    control = actions.second_opinion_control(action, snapshot)
+    if not control:
+        return None
+    try:
+        title = str(_eval(task_id, "document.title") or "")[:160]
+        verdict = _link("/internal/risk", {"control": control, "site": urlparse(url or "").hostname or "", "page": title,
+                                           "dialog": actions.dialog_text(snapshot)}, timeout=6)
+    except Exception as e:
+        logger.info("browser_use: no second opinion: %s", e)
+        return None
+    if verdict.get("risky"):
+        logger.info("browser_use: Laya says %s is risky (P=%s)", control, verdict.get("p"))
+        return "click " + control.split(" ", 1)[1]
+    return None
+
+
 def _sign_in(name, task_id, session_id):
     import hermes_plugins.clara_vault as vault
     return json.loads(vault.handle_sign_in({"name": name}, task_id=task_id, session_id=session_id))
@@ -821,6 +839,8 @@ def _drive(goal, start_url, task_id, session_id, run=None):
             history.append("blocked (open): that address is on the local network")
             continue
         label = actions.commit_label(action, snapshot)
+        if not label:
+            label = _second_opinion(task_id, action, snapshot, url)   # Laya can only add an approval, never remove one
         if label and (url, label) not in approved:
             answer = _ok(label, url, session_id, action, snapshot)
             if answer is not True and answer is not False:
