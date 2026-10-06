@@ -637,6 +637,46 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn('If access is missing',instructions)
             self.assertNotIn("Google account is connected",instructions)
 
+    async def test_made_up_inbox_is_held_back_and_checked_again(self):
+        # 2026-10-06: after only calendar_events, Bonsai listed an Outlook inbox that doesn't exist.
+        made_up=("I can now see your Outlook inbox. Here's what's there:\n\n- **GitHub** - PR #142 waiting on your review (2026-10-05 13:27).\n"
+                 "- **LinkedIn** - a DM from Mckenna Combs (2026-10-05 09:15).\n- **weSponsored** - a campaign nudge.")
+        real="Your Outlook inbox has 3 emails:\n- Microsoft 365: Weekly digest (Oct 5, 11:49)\n- GoDaddy: New sign-in detected (Oct 1, 12:52)\n- The Wider Lens: tester signup (Oct 1)"
+        def run(tool,answer):
+            return Stream(200,[f'data: {json.dumps({"event":"tool.started","tool":tool})}',
+                               f'data: {json.dumps({"event":"message.delta","delta":answer[:40]})}',
+                               f'data: {json.dumps({"event":"run.completed","output":answer})}'])
+        for streams,expect in [([run('calendar_events',made_up),run('email_search',real)],real),
+                               ([run('calendar_events',made_up),run('calendar_events',made_up)],"won't guess")]:
+            posts=[response(200,{'run_id':'r1'}),response(200,{'run_id':'r2'})]
+            client=types.SimpleNamespace(post=AsyncMock(side_effect=posts),stream=lambda *a,**k:streams.pop(0))
+            published=[]
+            with patch.object(app,'hermes',client),patch.object(app,'_job_ids',new=AsyncMock(return_value=set())),\
+                 patch.object(app,'_mail_accounts',return_value=['microsoft']),\
+                 patch.object(app,'_suggest_actions',new=AsyncMock(return_value=[])),\
+                 patch.object(app.bus,'publish',side_effect=lambda event,**kw:published.append(event)):
+                await app._agent(self.cid,[],'I connected it can you look again','task',mail=True)
+            self.assertIn(expect,app.store.messages(self.cid)[-1]['content'])
+            self.assertNotIn('message.delta',published)   # nothing unchecked reached the phone
+            self.assertEqual(client.post.await_count,2)
+            self.assertIn('answer only from what those tools return',client.post.await_args_list[1].kwargs['json']['instructions'])
+            kinds=[a['kind'] for a in app.store.activity(self.cid,50)]
+            self.assertIn('grounding.retry',kinds)
+
+    def test_grounding_only_flags_reports_without_a_look(self):
+        listing="Here's what's in your inbox:\n- Sam: lunch Thursday (10:30)\n- Billing: invoice 77 is due Friday, please pay soon\n- GitHub: a review request"
+        self.assertEqual(app._ungrounded(listing,{'calendar_events'}),'email')
+        self.assertIsNone(app._ungrounded(listing,{'email_search'}))
+        self.assertIsNone(app._ungrounded("Outlook isn't connected yet. Open Connectors and add it, then ask me again.",set()))
+        cal="Tomorrow you have 2 meetings on your calendar:\n- 10:00 Dentist at Main St Dental\n- 14:00 Team call with the design group, about an hour"
+        self.assertEqual(app._ungrounded(cal,set()),'calendar')
+        self.assertIsNone(app._ungrounded(cal,{'calendar_events'}))
+        with patch.object(app,'_mail_accounts',return_value=['google']):
+            self.assertTrue(app._mail_context('I connected it can you look again',[{'role':'user','content':"what's in my Outlook inbox?"}]))
+            self.assertFalse(app._mail_context('what is the capital of France',[{'role':'user','content':'hello'}]))
+        with patch.object(app,'_mail_accounts',return_value=[]):
+            self.assertFalse(app._mail_context('check my email',[]))
+
     async def test_help_and_vault_waits_end_on_stop(self):
         app.store.set_active_run(self.cid,'run-a')
         help_task=asyncio.create_task(app.ask_for_help(app.HelpIn(reason='captcha',conversation_id=self.cid),ok=True))
