@@ -663,6 +663,14 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             kinds=[a['kind'] for a in app.store.activity(self.cid,50)]
             self.assertIn('grounding.retry',kinds)
 
+    def test_telling_clara_about_yourself_goes_to_memory(self):
+        for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
+                     'my shoe size is 7.5','remember that I like oat milk']:
+            self.assertTrue(app.MEMORY_REQUEST.search(text),text)
+        for text in ['what is the name of that song','find shoes in my size','a man walks into a bar']:
+            self.assertFalse(app.MEMORY_REQUEST.search(text),text)
+        self.assertIn('profile',app._NEED_GUIDANCE)
+
     def test_grounding_only_flags_reports_without_a_look(self):
         listing="Here's what's in your inbox:\n- Sam: lunch Thursday (10:30)\n- Billing: invoice 77 is due Friday, please pay soon\n- GitHub: a review request"
         self.assertEqual(app._ungrounded(listing,{'calendar_events'}),'email')

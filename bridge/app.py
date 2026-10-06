@@ -646,6 +646,8 @@ async def _send_message(cid: str, body: MessageIn, dev):
         route_name, source = "task", "restyle"     # only the agent has restyle_yourself
     elif MEMORY_REQUEST.search(text):
         route_name, source = "task", "memory"      # only the agent has the memory tool; plain chat would just pretend
+        if not re.search(r"\b(remember|forget|note|keep in mind)\b", text, re.I):
+            need, need_conf = "profile", 1.0       # "my name is …": telling her about themselves means save it
     elif MAKE_REQUEST.search(text):
         route_name, source = "task", "make"        # images and code need the agent's tools (and cloud boost)
     else:
@@ -756,7 +758,12 @@ MAKE_REQUEST = re.compile(
     r"script|program|code|app|application|function|website|web ?site|game|bot|api|class|module|bug|"
     r"video|clip|movie|film|animation|reel|trailer|commercial|ad)s?\b|^\W*(please\s+)?(can you\s+)?animate\b", re.I)
 CODE_REQUEST = re.compile(r"\b(script|program|code|app|application|function|website|web ?site|game|bot|api|class|module|bug|debug|refactor|unit tests?)\b", re.I)
-MEMORY_REQUEST = re.compile(r"\b(remember|don'?t forget|do not forget|keep in mind|make a note|note (that|this)|forget (that|what|about))\b", re.I)
+MEMORY_REQUEST = re.compile(r"\b(remember|don'?t forget|do not forget|keep in mind|make a note|note (that|this)|forget (that|what|about))\b|"
+                            # telling her about yourself: only the agent can save it (2026-10-06 "my name is … my address is …"
+                            # went to chat, which said "I'll store these" and saved nothing)
+                            r"\bmy (full |first |last )?(name|address|birthday|date of birth|email|phone( number)?|pronouns|gender|"
+                            r"wife|husband|partner|girlfriend|boyfriend|son|daughter|kids?|job|employer|shoe size|size) (is|are)\b|"
+                            r"\bcall me\b|\bi live (in|at|on)\b|\bi'?m (a )?(man|woman|male|female|guy|girl)\b|\bi work (at|for|as)\b", re.I)
 
 
 OFFER = re.compile(r"\b(want me to|should i|shall i|would you like me to|do you want me to|i can .{0,60}(if you('d)? like|want))\b[^?]*\?", re.I)
@@ -1132,6 +1139,8 @@ _NEED_GUIDANCE = {
     "computer": "Use local file or system tools for the requested files, software or machine state. Retrieve documents from storage rather than guessing from conversational memory.",
     "create": "Use the appropriate creation or coding tools to produce or edit the requested artifact, then verify the result.",
     "memory": "Use personal memory tools to recall, store, update or forget the facts or preferences the user requested. A memory hint alone does not request storing new information.",
+    "profile": "The user is telling you about themselves. Save each fact (name, gender, address, family, sizes, work...) to your "
+               "memory about the user with the memory tool, then confirm in one short sentence what you saved. Don't search or browse.",
     "other": "Work from the user's supplied information for planning, calculations or other reasoning. If the task itself is undefined, clarify what they want done.",
 }
 
