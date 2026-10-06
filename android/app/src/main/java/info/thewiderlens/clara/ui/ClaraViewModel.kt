@@ -558,8 +558,8 @@ fun moodOf(s: UiState, celebrating: Boolean = false): Mood {
         if (s.streaming.isNotBlank()) return Mood.Talking
         if (s.status.startsWith(BROWSER_STEP)) return Mood.Browsing   // a live browser step
         return when (s.status) {
-            "Searching the web…" -> Mood.Searching
-            "Opening my browser…", "Using the browser…", "Reading a page…", "Looking at the screen…" -> Mood.Browsing
+            "Searching the web…", "Reading a page…" -> Mood.Searching   // web_extract fetches text: no browser to show
+            "Opening my browser…", "Using the browser…", "Looking at the screen…" -> Mood.Browsing
             "Scheduling…" -> Mood.Scheduling
             "Thinking…", "Typing…", "Checking past chats…", "Planning…", "Remembering…", "Studying the image…", "Looking…" -> Mood.Thinking
             else -> Mood.Working
