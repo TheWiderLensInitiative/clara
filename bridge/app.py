@@ -666,8 +666,8 @@ async def _send_message(cid: str, body: MessageIn, dev):
     effort = await _route_effort(cid, text, route_name, source, need, need_conf)
     mail = route_name == "task" and _mail_context(text, history)
     if mail and effort == "quick":   # quick mode once invented an inbox (2026-10-06): mail and calendar always think
-        effort = _last_effort[cid] = "deep"
-        store.add_activity(cid, None, "route.effort", None, "deep (email or calendar: Clara thinks and checks first)")
+        effort = _last_effort[cid] = "light"
+        store.add_activity(cid, None, "route.effort", None, "light (email or calendar: Clara thinks and checks first)")
     if route_name != "chat":
         store._x("UPDATE messages SET meta = ? WHERE id = ?", (json.dumps({"effort": effort}), user_msg["id"]))
     if route_name == "schedule" and not attachments and not conv["active_run"] and REMIND_REQUEST.search(text):
@@ -723,7 +723,8 @@ def _is_browse(text, route_name, source, need="", need_conf=0.0) -> bool:
 
 
 def _pick_effort(cid, text, route_name, source, need="", need_conf=0.0):
-    """quick = Bonsai without thinking (seconds), deep = with thinking. Only tasks get a choice."""
+    """quick = Bonsai without thinking (seconds), light = a short think (capped), deep = full thinking.
+    Only tasks get a choice; for them Laya's 'quick' now means light, so Clara always thinks a little."""
     if route_name == "chat":
         return "chat"
     if route_name == "schedule" or source in ("memory", "restyle"):
@@ -740,7 +741,7 @@ def _pick_effort(cid, text, route_name, source, need="", need_conf=0.0):
             choice, p_quick = router.effort(text)
         except Exception:
             choice, p_quick = "deep", 0.0
-        effort = "quick" if p_quick >= QUICK_MIN_CONF else "deep"
+        effort = "light" if p_quick >= QUICK_MIN_CONF else "deep"
         store.add_activity(cid, None, "route.effort", None, f"{effort} (Laya: P(quick) = {p_quick:.2f})")
     _last_effort[cid] = effort
     return effort
@@ -1194,8 +1195,8 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     if browse:
         payload["instructions"] += (" This is a website task: call browser_use right away with the user's whole goal (and the "
                                     "starting address if they gave one). Don't plan it yourself first; her browser works it out step by step.")
-    if effort == "quick" and not coding:
-        payload["model"] = "bonsai-fast"   # Hermes model route: same Bonsai, thinking off (see /bonsai/fast)
+    if effort in ("quick", "light") and not coding:   # Hermes model routes: same Bonsai, less thinking (see bonsai_lighter)
+        payload["model"] = "bonsai-fast" if effort == "quick" else "bonsai-light"
     jobs_before = await _job_ids()
     try:
         response = await hermes.post("/v1/runs", json=payload, timeout=30)
@@ -2388,14 +2389,24 @@ async def cloud_chat(request: Request, ok=Depends(link)):
     return JSONResponse(data, status_code=status)
 
 
-# --- Bonsai "quick" mode: the same model with thinking switched off -----------------------------------------
-# Hermes has a model route "bonsai-fast" pointing here; the Bridge picks it for quick tasks (Laya decides). Only the last
-# couple of prompt tokens differ from thinking mode, so both share the agent's warm prompt cache in slot 0.
-@app.post("/bonsai/fast/v1/chat/completions")
-async def bonsai_fast(request: Request, ok=Depends(link)):
+# --- Bonsai's lighter modes: the same model, less (or no) thinking --------------------------------------------
+# Hermes has model routes "bonsai-fast" (thinking off) and "bonsai-light" (thinking capped at LIGHT_BUDGET tokens per
+# turn) pointing here; the Bridge picks one per task (Laya decides, see _pick_effort). Deep tasks use Bonsai directly
+# (the server's 16K cap). Only the last couple of prompt tokens differ, so all share the agent's warm prompt cache.
+LIGHT_BUDGET = int(os.environ.get("CLARA_LIGHT_BUDGET", "1024"))   # ~30 s of thinking at Bonsai's ~36 tokens/s
+LIGHT_WRAP = "\n\nOkay, I've thought about this enough. Time to act or answer.\n"   # ends a capped thought cleanly
+
+
+@app.post("/bonsai/{mode}/v1/chat/completions")
+async def bonsai_lighter(mode: str, request: Request, ok=Depends(link)):
+    if mode not in ("fast", "light"):
+        raise HTTPException(404)
     body = await request.json()
-    body["chat_template_kwargs"] = {**(body.get("chat_template_kwargs") or {}), "enable_thinking": False}
     body.pop("reasoning_effort", None)
+    if mode == "fast":
+        body["chat_template_kwargs"] = {**(body.get("chat_template_kwargs") or {}), "enable_thinking": False}
+    else:   # without the message a capped thought spills into the reply
+        body.update(thinking_budget_tokens=LIGHT_BUDGET, reasoning_budget_message=LIGHT_WRAP)
     if body.get("stream"):
         async def relay():
             async with llm.stream("POST", LLM_URL, json=body) as r:
@@ -2406,8 +2417,8 @@ async def bonsai_fast(request: Request, ok=Depends(link)):
     return JSONResponse(r.json(), status_code=r.status_code)
 
 
-@app.get("/bonsai/fast/v1/models")
-async def bonsai_fast_models(ok=Depends(link)):
+@app.get("/bonsai/{mode}/v1/models")
+async def bonsai_lighter_models(mode: str, ok=Depends(link)):
     r = await llm.get(LLM_URL.replace("/chat/completions", "/models"))
     data = r.json()
     for m in data.get("data", []):

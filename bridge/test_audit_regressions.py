@@ -663,6 +663,36 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             kinds=[a['kind'] for a in app.store.activity(self.cid,50)]
             self.assertIn('grounding.retry',kinds)
 
+    async def test_three_thinking_levels(self):
+        cid=app.store.create_conversation()['id']
+        with patch.object(app,'router') as router:
+            router.effort.return_value=('quick',.95)
+            self.assertEqual(app._pick_effort(cid,'how many ounces in a cup','task','laya'),'light')   # Laya's quick: a short think
+            router.effort.return_value=('deep',.1)
+            self.assertEqual(app._pick_effort(cid,'compare three laptops for video editing','task','laya'),'deep')
+        self.assertEqual(app._pick_effort(cid,'remind me at 5','schedule','laya'),'quick')
+        self.assertEqual(app._pick_effort(cid,'think it through: plan my week','task','laya'),'deep')
+        sent=[]
+        class LLM:
+            async def post(self,url,json=None,timeout=None):
+                sent.append(json);return httpx.Response(200,json={'ok':1})
+        with patch.object(app,'llm',LLM()):
+            for mode in ('fast','light'):
+                req=types.SimpleNamespace(json=AsyncMock(return_value={'messages':[],'reasoning_effort':'high'}))
+                await app.bonsai_lighter(mode,req,ok=True)
+        self.assertEqual(sent[0]['chat_template_kwargs'],{'enable_thinking':False});self.assertNotIn('thinking_budget_tokens',sent[0])
+        self.assertEqual(sent[1]['thinking_budget_tokens'],app.LIGHT_BUDGET);self.assertIn('answer',sent[1]['reasoning_budget_message'])
+        self.assertNotIn('reasoning_effort',sent[1])
+        with self.assertRaises(HTTPException):
+            await app.bonsai_lighter('turbo',types.SimpleNamespace(json=AsyncMock(return_value={})),ok=True)
+        client=types.SimpleNamespace(post=AsyncMock(return_value=response(500,{'detail':'isolated test'})))
+        with patch.object(app,'hermes',client),patch.object(app,'_job_ids',new=AsyncMock(return_value=set())):
+            for effort,model in (('quick','bonsai-fast'),('light','bonsai-light'),('deep',None)):
+                await app._agent(cid,[],'test','task',effort=effort)
+                self.assertEqual(client.post.call_args.kwargs['json'].get('model'),model)
+        template=(ROOT/'hermes/config.yaml.template').read_text()
+        self.assertIn('bonsai-light:',template);self.assertIn('/bonsai/light/v1',template)
+
     def test_telling_clara_about_yourself_goes_to_memory(self):
         for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
                      'my shoe size is 7.5','remember that I like oat milk']:

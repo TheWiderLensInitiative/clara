@@ -183,3 +183,9 @@ platforms:
           provider: custom
           base_url: http://127.0.0.1:8700/bonsai/fast/v1
           api_key: {{LINK_TOKEN}}
+        # light tasks: same Bonsai, a short capped think (see bonsai_lighter in bridge/app.py)
+        bonsai-light:
+          model: bonsai2-27b-pq2-v16_2
+          provider: custom
+          base_url: http://127.0.0.1:8700/bonsai/light/v1
+          api_key: {{LINK_TOKEN}}
