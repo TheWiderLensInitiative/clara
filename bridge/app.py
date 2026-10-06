@@ -179,6 +179,7 @@ async def _startup():
     asyncio.create_task(_watch_cron_output())
     asyncio.create_task(_proactive_loop())
     asyncio.create_task(_resume_video_jobs())
+    asyncio.create_task(_takeover_watchdog())
 
 
 LEGACY_NOTIFY_CONVERSATION = "clara-notifications"  # old separate reminders thread; hidden, no longer written
@@ -3123,6 +3124,56 @@ async def _set_takeover(on: bool, owner: str, who: str = ""):
     return True
 
 
+# Clara waits for a handback with no time limit, so a takeover nobody holds anymore (a Bridge restart, a crash,
+# a test that ran against the live state folder) would pause her forever. A takeover counts as held while its
+# connection is open: the live-screen socket that took over, or for a device takeover any live screen of that
+# device. Once nobody holding it has been connected for TAKEOVER_ORPHAN_SECONDS, the Bridge hands back.
+TAKEOVER_ORPHAN_SECONDS = 120
+_screen_owners: set = set()       # takeover owners of open live-screen sockets ("socket:<device>:<token>")
+_screen_devices: dict = {}        # device id -> number of open live-screen sockets
+_takeover_orphaned_since: Optional[float] = None
+
+
+def _takeover_held(owner) -> bool:
+    if owner in _screen_owners:
+        return True
+    return bool(owner and owner.startswith("device:") and _screen_devices.get(owner.removeprefix("device:"), 0) > 0)
+
+
+async def _check_takeover(now=None):
+    """One watchdog pass: hand the browser back if its takeover has been orphaned long enough. True if it did."""
+    global _takeover_orphaned_since
+    now = time.time() if now is None else now
+    owner = await asyncio.to_thread(_takeover_owner)
+    if owner is None or _takeover_held(owner):
+        _takeover_orphaned_since = None
+        return False
+    if _takeover_orphaned_since is None:
+        _takeover_orphaned_since = now
+        return False
+    if now - _takeover_orphaned_since < TAKEOVER_ORPHAN_SECONDS:
+        return False
+    _takeover_orphaned_since = None
+    if not await asyncio.to_thread(_takeover_files, False, owner):
+        return False
+    store.add_activity(None, None, "takeover.ended", None,
+                       "Handed the browser back to Clara: nobody holding the takeover was connected anymore")
+    for future in list(_help_waiters):
+        if not future.done():
+            future.set_result(True)
+    bus.publish("takeover", on=False)
+    return True
+
+
+async def _takeover_watchdog():
+    while True:
+        try:
+            await _check_takeover()
+        except Exception as e:
+            print(f"takeover watchdog: {e}", flush=True)
+        await asyncio.sleep(15)
+
+
 class TakeoverIn(BaseModel):
     on: bool
 
@@ -3190,6 +3241,8 @@ async def screen_stream(ws: WebSocket):
     await ws.accept()
     took_over_here = False
     owner = "socket:" + dev["id"] + ":" + secrets.token_hex(12)
+    _screen_owners.add(owner)
+    _screen_devices[dev["id"]] = _screen_devices.get(dev["id"], 0) + 1
     try:
         while True:
             try:
@@ -3233,6 +3286,8 @@ async def screen_stream(ws: WebSocket):
     except WebSocketDisconnect:
         pass
     finally:
+        _screen_owners.discard(owner)
+        _screen_devices[dev["id"]] = max(0, _screen_devices.get(dev["id"], 1) - 1)
         if took_over_here and _takeover_on():
             await _set_takeover(False, owner, dev["name"])  # cannot release another connection's ownership
 

@@ -28,6 +28,15 @@ from store import Store
 import httpx
 from fastapi import HTTPException
 
+# The Bridge reads its folders when its modules are first imported. If another test module in the same process
+# imported them first, these tests would write into the live Clara state (2026-10-03 one left a takeover flag that
+# paused Clara's browser). Refuse to run unless everything points into this run's temporary folder.
+for _name, _folder in {"state": app.STATE_DIR, "workspace": app.WORKSPACE, "takeover flag": app.TAKEOVER_FILE,
+                       "database": Path(app.store.db.execute("PRAGMA database_list").fetchone()[2])}.items():
+    if BASE not in Path(_folder).resolve().parents and Path(_folder).resolve() != BASE:
+        raise SystemExit(f"Refusing to run: the Bridge's {_name} is {_folder}, outside the test folder {BASE}. "
+                         "Run this file in its own process (see the docstring).")
+
 def plugin(name, path):
     spec = importlib.util.spec_from_file_location(name, path, submodule_search_locations=[str(path.parent)])
     module = importlib.util.module_from_spec(spec)
@@ -405,6 +414,34 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await asyncio.wait_for(task,1),'deny')
         self.assertEqual(app.store.approvals('pending'),[])
         self.assertEqual(app._waiting,{})
+
+    async def test_orphaned_takeover_is_handed_back(self):
+        # 2026-10-05: a takeover flag left by an interrupted test paused Clara's browser task indefinitely.
+        app._takeover_orphaned_since=None;app._screen_owners.clear();app._screen_devices.clear()
+        app.TAKEOVER_FILE.write_text('cancelled-phone')
+        try:
+            self.assertFalse(await app._check_takeover(now=1000))        # nobody holds it: the grace period starts
+            self.assertFalse(await app._check_takeover(now=1000+119))
+            self.assertTrue(app.TAKEOVER_FILE.exists())
+            self.assertTrue(await app._check_takeover(now=1000+121))     # two minutes later: handed back
+            self.assertFalse(app.TAKEOVER_FILE.exists())
+            self.assertTrue(app.HANDBACK_FILE.exists())                  # Clara re-observes the page afterwards
+            self.assertIn('Handed the browser back',app.store.activity(None,5)[0]['detail'])
+        finally:app.TAKEOVER_FILE.unlink(missing_ok=True)
+
+    async def test_held_takeover_waits_however_long(self):
+        app._takeover_orphaned_since=None;app._screen_owners.clear();app._screen_devices.clear()
+        try:
+            app.TAKEOVER_FILE.write_text('socket:phone-1:abc');app._screen_owners.add('socket:phone-1:abc')
+            for t in (0,500,5000):self.assertFalse(await app._check_takeover(now=t))   # its socket is open: never cleared
+            app._screen_owners.discard('socket:phone-1:abc')                           # the phone went away
+            await app._check_takeover(now=6000);self.assertTrue(await app._check_takeover(now=6200))
+            app.TAKEOVER_FILE.write_text('device:phone-2');app._screen_devices['phone-2']=1   # a device takeover, its screen open
+            for t in (7000,9000):self.assertFalse(await app._check_takeover(now=t))
+            app._screen_devices['phone-2']=0
+            await app._check_takeover(now=9500);self.assertTrue(await app._check_takeover(now=9700))
+        finally:
+            app.TAKEOVER_FILE.unlink(missing_ok=True);app._screen_owners.clear();app._screen_devices.clear()
 
     async def test_stop_tells_every_device_right_away(self):
         app.store.set_active_run(self.cid,'run-a')
