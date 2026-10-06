@@ -262,10 +262,28 @@ async def _job_ids():
         return set()
 
 
-def _deliver_cron(job_id: str, text: str):
+# One-tap follow-ups under digests (a morning brief, an inbox summary): tapping one just sends it to Clara as a
+# message, so sending or changing anything still goes through her usual approval. proactive.parse_actions drops
+# anything about money or deleting, because email text is untrusted.
+ACTION_TOOLS = {"email_search", "email_read", "calendar_events", "calendar_free"}
+
+
+async def _suggest_actions(text: str, limit: float = 20) -> list:
+    try:
+        return proactive.parse_actions(await asyncio.wait_for(
+            _llm_once(proactive.actions_prompt(text, dt.date.today()), max_tokens=200, json_mode=True), limit))
+    except Exception as e:
+        print(f"actions: {type(e).__name__}: {e}", flush=True)
+        return []
+
+
+async def _deliver_cron(job_id: str, text: str):
     """Put a fired reminder / scheduled-job result into the chat that created the job, and notify the phone."""
     cid = store.job_conversation(job_id) or store.latest_conversation_id() or store.create_conversation()["id"]
-    msg = store.add_message(cid, "assistant", text, route="schedule")
+    # Short reminders need no buttons. clara-link gives up after 15 s and resends, so a slow answer means no buttons,
+    # never a duplicate brief.
+    suggestions = await _suggest_actions(text, limit=10) if len(text) >= 200 else []
+    msg = store.add_message(cid, "assistant", text, route="schedule", suggestions=suggestions or None)
     store.add_activity(cid, None, "job.fired", None, f"{job_id}: {text[:200]}")
     bus.publish("notification", conversation_id=cid, message=msg, job_id=job_id)
 
@@ -287,7 +305,7 @@ async def _watch_cron_output():
         for p in files:
             if str(p) not in seen:
                 seen.add(str(p))
-                _deliver_cron(p.parent.name, _cron_response(p.read_text(errors="replace")))
+                await _deliver_cron(p.parent.name, _cron_response(p.read_text(errors="replace")))
 
 
 def _cron_response(md: str) -> str:
@@ -1143,6 +1161,7 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     final = None
     terminal = False
     browser_used, browser_url, run_started = False, "", time.time()
+    tools_used = set()
     try:
         async with hermes.stream("GET", f"/v1/runs/{run_id}/events") as resp:
             resp.raise_for_status()
@@ -1155,6 +1174,7 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                     bus.publish("message.delta", conversation_id=cid, run_id=run_id, text=ev.get("delta") or ev.get("text") or "")
                 elif kind.startswith("tool."):
                     tool = ev.get("tool") or ev.get("name")
+                    tools_used.add(tool or "")
                     detail = _brief(ev, "preview") or _brief(ev, "args")
                     store.add_activity(cid, run_id, kind, tool, detail)
                     bus.publish("activity", conversation_id=cid, run_id=run_id, kind=kind, tool=tool, detail=detail)
@@ -1201,8 +1221,11 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
         shot = await _browser_snapshot(run_id, run_started)
         if shot:
             meta.update({"browser": shot, "browser_url": browser_url})
+    suggestions = ["Undo my new look"] if restyled else None
+    if not restyled and final and terminal and len(final) >= 200 and tools_used & ACTION_TOOLS:
+        suggestions = await _suggest_actions(final) or None   # a digest of email/calendar: one-tap follow-ups
     msg = store.add_message(cid, "assistant", (final or "The task stream ended before completion could be confirmed. Please check the result before retrying.").strip(), route=route_name, run_id=run_id,
-                            suggestions=["Undo my new look"] if restyled else None, meta=meta or None)
+                            suggestions=suggestions, meta=meta or None)
     store.add_activity(cid, run_id, "run.finished", None, (final or "")[:300])
     bus.publish("message.completed", conversation_id=cid, message=msg)
 
@@ -3102,7 +3125,7 @@ class CronOutputIn(BaseModel):
 
 @app.post("/internal/cron-output")
 async def internal_cron_output(body: CronOutputIn, ok=Depends(link)):
-    _deliver_cron(body.job_id[:64], body.text[:20000])
+    await _deliver_cron(body.job_id[:64], body.text[:20000])
     return {"ok": True}
 
 

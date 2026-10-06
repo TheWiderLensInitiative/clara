@@ -38,6 +38,13 @@ check("weekly right day", p.goal_due(w, D(27, 19, 5)), True)            # Sunday
 check("parse", p.parse_suggestions('```json\n{"message": "Morning!", "suggestions": ["Remind me at 3", "Plan dinner", "x", "y"]}\n```'),
       ("Morning!", ["Remind me at 3", "Plan dinner", "x"]))
 check("parse junk", p.parse_suggestions("sorry"), (None, []))
+check("actions", p.parse_actions('```json\n{"actions": ["Draft a reply to Sam saying Thursday works.", "Add the Vercel trial end (Oct 8) to my calendar", "draft a reply to sam saying thursday works"]}\n```'),
+      ["Draft a reply to Sam saying Thursday works", "Add the Vercel trial end (Oct 8) to my calendar"])
+check("actions drop risky", p.parse_actions('{"actions": ["Pay the $20 Vercel bill", "Delete the Amazon email", "Wire $500 to the contractor", "Remind me Thursday at 9 to file the reinstatement"]}'),
+      ["Remind me Thursday at 9 to file the reinstatement"])
+check("actions drop past dates", p.parse_actions('{"actions": ["Remind me Oct 2 to downgrade the Vercel plan", "Remind me Oct 7 to downgrade the Vercel plan", "Remind me Nov 8th about Apple Cash ID check"]}', today=dt.date(2026, 10, 5)),
+      ["Remind me Oct 7 to downgrade the Vercel plan", "Remind me Nov 8th about Apple Cash ID check"])
+check("actions cap and junk", (len(p.parse_actions('{"actions": ["a1aa", "b2bb", "c3cc", "d4dd"]}')), p.parse_actions("nope"), p.parse_actions('{"actions": "x"}')), (3, [], []))
 print(f"{ok} passed, {fails} failed")
 check("fresh", p.fresh(["What's using the most memory on my PC?", "Plan dinner"], ["what's using the most memory on my PC"]), ["Plan dinner"])
 print("fresh ok" if fails == 0 else "fresh FAILED")

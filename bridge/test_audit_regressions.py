@@ -488,6 +488,27 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await app.internal_activity(app.ActivityIn(conversation_id='nope',kind='browser.step',detail='x'),ok=True),{'ok':False})
         app.store.set_active_run(self.cid,None)
 
+    async def test_digests_come_with_safe_one_tap_actions(self):
+        brief=('Morning! Overnight: Sam asked if Thursday works for the review. Vercel says your Pro trial ends Oct 8 '
+               'and you will be charged $20. Florida says DEVIGNITE LLC needs reinstatement by Oct 31. Your Chewy order shipped '
+               'and arrives Wednesday. Nothing else needs you today.')
+        reply='{"actions": ["Draft a reply to Sam saying Thursday works", "Pay the Vercel bill", "Add the Vercel trial end (Oct 8) to my calendar"]}'
+        with patch.object(app,'_llm_once',new=AsyncMock(return_value=reply)):
+            self.assertEqual(await app._suggest_actions(brief),['Draft a reply to Sam saying Thursday works','Add the Vercel trial end (Oct 8) to my calendar'])
+            app.store.set_job_conversation('job-brief',self.cid)
+            await app._deliver_cron('job-brief',brief)
+        msg=app.store.messages(self.cid)[-1]
+        self.assertEqual(msg['route'],'schedule')
+        self.assertIn('Draft a reply to Sam saying Thursday works',json.dumps(msg.get('suggestions')))
+        with patch.object(app,'_llm_once',new=AsyncMock(return_value=reply)) as llm_call:
+            await app._deliver_cron('job-brief','Time to stretch!')   # a short reminder: no buttons, no model call
+            llm_call.assert_not_called()
+        async def slow(*a,**k): await asyncio.sleep(5); return reply
+        with patch.object(app,'_llm_once',new=slow):
+            self.assertEqual(await app._suggest_actions(brief,limit=0.05),[])   # too slow: the brief goes out without buttons
+        with patch.object(app,'_llm_once',new=AsyncMock(side_effect=RuntimeError('model down'))):
+            self.assertEqual(await app._suggest_actions(brief),[])
+
     async def test_stop_tells_every_device_right_away(self):
         app.store.set_active_run(self.cid,'run-a')
         with patch.object(app,'hermes',httpx.AsyncClient(base_url='http://hermes',transport=httpx.MockTransport(lambda r:httpx.Response(200,json={})))),\
