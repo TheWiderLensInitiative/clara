@@ -3,9 +3,9 @@
 ## Current model: laya-clara-unified (2026-10-04)
 
 Clara serves **one `laya-clara-unified` checkpoint** for route, effort, need and
-follow-up. It is installed locally on the project PC; Hugging Face still has the
-previous model, so a fresh installation downloads that one until a separately
-validated release is published. Results of the selected run:
+follow-up. It is published on Hugging Face as `TheWiderLensInitiative/laya-for-clara`
+(2026-10-05), so fresh installations download it; the previous route + effort model is
+tagged `v2` there. Results of the selected run:
 
 - Established regressions: route **40/40**, effort **40/40**, need **50/50**,
   follow-up **36/36**; all 40 routes accepted correctly.
