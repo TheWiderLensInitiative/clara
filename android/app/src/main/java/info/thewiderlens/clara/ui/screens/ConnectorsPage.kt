@@ -142,9 +142,11 @@ private fun ConnectedPanel(c: Connector, onDisconnect: (String, Boolean) -> Unit
     Text("Clara can use: " + c.services.joinToString(", ") + ". Reading is free; sending, posting and changes ask you first.",
         style = MaterialTheme.typography.bodySmall, color = ClaraColors.Muted)
     Spacer(Modifier.height(8.dp))
-    if (c.provider == "google") {
+    if (c.provider == "google" || c.provider == "microsoft") {   // the two email & calendar accounts
         PolicySwitch("Add calendar events without asking", c.policy["calendar_add"] == "trust") { onPolicy(c.provider, "calendar_add", if (it) "trust" else "ask") }
-        Text("Emails, invites, YouTube posts, changes and deletions still ask.", style = MaterialTheme.typography.labelSmall, color = ClaraColors.Muted)
+        Text(if (c.provider == "google") "Emails, invites, YouTube posts, changes and deletions still ask."
+             else "Emails, invites, changes and deletions still ask, and so do OneDrive and To Do changes.",
+            style = MaterialTheme.typography.labelSmall, color = ClaraColors.Muted)
     } else {
         PolicySwitch("Let Clara act without asking", c.policy["writes"] == "trust") { onPolicy(c.provider, "writes", if (it) "trust" else "ask") }
         Text(if (c.provider == "homeassistant" || c.provider == "spotify") "Handy for lights and music."

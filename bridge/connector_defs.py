@@ -59,9 +59,8 @@ PROVIDERS = {
             f"Redirect URI: platform “Public client/native (mobile & desktop)” and enter {REDIRECT}. Register.",
             "Copy the “Application (client) ID” here. No secret is needed.",
         ],
-        "guide": "Microsoft Graph at https://graph.microsoft.com/v1.0. Mail: GET /me/messages?$top=10&$select=subject,from,receivedDateTime,bodyPreview, "
-                 "GET /me/messages/{id}, POST /me/sendMail {message:{subject,body:{contentType:'Text',content},toRecipients:[{emailAddress:{address}}]}}. "
-                 "Calendar: GET /me/calendarview?startDateTime=...&endDateTime=..., POST /me/events. OneDrive: GET /me/drive/root/children, "
+        "guide": "Outlook mail and calendar have dedicated email_* / calendar_* tools (use those). With connection_call, Microsoft "
+                 "Graph at https://graph.microsoft.com/v1.0. OneDrive: GET /me/drive/root/children, "
                  "GET /me/drive/root/search(q='budget'). To Do: GET /me/todo/lists, POST /me/todo/lists/{id}/tasks {title}.",
     },
     "dropbox": {

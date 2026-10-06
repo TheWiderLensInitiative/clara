@@ -2,5 +2,8 @@
   "google": {
     "client_id": "793396838412-3encbul8gcmrsc5a9rg75sdhovqlas9a.apps.googleusercontent.com",
     "client_secret": "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"
+  },
+  "microsoft": {
+    "client_id": "ad3f1e96-639d-41c1-94c2-049b7794b56b"
   }
 }

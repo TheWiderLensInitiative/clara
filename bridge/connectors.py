@@ -35,6 +35,15 @@ if _os.environ.get("CLARA_FAKE_GOOGLE"):   # tests only: a local stand-in for Go
     GMAIL, CAL, YT_UPLOAD = _fake + "/gmail/v1/users/me", _fake + "/calendar/v3", _fake + "/upload/youtube/v3/videos"
 
 
+MS_GRAPH = "https://graph.microsoft.com/v1.0"
+if _os.environ.get("CLARA_FAKE_MICROSOFT"):   # tests only: a local stand-in for Microsoft (tools/fake_microsoft.py)
+    _fake = _os.environ["CLARA_FAKE_MICROSOFT"]
+    PROVIDERS["microsoft"].update(auth_url=_fake + "/authorize", token_url=_fake + "/token",
+                                  account=("GET", _fake + "/v1.0/me", ["mail", "userPrincipalName", "displayName"]))
+    PROVIDERS["microsoft"]["hosts"] = PROVIDERS["microsoft"]["hosts"] + [urlparse(_fake).netloc]
+    MS_GRAPH = _fake + "/v1.0"
+
+
 if _os.environ.get("CLARA_TEST_OVERRIDES"):   # tests only: {"spotify": {"auth_url": ..., "hosts": [...]}, ...}
     for _p, _f in json.loads(_os.environ["CLARA_TEST_OVERRIDES"]).items():
         PROVIDERS[_p].update({k: tuple(v) if k == "account" else v for k, v in _f.items()})
@@ -299,7 +308,7 @@ def is_read(provider, method, url) -> bool:
 
 async def api(store, provider, method, url, **kw):
     """JSON call used by the Gmail/Calendar helpers."""
-    r = await request(store, provider, method, url, query=kw.get("params"), body=kw.get("json"))
+    r = await request(store, provider, method, url, query=kw.get("params"), body=kw.get("json"), headers=kw.get("headers"))
     if r.status_code >= 400:
         try:
             msg = r.json().get("error", {}).get("message")
@@ -524,8 +533,9 @@ async def calendar_get(store, event_id):
     return summarize_event(await api(store, "google", "GET", f"{CAL}/calendars/primary/events/{event_id}"))
 
 
-async def free_slots(store, day: str, minutes=60, work_start="09:00", work_end="18:00"):
-    """Open gaps on a day between the user's events (inside working hours)."""
+async def free_slots(store, day: str, minutes=60, work_start="09:00", work_end="18:00", events_fn=None):
+    """Open gaps on a day between the user's events (inside working hours). events_fn: another calendar
+    (or several merged) in place of Google's."""
     d = dt.date.fromisoformat(day[:10])
     from zoneinfo import ZoneInfo
     # Retain future DST rules rather than today's fixed UTC offset.
@@ -536,7 +546,7 @@ async def free_slots(store, day: str, minutes=60, work_start="09:00", work_end="
         tz = dt.timezone.utc
     ws = dt.datetime.combine(d, dt.time.fromisoformat(work_start), tz)
     we = dt.datetime.combine(d, dt.time.fromisoformat(work_end), tz)
-    events = await calendar_events(store, ws.isoformat(), we.isoformat(), limit=50, all_pages=True)
+    events = await (events_fn or calendar_events)(store, ws.isoformat(), we.isoformat(), limit=50, all_pages=True)
     busy = []
     for e in events:
         if not e.get("busy", True):

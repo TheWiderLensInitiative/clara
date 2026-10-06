@@ -41,7 +41,7 @@ on cloud help for a specific job and approve it.
 - **Voice mode:** talk hands-free; she answers with a natural local voice
 - **Photos and files:** send a picture and she sees it; send a document and she reads it
 - **Goals and check-ins**, plus a morning note with suggestions
-- **Connectors:** Gmail and Google Calendar, Outlook, Spotify, Notion, Todoist, GitHub, Slack, Discord, Telegram, Dropbox,
+- **Connectors:** Gmail and Google Calendar or Outlook mail and calendar (both one tap), OneDrive, Spotify, Notion, Todoist, GitHub, Slack, Discord, Telegram, Dropbox,
   Home Assistant, and YouTube posting. Your logins stay encrypted on your PC; Clara only sees results.
 - **Passwords stay on your phone:** she can use a saved login without ever seeing it
 - **Optional cloud boost** through your own [OpenRouter](https://openrouter.ai) account for heavy coding, pictures, videos,
