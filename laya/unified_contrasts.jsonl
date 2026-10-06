@@ -1,0 +1,224 @@
+{"question":"route","text":"Show me the newest unread message from Robin.","label":"task","pair_id":"unified-mail_priority","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Show me the newest unread message from Robin.","label":"quick","pair_id":"unified-mail_priority","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Show me the newest unread message from Robin.","label":"email_calendar","pair_id":"unified-mail_priority","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Read this week's unread messages, work out which require action, and order them by urgency.","label":"task","pair_id":"unified-mail_priority","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Read this week's unread messages, work out which require action, and order them by urgency.","label":"deep","pair_id":"unified-mail_priority","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Read this week's unread messages, work out which require action, and order them by urgency.","label":"email_calendar","pair_id":"unified-mail_priority","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Send Lee the exact message: I'll arrive at six.","label":"task","pair_id":"unified-mail_draft","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Send Lee the exact message: I'll arrive at six.","label":"quick","pair_id":"unified-mail_draft","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Send Lee the exact message: I'll arrive at six.","label":"email_calendar","pair_id":"unified-mail_draft","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Draft a tactful response to Lee's complaint after checking the earlier email exchange.","label":"task","pair_id":"unified-mail_draft","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Draft a tactful response to Lee's complaint after checking the earlier email exchange.","label":"deep","pair_id":"unified-mail_draft","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Draft a tactful response to Lee's complaint after checking the earlier email exchange.","label":"email_calendar","pair_id":"unified-mail_draft","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"What is the start time of my next appointment?","label":"task","pair_id":"unified-calendar","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"What is the start time of my next appointment?","label":"quick","pair_id":"unified-calendar","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"What is the start time of my next appointment?","label":"email_calendar","pair_id":"unified-calendar","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Rework next week's appointments to make room for two study sessions without moving anything urgent.","label":"task","pair_id":"unified-calendar","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Rework next week's appointments to make room for two study sessions without moving anything urgent.","label":"deep","pair_id":"unified-calendar","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Rework next week's appointments to make room for two study sessions without moving anything urgent.","label":"email_calendar","pair_id":"unified-calendar","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Put a dentist appointment on my calendar for Thursday at 2pm.","label":"task","pair_id":"unified-calendar_trip","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Put a dentist appointment on my calendar for Thursday at 2pm.","label":"quick","pair_id":"unified-calendar_trip","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Put a dentist appointment on my calendar for Thursday at 2pm.","label":"email_calendar","pair_id":"unified-calendar_trip","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Look across my work and personal calendars and propose three realistic weekends for a trip.","label":"task","pair_id":"unified-calendar_trip","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Look across my work and personal calendars and propose three realistic weekends for a trip.","label":"deep","pair_id":"unified-calendar_trip","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Look across my work and personal calendars and propose three realistic weekends for a trip.","label":"email_calendar","pair_id":"unified-calendar_trip","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"List the open issues in the connected repository.","label":"task","pair_id":"unified-github","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"List the open issues in the connected repository.","label":"quick","pair_id":"unified-github","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"List the open issues in the connected repository.","label":"apps","pair_id":"unified-github","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Inspect the open issues and recent changes, then explain which defects should be addressed first.","label":"task","pair_id":"unified-github","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Inspect the open issues and recent changes, then explain which defects should be addressed first.","label":"deep","pair_id":"unified-github","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Inspect the open issues and recent changes, then explain which defects should be addressed first.","label":"apps","pair_id":"unified-github","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Put batteries on my Todoist shopping list.","label":"task","pair_id":"unified-todoist","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Put batteries on my Todoist shopping list.","label":"quick","pair_id":"unified-todoist","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Put batteries on my Todoist shopping list.","label":"apps","pair_id":"unified-todoist","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Review my overdue Todoist projects, identify blockers, and propose a realistic plan for the week.","label":"task","pair_id":"unified-todoist","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Review my overdue Todoist projects, identify blockers, and propose a realistic plan for the week.","label":"deep","pair_id":"unified-todoist","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Review my overdue Todoist projects, identify blockers, and propose a realistic plan for the week.","label":"apps","pair_id":"unified-todoist","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Open my packing checklist in Notion.","label":"task","pair_id":"unified-notion","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Open my packing checklist in Notion.","label":"quick","pair_id":"unified-notion","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Open my packing checklist in Notion.","label":"apps","pair_id":"unified-notion","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Review the scattered notes in my Notion workspace and turn them into a coherent project outline.","label":"task","pair_id":"unified-notion","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Review the scattered notes in my Notion workspace and turn them into a coherent project outline.","label":"deep","pair_id":"unified-notion","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Review the scattered notes in my Notion workspace and turn them into a coherent project outline.","label":"apps","pair_id":"unified-notion","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Read the latest message in the team Slack channel.","label":"task","pair_id":"unified-slack","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Read the latest message in the team Slack channel.","label":"quick","pair_id":"unified-slack","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Read the latest message in the team Slack channel.","label":"apps","pair_id":"unified-slack","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Read this week's team Slack discussion and identify decisions, unresolved questions, and owners.","label":"task","pair_id":"unified-slack","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Read this week's team Slack discussion and identify decisions, unresolved questions, and owners.","label":"deep","pair_id":"unified-slack","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Read this week's team Slack discussion and identify decisions, unresolved questions, and owners.","label":"apps","pair_id":"unified-slack","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Start my saved evening playlist in Spotify.","label":"task","pair_id":"unified-music","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Start my saved evening playlist in Spotify.","label":"quick","pair_id":"unified-music","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Start my saved evening playlist in Spotify.","label":"apps","pair_id":"unified-music","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Review my Spotify playlists, identify overlapping tracks, and suggest how to reorganize them by mood.","label":"task","pair_id":"unified-music","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Review my Spotify playlists, identify overlapping tracks, and suggest how to reorganize them by mood.","label":"deep","pair_id":"unified-music","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Review my Spotify playlists, identify overlapping tracks, and suggest how to reorganize them by mood.","label":"apps","pair_id":"unified-music","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Turn off the kitchen light.","label":"task","pair_id":"unified-smart_home","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Turn off the kitchen light.","label":"quick","pair_id":"unified-smart_home","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Turn off the kitchen light.","label":"apps","pair_id":"unified-smart_home","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Review the connected heating and lighting routines and propose changes that save energy without disrupting my schedule.","label":"task","pair_id":"unified-smart_home","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Review the connected heating and lighting routines and propose changes that save energy without disrupting my schedule.","label":"deep","pair_id":"unified-smart_home","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Review the connected heating and lighting routines and propose changes that save energy without disrupting my schedule.","label":"apps","pair_id":"unified-smart_home","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Show the contents of my connected Dropbox folder named Invoices.","label":"task","pair_id":"unified-cloud_files","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Show the contents of my connected Dropbox folder named Invoices.","label":"quick","pair_id":"unified-cloud_files","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Show the contents of my connected Dropbox folder named Invoices.","label":"apps","pair_id":"unified-cloud_files","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Review the invoices in Dropbox, reconcile duplicate copies, and organize them by vendor and month.","label":"task","pair_id":"unified-cloud_files","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Review the invoices in Dropbox, reconcile duplicate copies, and organize them by vendor and month.","label":"deep","pair_id":"unified-cloud_files","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Review the invoices in Dropbox, reconcile duplicate copies, and organize them by vendor and month.","label":"apps","pair_id":"unified-cloud_files","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Post the exact text 'Game starts at 8' in my Discord group.","label":"task","pair_id":"unified-discord","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Post the exact text 'Game starts at 8' in my Discord group.","label":"quick","pair_id":"unified-discord","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Post the exact text 'Game starts at 8' in my Discord group.","label":"apps","pair_id":"unified-discord","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Read the feedback in our Discord group and prepare a balanced response addressing the main concerns.","label":"task","pair_id":"unified-discord","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Read the feedback in our Discord group and prepare a balanced response addressing the main concerns.","label":"deep","pair_id":"unified-discord","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Read the feedback in our Discord group and prepare a balanced response addressing the main concerns.","label":"apps","pair_id":"unified-discord","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Copy the folder named Tax2025 into the backup drive.","label":"task","pair_id":"unified-files","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Copy the folder named Tax2025 into the backup drive.","label":"quick","pair_id":"unified-files","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Copy the folder named Tax2025 into the backup drive.","label":"computer","pair_id":"unified-files","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Review the documents in Downloads, decide what needs archiving, and propose a folder structure before moving anything.","label":"task","pair_id":"unified-files","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Review the documents in Downloads, decide what needs archiving, and propose a folder structure before moving anything.","label":"deep","pair_id":"unified-files","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Review the documents in Downloads, decide what needs archiving, and propose a folder structure before moving anything.","label":"computer","pair_id":"unified-files","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Tell me how much free disk space is left.","label":"task","pair_id":"unified-disk","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Tell me how much free disk space is left.","label":"quick","pair_id":"unified-disk","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Tell me how much free disk space is left.","label":"computer","pair_id":"unified-disk","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Investigate why disk space keeps disappearing and recommend cleanup steps that preserve my important files.","label":"task","pair_id":"unified-disk","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Investigate why disk space keeps disappearing and recommend cleanup steps that preserve my important files.","label":"deep","pair_id":"unified-disk","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Investigate why disk space keeps disappearing and recommend cleanup steps that preserve my important files.","label":"computer","pair_id":"unified-disk","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"List the programs running on this computer.","label":"task","pair_id":"unified-processes","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"List the programs running on this computer.","label":"quick","pair_id":"unified-processes","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"List the programs running on this computer.","label":"computer","pair_id":"unified-processes","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Investigate repeated freezes, compare the relevant logs and resource usage, and recommend a fix.","label":"task","pair_id":"unified-processes","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Investigate repeated freezes, compare the relevant logs and resource usage, and recommend a fix.","label":"deep","pair_id":"unified-processes","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Investigate repeated freezes, compare the relevant logs and resource usage, and recommend a fix.","label":"computer","pair_id":"unified-processes","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Open the file named lake.jpg.","label":"task","pair_id":"unified-photos","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Open the file named lake.jpg.","label":"quick","pair_id":"unified-photos","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Open the file named lake.jpg.","label":"computer","pair_id":"unified-photos","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Review the vacation photo folder, select the best pictures for an album, and explain your choices.","label":"task","pair_id":"unified-photos","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Review the vacation photo folder, select the best pictures for an album, and explain your choices.","label":"deep","pair_id":"unified-photos","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Review the vacation photo folder, select the best pictures for an album, and explain your choices.","label":"computer","pair_id":"unified-photos","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Count the PDF files in this folder.","label":"task","pair_id":"unified-duplicates","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Count the PDF files in this folder.","label":"quick","pair_id":"unified-duplicates","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Count the PDF files in this folder.","label":"computer","pair_id":"unified-duplicates","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Find duplicate documents whose filenames differ, identify the versions worth keeping, and present a cleanup plan.","label":"task","pair_id":"unified-duplicates","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Find duplicate documents whose filenames differ, identify the versions worth keeping, and present a cleanup plan.","label":"deep","pair_id":"unified-duplicates","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Find duplicate documents whose filenames differ, identify the versions worth keeping, and present a cleanup plan.","label":"computer","pair_id":"unified-duplicates","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Install the package named ripgrep.","label":"task","pair_id":"unified-install","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Install the package named ripgrep.","label":"quick","pair_id":"unified-install","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Install the package named ripgrep.","label":"computer","pair_id":"unified-install","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Figure out which installed packages this project really needs and plan a reproducible environment.","label":"task","pair_id":"unified-install","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Figure out which installed packages this project really needs and plan a reproducible environment.","label":"deep","pair_id":"unified-install","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Figure out which installed packages this project really needs and plan a reproducible environment.","label":"computer","pair_id":"unified-install","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"What is the temperature in Portland right now?","label":"task","pair_id":"unified-weather","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"What is the temperature in Portland right now?","label":"quick","pair_id":"unified-weather","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"What is the temperature in Portland right now?","label":"search","pair_id":"unified-weather","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Compare the upcoming weather at three possible hiking destinations and recommend the safest day and location.","label":"task","pair_id":"unified-weather","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Compare the upcoming weather at three possible hiking destinations and recommend the safest day and location.","label":"deep","pair_id":"unified-weather","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Compare the upcoming weather at three possible hiking destinations and recommend the safest day and location.","label":"search","pair_id":"unified-weather","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"What is the listed price of the Sony WH-1000XM5 today?","label":"task","pair_id":"unified-shopping","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"What is the listed price of the Sony WH-1000XM5 today?","label":"quick","pair_id":"unified-shopping","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"What is the listed price of the Sony WH-1000XM5 today?","label":"search","pair_id":"unified-shopping","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Compare headphones for long train journeys using comfort, battery life, repairability, and independent reviews.","label":"task","pair_id":"unified-shopping","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Compare headphones for long train journeys using comfort, battery life, repairability, and independent reviews.","label":"deep","pair_id":"unified-shopping","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Compare headphones for long train journeys using comfort, battery life, repairability, and independent reviews.","label":"search","pair_id":"unified-shopping","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Look up the current price of an RTX 3090.","label":"task","pair_id":"unified-gpu","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Look up the current price of an RTX 3090.","label":"quick","pair_id":"unified-gpu","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Look up the current price of an RTX 3090.","label":"search","pair_id":"unified-gpu","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Research graphics cards for local AI workloads, compare memory limits and used prices, and justify a recommendation.","label":"task","pair_id":"unified-gpu","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Research graphics cards for local AI workloads, compare memory limits and used prices, and justify a recommendation.","label":"deep","pair_id":"unified-gpu","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Research graphics cards for local AI workloads, compare memory limits and used prices, and justify a recommendation.","label":"search","pair_id":"unified-gpu","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Look up the departure time of flight UA 241 today.","label":"task","pair_id":"unified-travel","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Look up the departure time of flight UA 241 today.","label":"quick","pair_id":"unified-travel","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Look up the departure time of flight UA 241 today.","label":"search","pair_id":"unified-travel","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Plan a three-day low-cost trip using current transport, lodging, and attraction information.","label":"task","pair_id":"unified-travel","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Plan a three-day low-cost trip using current transport, lodging, and attraction information.","label":"deep","pair_id":"unified-travel","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Plan a three-day low-cost trip using current transport, lodging, and attraction information.","label":"search","pair_id":"unified-travel","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"What was the final score in last night's Celtics game?","label":"task","pair_id":"unified-news","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"What was the final score in last night's Celtics game?","label":"quick","pair_id":"unified-news","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"What was the final score in last night's Celtics game?","label":"search","pair_id":"unified-news","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Compare how several news sources explain the same event and identify where their evidence differs.","label":"task","pair_id":"unified-news","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Compare how several news sources explain the same event and identify where their evidence differs.","label":"deep","pair_id":"unified-news","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Compare how several news sources explain the same event and identify where their evidence differs.","label":"search","pair_id":"unified-news","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Find the opening time of the public library today.","label":"task","pair_id":"unified-local","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Find the opening time of the public library today.","label":"quick","pair_id":"unified-local","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Find the opening time of the public library today.","label":"search","pair_id":"unified-local","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Research accessible local venues for a group of twelve, compare travel time and cost, and recommend two.","label":"task","pair_id":"unified-local","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Research accessible local venues for a group of twelve, compare travel time and cost, and recommend two.","label":"deep","pair_id":"unified-local","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Research accessible local venues for a group of twelve, compare travel time and cost, and recommend two.","label":"search","pair_id":"unified-local","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Open the account settings page on example.com.","label":"task","pair_id":"unified-web_open","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Open the account settings page on example.com.","label":"quick","pair_id":"unified-web_open","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Open the account settings page on example.com.","label":"browser","pair_id":"unified-web_open","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Go through the plans on example.com, compare the limits with our needs, and explain which plan is worthwhile.","label":"task","pair_id":"unified-web_open","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Go through the plans on example.com, compare the limits with our needs, and explain which plan is worthwhile.","label":"deep","pair_id":"unified-web_open","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Go through the plans on example.com, compare the limits with our needs, and explain which plan is worthwhile.","label":"browser","pair_id":"unified-web_open","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"On the open form, set the country dropdown to Canada.","label":"task","pair_id":"unified-web_form","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"On the open form, set the country dropdown to Canada.","label":"quick","pair_id":"unified-web_form","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"On the open form, set the country dropdown to Canada.","label":"browser","pair_id":"unified-web_form","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Work through the grant application website, determine which documents are needed, and build a preparation checklist.","label":"task","pair_id":"unified-web_form","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Work through the grant application website, determine which documents are needed, and build a preparation checklist.","label":"deep","pair_id":"unified-web_form","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Work through the grant application website, determine which documents are needed, and build a preparation checklist.","label":"browser","pair_id":"unified-web_form","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Open the tracking page for order 4821 on the store website.","label":"task","pair_id":"unified-web_order","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Open the tracking page for order 4821 on the store website.","label":"quick","pair_id":"unified-web_order","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Open the tracking page for order 4821 on the store website.","label":"browser","pair_id":"unified-web_order","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Compare the items in my cart with alternatives on that store's website and recommend changes within my budget.","label":"task","pair_id":"unified-web_order","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Compare the items in my cart with alternatives on that store's website and recommend changes within my budget.","label":"deep","pair_id":"unified-web_order","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Compare the items in my cart with alternatives on that store's website and recommend changes within my budget.","label":"browser","pair_id":"unified-web_order","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"On the current website, switch the theme to dark.","label":"task","pair_id":"unified-web_settings","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"On the current website, switch the theme to dark.","label":"quick","pair_id":"unified-web_settings","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"On the current website, switch the theme to dark.","label":"browser","pair_id":"unified-web_settings","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Review this website's notification settings and propose a configuration that keeps important alerts while reducing interruptions.","label":"task","pair_id":"unified-web_settings","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Review this website's notification settings and propose a configuration that keeps important alerts while reducing interruptions.","label":"deep","pair_id":"unified-web_settings","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Review this website's notification settings and propose a configuration that keeps important alerts while reducing interruptions.","label":"browser","pair_id":"unified-web_settings","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Message Alex on Telegram with the exact words 'I'm outside'.","label":"task","pair_id":"unified-telegram","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Message Alex on Telegram with the exact words 'I'm outside'.","label":"quick","pair_id":"unified-telegram","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Message Alex on Telegram with the exact words 'I'm outside'.","label":"apps","pair_id":"unified-telegram","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Read the Telegram discussion about our event and draft a plan that addresses everyone's constraints.","label":"task","pair_id":"unified-telegram","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Read the Telegram discussion about our event and draft a plan that addresses everyone's constraints.","label":"deep","pair_id":"unified-telegram","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Read the Telegram discussion about our event and draft a plan that addresses everyone's constraints.","label":"apps","pair_id":"unified-telegram","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Show the latest file in my connected OneDrive folder.","label":"task","pair_id":"unified-onedrive","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Show the latest file in my connected OneDrive folder.","label":"quick","pair_id":"unified-onedrive","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Show the latest file in my connected OneDrive folder.","label":"apps","pair_id":"unified-onedrive","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Review the shared OneDrive project documents, identify contradictory requirements, and summarize decisions we need to make.","label":"task","pair_id":"unified-onedrive","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Review the shared OneDrive project documents, identify contradictory requirements, and summarize decisions we need to make.","label":"deep","pair_id":"unified-onedrive","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Review the shared OneDrive project documents, identify contradictory requirements, and summarize decisions we need to make.","label":"apps","pair_id":"unified-onedrive","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Look up the current monthly price of the basic plan.","label":"task","pair_id":"unified-subscriptions","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Look up the current monthly price of the basic plan.","label":"quick","pair_id":"unified-subscriptions","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Look up the current monthly price of the basic plan.","label":"search","pair_id":"unified-subscriptions","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Compare current subscription plans across providers, calculate annual costs, and identify which fits my requirements.","label":"task","pair_id":"unified-subscriptions","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Compare current subscription plans across providers, calculate annual costs, and identify which fits my requirements.","label":"deep","pair_id":"unified-subscriptions","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Compare current subscription plans across providers, calculate annual costs, and identify which fits my requirements.","label":"search","pair_id":"unified-subscriptions","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Copy this specific file to the named backup folder.","label":"task","pair_id":"unified-backup","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Copy this specific file to the named backup folder.","label":"quick","pair_id":"unified-backup","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Copy this specific file to the named backup folder.","label":"computer","pair_id":"unified-backup","source":"agent-authored-contrast-v1"}
+{"question":"route","text":"Decide which work folders need backup, check existing copies, and design a recovery plan with verification steps.","label":"task","pair_id":"unified-backup","source":"agent-authored-contrast-v1"}
+{"question":"effort","text":"Decide which work folders need backup, check existing copies, and design a recovery plan with verification steps.","label":"deep","pair_id":"unified-backup","source":"agent-authored-contrast-v1"}
+{"question":"need","text":"Decide which work folders need backup, check existing copies, and design a recovery plan with verification steps.","label":"computer","pair_id":"unified-backup","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Use Wednesday afternoon instead.","last":"I can move the meeting to Tuesday morning. Would that work?","label":"continue","pair_id":"unified-follow-meeting","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"What causes thunder?","last":"I can move the meeting to Tuesday morning. Would that work?","label":"new","pair_id":"unified-follow-meeting","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Please shorten the second paragraph first.","last":"I've drafted the note. Would you like me to send it?","label":"continue","pair_id":"unified-follow-draft","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"How do I improve my posture at a desk?","last":"I've drafted the note. Would you like me to send it?","label":"new","pair_id":"unified-follow-draft","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Let's go with the one with more battery life.","last":"The blue model fits your budget best; the green one has longer battery life.","label":"continue","pair_id":"unified-follow-shopping","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"How long do blue whales live?","last":"The blue model fits your budget best; the green one has longer battery life.","label":"new","pair_id":"unified-follow-shopping","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Actually shift that two hours later.","last":"Your reminder is set for 8 tomorrow morning.","label":"continue","pair_id":"unified-follow-reminder","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"What's the difference between a timer and a stopwatch?","last":"Your reminder is set for 8 tomorrow morning.","label":"new","pair_id":"unified-follow-reminder","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Keep the newest copy of each.","last":"I found three duplicate folders but have not removed anything.","label":"continue","pair_id":"unified-follow-files","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Tell me a story about a lost folder.","last":"I found three duplicate folders but have not removed anything.","label":"new","pair_id":"unified-follow-files","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"The later table works.","last":"The restaurant has tables at six and eight, but seven is full.","label":"continue","pair_id":"unified-follow-booking","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Why do people call dinner supper?","last":"The restaurant has tables at six and eight, but seven is full.","label":"new","pair_id":"unified-follow-booking","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"What about Saturday?","last":"You have two appointments on Friday.","label":"continue","pair_id":"unified-follow-calendar_view","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Thanks. Can you look up the weather in Oslo?","last":"You have two appointments on Friday.","label":"new","pair_id":"unified-follow-calendar_view","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"And on Sunday?","last":"The library closes at seven tonight.","label":"continue","pair_id":"unified-follow-search_result","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"I finished that. Now open Spotify.","last":"The library closes at seven tonight.","label":"new","pair_id":"unified-follow-search_result","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Show me what is taking up the space.","last":"The installation failed because the disk is full.","label":"continue","pair_id":"unified-follow-failed_install","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Can you explain why disks are round?","last":"The installation failed because the disk is full.","label":"new","pair_id":"unified-follow-failed_install","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Add a regression test for the empty input too.","last":"The failing test is fixed and the suite now passes.","label":"continue","pair_id":"unified-follow-code","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"How do I boil an egg?","last":"The failing test is fixed and the suite now passes.","label":"new","pair_id":"unified-follow-code","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Reply asking whether pickup is possible sooner.","last":"The vendor says the delivery will arrive on Monday.","label":"continue","pair_id":"unified-follow-mail_read","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"What is a supply chain?","last":"The vendor says the delivery will arrive on Monday.","label":"new","pair_id":"unified-follow-mail_read","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Shuffle it and start playing.","last":"I've opened the playlist you requested.","label":"continue","pair_id":"unified-follow-playlist","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Thanks, that's all.","last":"I've opened the playlist you requested.","label":"new","pair_id":"unified-follow-playlist","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Show the calculation behind that.","last":"I compared the two plans. The annual plan is cheaper if you keep it for a year.","label":"continue","pair_id":"unified-follow-plans","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Unrelated: what's on my calendar tomorrow?","last":"I compared the two plans. The annual plan is cheaper if you keep it for a year.","label":"new","pair_id":"unified-follow-plans","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Don't send it; change the location to our office.","last":"The invitation draft is ready to review.","label":"continue","pair_id":"unified-follow-draft_offer","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"No more work on that. Tell me a joke.","last":"The invitation draft is ready to review.","label":"new","pair_id":"unified-follow-draft_offer","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Include April in that report too.","last":"I found the invoices for your business in March.","label":"continue","pair_id":"unified-follow-ambiguous_topic","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"What does the word invoice mean?","last":"I found the invoices for your business in March.","label":"new","pair_id":"unified-follow-ambiguous_topic","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Thanks, move it back thirty minutes though.","last":"The new event is on your calendar.","label":"continue","pair_id":"unified-follow-thanks_action","source":"agent-authored-contrast-v1"}
+{"question":"followup","text":"Thanks so much, Clara!","last":"The new event is on your calendar.","label":"new","pair_id":"unified-follow-thanks_action","source":"agent-authored-contrast-v1"}

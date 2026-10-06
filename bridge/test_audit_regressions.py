@@ -462,6 +462,54 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(await app._agent_followup(history,'do it'))
             self.assertFalse(await app._agent_followup(history,'does the used one come with a warranty'))
 
+    async def test_semantic_need_survives_message_dispatch(self):
+        decision=types.SimpleNamespace(route='task',source='laya',confidence=.97,ms=10,
+                                       effort='deep',effort_conf=.1,need='search',need_conf=.94)
+        router=types.SimpleNamespace(route=lambda text:decision,effort=lambda text:('deep',.1),knows_need=False)
+        calls=[]
+        def capture(cid,coroutine):
+            calls.append(dict(coroutine.cr_frame.f_locals))
+            coroutine.close()
+        with patch.object(app,'router',router),patch.object(app,'_launch_run',side_effect=capture),\
+             patch.object(app,'_mentions_connected',return_value=False),\
+             patch.object(app,'_connector_view',return_value={'connected':False}):
+            result=await app._send_message(self.cid,app.MessageIn(text='look into the recent developments for me'),{})
+        self.assertEqual(result['route'],'task')
+        self.assertEqual((calls[0]['need'],calls[0]['need_conf']),('search',.94))
+
+    async def test_short_interruptions_keep_context_without_swallowing_new_requests(self):
+        import time as _t
+        last={'role':'assistant','route':'task','created':_t.time()-60,
+              'content':'The reply is drafted. Want me to send it?'}
+        router=types.SimpleNamespace(knows_need=True,followup=unittest.mock.Mock(return_value=('new',.02)))
+        with patch.object(app,'router',router):
+            for text in ('no wait','Wait!','hold on','stop that','not yet','no thanks'):
+                self.assertTrue(await app._agent_followup([last],text),text)
+            router.followup.assert_not_called()
+            self.assertFalse(await app._agent_followup([last],"no wait, what's the weather in Oslo"))
+            self.assertFalse(await app._agent_followup([last],'cancel my flight tomorrow'))
+            self.assertEqual(router.followup.call_count,2)
+            old={**last,'created':_t.time()-3600}
+            self.assertFalse(await app._agent_followup([old],'no wait'))
+
+    async def test_agent_uses_confident_need_without_changing_permissions_or_model(self):
+        client=types.SimpleNamespace(post=AsyncMock(return_value=response(500,{'detail':'isolated test'})))
+        with patch.object(app,'hermes',client),patch.object(app,'_job_ids',new=AsyncMock(return_value=set())),\
+             patch.object(app,'_connected',return_value=[]),\
+             patch.object(app,'_connector_view',return_value={'connected':False}):
+            await app._agent(self.cid,[],'look into this','task',need='search',need_conf=.94)
+            payload=client.post.call_args.kwargs['json']
+            self.assertIn('available search or retrieval tools',payload['instructions'])
+            self.assertIn('preserve existing approval and spending limits',payload['instructions'])
+            self.assertNotIn('model',payload)
+            for route,need,confidence in [('task','search',.4),('task','unknown',.99),('schedule','search',.99)]:
+                await app._agent(self.cid,[],'look into this',route,need=need,need_conf=confidence)
+                self.assertNotIn('Task guidance:',client.post.call_args.kwargs['json']['instructions'])
+            await app._agent(self.cid,[],'check my agenda','task',need='email_calendar',need_conf=.94)
+            instructions=client.post.call_args.kwargs['json']['instructions']
+            self.assertIn('If access is missing',instructions)
+            self.assertNotIn("Google account is connected",instructions)
+
     async def test_help_and_vault_waits_end_on_stop(self):
         app.store.set_active_run(self.cid,'run-a')
         help_task=asyncio.create_task(app.ask_for_help(app.HelpIn(reason='captcha',conversation_id=self.cid),ok=True))

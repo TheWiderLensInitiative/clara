@@ -93,7 +93,10 @@ def main(train_path, out_dir):
     os.makedirs(out_dir, exist_ok=True)
     save_file({k: v.half().contiguous().cpu() for k, v in model.state_dict().items()}, os.path.join(out_dir, "model.safetensors"))
     model.encoder.config.save_pretrained(os.path.join(out_dir, "encoder")); tok.save_pretrained(os.path.join(out_dir, "tokenizer"))
-    cfg.update(fine_tuned=True, model_name="laya-clara-router-v3", temperature=temps, questions=sorted(specs))   # the Bridge checks this; cfg.pop("temperature_by_options", None)
+    # questions: what this checkpoint was trained on (the Bridge checks it). The base model's per-option-count
+    # temperatures must go: they override the one fitted above and squeeze 2- and 3-option answers toward 0.8.
+    cfg.update(fine_tuned=True, model_name="laya-clara-router-v3", temperature=temps, questions=sorted(specs))
+    cfg.pop("temperature_by_options", None)
     json.dump(cfg, open(os.path.join(out_dir, "rl_agent_config.json"), "w"), indent=2); print("saved", out_dir)
 
 if __name__ == "__main__":

@@ -275,6 +275,8 @@ async def pair(body: PairIn):
 @app.get("/v1/health")
 async def health():
     out = {"bridge": "ok", "router": router is not None}
+    if router is not None:
+        out["laya"] = router.diagnostics()
     for name, url in (("hermes", f"{HERMES_URL}/health"), ("model", LLM_URL.replace("/v1/chat/completions", "/health"))):
         try:
             out[name] = (await llm.get(url, timeout=3)).status_code == 200
@@ -552,7 +554,8 @@ async def _send_message(cid: str, body: MessageIn, dev):
         browse = effort == "quick" and _is_browse(text, route_name, source, need, need_conf)
         if browse:   # show the browser card now; Chrome comes up while the agent hands the job over
             bus.publish("activity", conversation_id=cid, run_id=None, kind="browser.opening", tool="browser_use", detail="Opening my browser…")
-        _launch_run(cid, _agent(cid, history, agent_text, route_name, coding=coding, voice=body.voice, effort=effort, browse=browse))
+        _launch_run(cid, _agent(cid, history, agent_text, route_name, coding=coding, voice=body.voice, effort=effort,
+                                browse=browse, need=need, need_conf=need_conf))
     return {"message": user_msg, "route": route_name, "source": source}
 
 
@@ -635,6 +638,8 @@ MEMORY_REQUEST = re.compile(r"\b(remember|don'?t forget|do not forget|keep in mi
 OFFER = re.compile(r"\b(want me to|should i|shall i|would you like me to|do you want me to|i can .{0,60}(if you('d)? like|want))\b[^?]*\?", re.I)
 YES = re.compile(r"^\W*(yes|yeah|yep|yup|sure|ok(ay)?|please|go ahead|do it|sounds good|let'?s do it|absolutely|definitely)\b.{0,60}$", re.I)
 THANKS = re.compile(r"^\W*((thank(s| you)( so much| a lot)?|thx|ty|appreciate it|much appreciated)(,? clara)?)\W*$", re.I)
+PAUSE_REPLY = re.compile(r"\W*(?:no(?:\s+wait)?|nope|no\s+thanks|no\s+thank\s+you|wait|hold\s+(?:on|up)|"
+                         r"stop(?:\s+that)?|cancel\s+that|not\s+yet)\W*", re.I)
 
 
 FOLLOWUP_MIN = float(os.environ.get("CLARA_FOLLOWUP_MIN", "0.6"))   # Laya's P(continue) needed to send it back to the task
@@ -642,11 +647,13 @@ FOLLOWUP_MIN = float(os.environ.get("CLARA_FOLLOWUP_MIN", "0.6"))   # Laya's P(c
 
 async def _agent_followup(history, text):
     """Laya reads Clara's last task reply next to the new message; the keyword rules remain for "yes" to an offer,
-    plain thanks, and models that weren't trained for this."""
+    plain thanks, explicit short interruptions, and models that weren't trained for this."""
     if THANKS.search(text):
         return False
     last = next((m for m in reversed(history) if m["role"] == "assistant"), None)
     fresh = bool(last and last["route"] in ("task", "schedule") and time.time() - last["created"] < FOLLOWUP_WINDOW)
+    if fresh and PAUSE_REPLY.fullmatch(text):
+        return True   # retain the task context for a direct pause or rejection
     if fresh and router is not None and getattr(router, "knows_need", False):
         try:
             choice, p_continue = await _router_call(router.followup, text, last["content"])
@@ -993,7 +1000,20 @@ def _brief(ev, key):
     return v if isinstance(v, str) else json.dumps(v)[:500] if v else ""
 
 
-async def _agent(cid, history, text, route_name, coding=False, voice=False, effort="deep", browse=False):
+_NEED_GUIDANCE = {
+    "browser": "Use browser_use for the requested website operation, with the user's goal and any supplied address.",
+    "search": "Use available search or retrieval tools for current public information; check sources before reporting facts.",
+    "email_calendar": "Prefer the connected email or calendar tools for the requested personal messages, events or availability. If access is missing, explain what connection is needed.",
+    "apps": "Prefer available connected-service tools for the requested app or device. Publishing existing media is an upload or sharing task; do not recreate it unless asked.",
+    "computer": "Use local file or system tools for the requested files, software or machine state. Retrieve documents from storage rather than guessing from conversational memory.",
+    "create": "Use the appropriate creation or coding tools to produce or edit the requested artifact, then verify the result.",
+    "memory": "Use personal memory tools to recall, store, update or forget the facts or preferences the user requested. A memory hint alone does not request storing new information.",
+    "other": "Work from the user's supplied information for planning, calculations or other reasoning. If the task itself is undefined, clarify what they want done.",
+}
+
+
+async def _agent(cid, history, text, route_name, coding=False, voice=False, effort="deep", browse=False,
+                 need="", need_conf=0.0):
     conv_hist = [{"role": m["role"], "content": _history_text(m)} for m in history if m["role"] in ("user", "assistant")]
     now = dt.datetime.now().astimezone().isoformat(timespec="seconds")
     payload = {"input": text, "session_id": cid, "conversation_history": conv_hist,
@@ -1023,6 +1043,10 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     if route_name == "schedule":
         payload["instructions"] += (" The user is asking about reminders or scheduled jobs. Use the cronjob tool directly to create, "
                                     "change, cancel, or list jobs, then confirm in one friendly sentence with the exact time.")
+    if route_name == "task" and need_conf >= NEED_MIN and need in _NEED_GUIDANCE and not browse:
+        payload["instructions"] += (" Task guidance: " + _NEED_GUIDANCE[need] +
+                                    " Treat this as a routing hint; follow the actual request if it differs. "
+                                    "Use only available tools and preserve existing approval and spending limits.")
     if browse:
         payload["instructions"] += (" This is a website task: call browser_use right away with the user's whole goal (and the "
                                     "starting address if they gave one). Don't plan it yourself first; her browser works it out step by step.")

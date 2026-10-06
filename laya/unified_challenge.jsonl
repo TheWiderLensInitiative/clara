@@ -1,0 +1,64 @@
+{"question":"route","text":"Explain what a recurring reminder is without creating one.","label":"chat","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Help me write a polite sentence declining an invitation.","label":"chat","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"What is the derivative of x cubed?","label":"chat","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Translate 'please call me tomorrow' into French.","label":"chat","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Why do leaves change color in autumn?","label":"chat","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Every other Monday, check the exchange rate and tell me if it is below my target.","label":"schedule","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Cancel the reminder you set for Saturday.","label":"schedule","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"In ninety minutes, tell me to stretch.","label":"schedule","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"List the repeating reminders I already have.","label":"schedule","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Remind me to collect my prescription next Tuesday afternoon.","label":"schedule","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Check whether the pharmacy near me is open now.","label":"task","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Find the spreadsheet named Revenue in my Documents folder.","label":"task","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"What appointments are on my connected calendar this afternoon?","label":"task","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Find current laptop deals with at least 32GB of RAM.","label":"task","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Save this text as a file on my desktop.","label":"task","source":"agent-authored-challenge-v1"}
+{"question":"route","text":"Look up whether the train to Bristol is delayed.","label":"task","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Read the last message from the electrician.","label":"quick","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Set the connected hallway thermostat to 20 degrees.","label":"quick","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Open the saved recipe named Lentil soup.","label":"quick","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Look up the live exchange rate for euros to yen.","label":"quick","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Copy the file budget.xlsx to the folder called Backup.","label":"quick","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Add coffee filters to my connected shopping list.","label":"quick","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Show the next scheduled event on my calendar.","label":"quick","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Tell Maya exactly: 'See you at the station'.","label":"quick","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Read the last month of customer feedback and decide which product changes matter most.","label":"deep","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Review the tasks I postponed and build a realistic plan that explains the tradeoffs.","label":"deep","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Compare these insurance documents and explain the meaningful differences.","label":"deep","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Investigate the intermittent network failure using logs and current settings.","label":"deep","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Choose which photos should represent our event and justify the selection.","label":"deep","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Research accessible holiday destinations and compare total costs for a family.","label":"deep","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Audit the repository for fragile assumptions and prioritize repairs.","label":"deep","source":"agent-authored-challenge-v1"}
+{"question":"effort","text":"Organize the shared drive based on what people need to find, and explain the structure.","label":"deep","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Find which retailer has the best current deal on a used workstation.","label":"search","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Research whether a 16GB graphics card is enough for the models I want to run.","label":"search","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Use the booking website to change my seat assignment.","label":"browser","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"On the open account page, update my notification preferences.","label":"browser","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Move my Thursday dentist appointment to the same time Friday.","label":"email_calendar","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Draft a response to the latest email from the property manager.","label":"email_calendar","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Add an item called compost bags to my Todoist errands list.","label":"apps","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Turn on my connected living-room lamps.","label":"apps","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Find the largest folders on this computer.","label":"computer","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Install the command line program jq on this machine.","label":"computer","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Write a Python program that renames images by date.","label":"create","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Generate an illustration of a fox reading a book.","label":"create","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Remember that my preferred name is Jules.","label":"memory","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Forget the old address I previously told you.","label":"memory","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"Do the special custom action we have not described or configured yet.","label":"other","source":"agent-authored-challenge-v1"}
+{"question":"need","text":"I need a task performed, but I cannot yet tell you what kind of task.","label":"other","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Could you make the ending friendlier?","label":"continue","last":"I wrote a draft reply to the neighbor about the noise.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Let's use the second option.","label":"continue","last":"I found two available delivery slots: morning and evening.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Hold off; I need to check the numbers first.","label":"continue","last":"The payment form is filled, and I am waiting for your decision.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Add the same thing for next month.","label":"continue","last":"The monthly review event has been added for this month.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Why couldn't it finish?","label":"continue","last":"The archive job stopped before all the files were copied.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Thanks, but include the attachment too.","label":"continue","last":"The email draft is ready, with the subject and message you requested.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Only the ones dated this year.","label":"continue","last":"I found several receipts. Which should I put in the report?","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Change the quantity to four.","label":"continue","last":"Your cart contains two copies of the requested notebook.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Thanks. Unrelated question: why is the sky blue?","label":"new","last":"The requested notebook is now in your cart.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"What does RSVP stand for?","label":"new","last":"I sent the invitation to your guests.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"I want to start a different project: build a calculator.","label":"new","last":"The website styling changes are finished.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"All done with that. What's the latest weather forecast?","label":"new","last":"I found the receipts for your trip.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"Good night, Clara.","label":"new","last":"The report is saved in your project folder.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"No more changes. Tell me a funny story.","label":"new","last":"I revised the invitation to include the new address.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"How does a battery store energy?","label":"new","last":"I compared the phone prices you requested.","source":"agent-authored-challenge-v1"}
+{"question":"followup","text":"That's sorted. Open my music app.","label":"new","last":"Your calendar appointment has been moved.","source":"agent-authored-challenge-v1"}

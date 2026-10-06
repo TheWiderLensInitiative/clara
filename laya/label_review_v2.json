@@ -1,0 +1,448 @@
+{
+  "format": 1,
+  "reviewer": "Codex assistant, not human adjudication",
+  "scope": "All 36 legacy need/other examples reviewed against the existing category definitions. Original files preserved. Five calculation/conversion/scheduling examples retained. Other categories have not received a complete manual audit. Additional targeted effort review: four clear corrections. The effort corpus has not had a complete independent human audit. Additional review of short need/email_calendar source examples: four clear corrections and 21 ambiguous or out-of-scope examples excluded. External provider reservations and personal calendar changes are distinct.",
+  "source_sha256": {
+    "train_v3.jsonl": "130620ceb130841f13651e4f02f23643618bd1b6228050eb17403bc2e9a3d524"
+  },
+  "decisions": [
+    {
+      "question": "need",
+      "text": "search for the best coffee shop near my office",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "search",
+      "reason": "Finding current local businesses requires web information."
+    },
+    {
+      "question": "need",
+      "text": "open my notes app and write down these 3 ideas",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "apps",
+      "reason": "Explicitly operates the notes app."
+    },
+    {
+      "question": "need",
+      "text": "book a table for 2 at the restaurant from that article",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "browser",
+      "reason": "Making a restaurant reservation is a website operation."
+    },
+    {
+      "question": "need",
+      "text": "Hey I need you to pull up my step counter from today and then open the spreadsheet in my local drive to update the nutrition log cell for breakfast",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "Go to my browser history and find that nutrition article I was reading last night and save it to the read later tab while also blocking the site so it does not load again during my work hours",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "browser",
+      "reason": "All requested operations affect browser history, saved pages and site settings."
+    },
+    {
+      "question": "need",
+      "text": "Find the recipe I bookmarked in the browser for the chicken salad and extract the ingredients then cross reference them with the shopping list app to see what is already in the list and move the new ones to the top",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "Is there a way to automate sending the weekly sales report to the sales team every Monday at 9 AM using the connected apps?",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "apps",
+      "reason": "Explicitly requests an automation using connected apps."
+    },
+    {
+      "question": "need",
+      "text": "What's the current time in Tokyo, and can you set a reminder on my phone for my call with the client at 2:00 PM?",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "hey can u book a table for 4 next thur? need to check my cal first so i dont double book with the sales sync",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "send that invoice to jay and cc me but make sure u use the new payment portal link i saved in my notes app",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "whats on my cal for next tuesday? if its clear could u grab a parking pass at the office app too",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "what did i pay for on my credit card last month? i need the total for the budget sheet im working on",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "remind me to check the gas station app for the coupon code i mentioned last week, and put it in my wallet",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "can u check if the server room ac is still on? i think it was acting up and the temp is getting weird",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "apps",
+      "reason": "Checks the state of a connected air-conditioning device."
+    },
+    {
+      "question": "need",
+      "text": "what time is the train to nyc if i leave work at 5? i need to catch the 5:30 pm flight",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "search",
+      "reason": "Requires current transport information."
+    },
+    {
+      "question": "need",
+      "text": "can u find the recipe for that pasta i made last tuesday? i want to make it again for dinner",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "open my browser and go to the campus bookstore site and add that blue hoodie to the cart since its on sale but only if my bank account balance is above five hundred dollars",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "find that article i read about the local library opening and put the link in the notes app for the group chat with my study partners",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "can you convert my miles to kilometers for that road trip i planned, and also check the gas prices at stations near the highway exit?",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "wait, i need to calculate how much i spend on coffee based on my last month's bank app transactions, then suggest a cheaper brand",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "yo, check if my smart fridge is out of milk, and if so, add it to my grocery list app and text my roommate to pick some up",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "apps",
+      "reason": "All actions use connected devices, lists and messaging."
+    },
+    {
+      "question": "need",
+      "text": "hey, i wrote some random ideas about a vacation in my notes app, can you help me organize them into a rough itinerary and check flight prices for next month?",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "can you make a spreadsheet of all the albums i bought last year and sort them by the number of tracks and then put a link to the cheapest one on a sale into my shopping cart",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "find me a recipe for pasta that uses stuff i already have in the fridge and then play some lofi beats while i cook and set a timer for 20 mins",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "Search for flight options to Tokyo next month under $1500, open the cheapest one in my browser, and save the link to my travel notes",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "Organize my scattered notes on 'Project Alpha' into a single document, highlight the action items, and add a task for each to my to-do list",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "Find 3 recipes with low carbs from my saved recipes, convert the measurements for 2 people instead of 4, and add them to my meal plan notes",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "Search for the best coffee shops near my office, open the reviews for the top 3, and save the names and addresses to a new note",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "open my browser and go to that recipe site i saved last week and read out the ingredients list for me while i am standing at the kitchen",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "browser",
+      "reason": "Explicitly opens a saved website and reads its page."
+    },
+    {
+      "question": "need",
+      "text": "what is the best time to post that video i just exported based on what you know about my audience on social media",
+      "old_label": "other",
+      "action": "drop",
+      "reason": "Ambiguous source or several tool categories; no single unambiguous label under the existing question. Excluded instead of teaching that mixed tool use means other."
+    },
+    {
+      "question": "need",
+      "text": "organize the notes i scribbled about the upcoming product launch video into a structured outline in my notes app",
+      "old_label": "other",
+      "action": "relabel",
+      "label": "apps",
+      "reason": "Organizes content inside the notes app."
+    },
+    {
+      "question": "effort",
+      "text": "What's the best price for this?",
+      "old_label": "quick",
+      "action": "relabel",
+      "label": "deep",
+      "reason": "Finding the best price entails comparing alternatives, not reading one specified price."
+    },
+    {
+      "question": "effort",
+      "text": "Compare price of this phone",
+      "old_label": "quick",
+      "action": "relabel",
+      "label": "deep",
+      "reason": "Explicit price comparison requires judgment across alternatives."
+    },
+    {
+      "question": "effort",
+      "text": "Check if there are any emails in the spam folder with important subjects.",
+      "old_label": "quick",
+      "action": "relabel",
+      "label": "deep",
+      "reason": "Determining which spam subjects matter requires evaluating messages."
+    },
+    {
+      "question": "effort",
+      "text": "Find professor office hours",
+      "old_label": "deep",
+      "action": "relabel",
+      "label": "quick",
+      "reason": "Office hours are one factual lookup, not a research or planning task."
+    },
+    {
+      "question": "need",
+      "text": "Find cheapest flight price",
+      "old_label": "email_calendar",
+      "action": "relabel",
+      "label": "search",
+      "reason": "Finding the cheapest flight price requires web research, not the user\u2019s email/calendar."
+    },
+    {
+      "question": "need",
+      "text": "Book gym appointment",
+      "old_label": "email_calendar",
+      "action": "relabel",
+      "label": "browser",
+      "reason": "Booking a provider appointment is an external reservation, not merely adding a calendar event."
+    },
+    {
+      "question": "need",
+      "text": "See health provider slots",
+      "old_label": "email_calendar",
+      "action": "relabel",
+      "label": "browser",
+      "reason": "Checking a provider\u2019s available appointments requires its booking interface, not the user\u2019s calendar."
+    },
+    {
+      "question": "need",
+      "text": "Book dentist slot",
+      "old_label": "email_calendar",
+      "action": "relabel",
+      "label": "browser",
+      "reason": "Booking an actual dentist appointment requires the provider\u2019s reservation process."
+    },
+    {
+      "question": "need",
+      "text": "Book my Tuesday lunch",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Move dentist to 10am",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Check if Sarah replied",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Cancel that subscription renewal",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Reschedule 1pm to 2pm",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Check yoga schedule",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Find free workout slot",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Reschedule physio appointment",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Book follow-up appointment",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Find free gym time",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Check fitness class schedule",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Find open wellness slot",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Reschedule lunch for Friday",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Reply to Sarah",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Check 9am slot",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Move dentist to Monday",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Send invite to team",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Free time for flight",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Find open slot today",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "See next week plans",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    },
+    {
+      "question": "need",
+      "text": "Schedule airport pickup reminder",
+      "old_label": "email_calendar",
+      "action": "drop",
+      "reason": "Ambiguous booking, availability or communication channel without enough context to establish personal email/calendar work. Excluded instead of teaching a calendar shortcut."
+    }
+  ]
+}
