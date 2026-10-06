@@ -1,0 +1,4 @@
+• Watch Clara work in the browser: each step shows live in the chat ("Clicked “Save changes”")
+• Updates lists every browser step, so you can see exactly what she did
+• Morning briefs and inbox summaries come with one-tap follow-ups (remind me, add to calendar, draft a reply)
+• Faster: new tasks start in about a second

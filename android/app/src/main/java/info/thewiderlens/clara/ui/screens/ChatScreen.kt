@@ -204,6 +204,8 @@ fun ChatScreen(
                         else -> state.status.ifBlank { "Working on it…" }
                     },
                     style = MaterialTheme.typography.labelMedium, color = ClaraColors.Muted,
+                    maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(horizontal = 24.dp),
                 )
                 if (state.working && (mood == Mood.Browsing || state.showLive)) {   // only when her browser is really open, not while she searches
                     Text(

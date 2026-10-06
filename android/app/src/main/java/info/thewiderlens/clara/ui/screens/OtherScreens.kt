@@ -98,6 +98,7 @@ private fun ActivityRow(a: ActivityItem) {
         a.kind == "approval.denied" -> ClaraColors.Danger to "You denied"
         a.kind == "run.finished" -> ClaraColors.Violet to "Finished"
         a.kind == "job.fired" -> ClaraColors.Magenta to "Scheduled job ran"
+        a.kind == "browser.step" -> ClaraColors.Cyan to "In the browser"
         else -> ClaraColors.Muted to a.kind
     }
     Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {

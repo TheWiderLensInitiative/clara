@@ -491,6 +491,8 @@ class ClaraViewModel : ViewModel() {
                 if (ev.conversationId == cur && ev.kind == "browser.opening") _ui.update { it.copy(working = true, status = "Opening my browser…") }
                 // cloud sub-agent steps arrive already phrased, e.g. "☁️ Qwen: running pytest"
                 if (ev.conversationId == cur && ev.kind == "cloud.step" && ev.detail != null) _ui.update { it.copy(status = ev.detail) }
+                // each step of her browser, live: "🌐 Clicked “Save changes”"
+                if (ev.conversationId == cur && ev.kind == "browser.step" && ev.detail != null) _ui.update { it.copy(status = BROWSER_STEP + ev.detail) }
             }
             is ClaraEvent.HelpRequested -> _ui.update { it.copy(help = ev.help, status = "Needs your help…") }
             is ClaraEvent.HelpResolved -> _ui.update { if (it.help?.id == ev.id) it.copy(help = null) else it }
@@ -545,12 +547,16 @@ fun friendlyTool(tool: String?): String = when {
     else -> "Working on it…"
 }
 
+/** Prefix of a live browser step in the status line ("🌐 Clicked “Next”"). */
+const val BROWSER_STEP = "🌐 "
+
 /** The character's mood for the current conversation. */
 fun moodOf(s: UiState, celebrating: Boolean = false): Mood {
     if (s.link == Link.Offline) return Mood.Sleeping
     if (s.help != null || s.pending.any { it.conversationId == s.conversationId } || s.vaultRequests.isNotEmpty() || s.apiRequests.isNotEmpty() || s.cloudRequests.isNotEmpty()) return Mood.Waiting
     if (s.working) {
         if (s.streaming.isNotBlank()) return Mood.Talking
+        if (s.status.startsWith(BROWSER_STEP)) return Mood.Browsing   // a live browser step
         return when (s.status) {
             "Searching the web…" -> Mood.Searching
             "Opening my browser…", "Using the browser…", "Reading a page…", "Looking at the screen…" -> Mood.Browsing
