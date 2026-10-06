@@ -180,6 +180,76 @@ async def _startup():
     asyncio.create_task(_proactive_loop())
     asyncio.create_task(_resume_video_jobs())
     asyncio.create_task(_takeover_watchdog())
+    asyncio.create_task(_warmup_watcher())
+
+
+# --- warm-up: after Bonsai or Hermes restarts, read Clara's long prompt before the user's next task does ---------
+# Her agent prompt is ~22K tokens (tool descriptions and personality come first). Bonsai keeps it in memory, but a
+# restart empties that, and the next task waits ~45 s while it's reread. One hidden quick run fills it again.
+# It has no Bridge conversation, so nothing shows up in the app.
+WARMUP_INSTRUCTIONS = ("This is an automatic warm-up after a restart, not a message from the user. "
+                       "Reply with exactly the word ready. Do not use any tools.")
+_warmed_for = None   # the service start marks the last warm-up was done for
+
+
+def _service_marks():
+    """When clara-model and clara-hermes last started (systemd monotonic stamps; no privileges needed)."""
+    import subprocess
+    try:
+        out = subprocess.run(["systemctl", "show", "clara-model", "clara-hermes", "-p", "ActiveEnterTimestampMonotonic", "--value"],
+                             capture_output=True, text=True, timeout=5).stdout.split()
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return tuple(out) if len(out) == 2 and all(x.isdigit() and x != "0" for x in out) else None
+
+
+async def _services_ready():
+    for url in (f"{HERMES_URL}/health", LLM_URL.replace("/v1/chat/completions", "/health")):
+        try:
+            if (await llm.get(url, timeout=3)).status_code != 200:
+                return False
+        except Exception:
+            return False
+    return True
+
+
+async def _warm_agent():
+    payload = {"input": "ready?", "session_id": f"clara-warmup-{int(time.time())}", "conversation_history": [],
+               "instructions": WARMUP_INSTRUCTIONS, "model": "bonsai-fast"}
+    response = await hermes.post("/v1/runs", json=payload, timeout=30)
+    response.raise_for_status()
+    run = response.json()
+    run_id = run.get("run_id") or run.get("id")
+    async with hermes.stream("GET", f"/v1/runs/{run_id}/events", timeout=300) as resp:
+        async for line in resp.aiter_lines():
+            if line.startswith("data:") and (json.loads(line[5:]).get("event") or json.loads(line[5:]).get("type") or "") in (
+                    "run.completed", "run.failed", "run.error", "run.cancelled"):
+                return
+
+
+async def _maybe_warm():
+    """One pass: warm up if Bonsai or Hermes restarted since the last warm-up. Returns what it did."""
+    global _warmed_for
+    marks = await asyncio.to_thread(_service_marks)
+    if not marks or marks == _warmed_for or not await _services_ready():
+        return "skip"
+    if store._one("SELECT 1 AS busy FROM conversations WHERE active_run IS NOT NULL"):
+        _warmed_for = marks          # a real task is reading the prompt anyway
+        return "busy"
+    started = time.time()
+    await asyncio.wait_for(_warm_agent(), 300)
+    _warmed_for = marks
+    print(f"warm-up: Clara's prompt is in Bonsai's memory ({time.time() - started:.0f} s)", flush=True)
+    return "warmed"
+
+
+async def _warmup_watcher():
+    while True:
+        try:
+            await _maybe_warm()
+        except Exception as e:
+            print(f"warm-up: {type(e).__name__}: {e}", flush=True)   # tried again next round
+        await asyncio.sleep(30)
 
 
 LEGACY_NOTIFY_CONVERSATION = "clara-notifications"  # old separate reminders thread; hidden, no longer written
@@ -3186,6 +3256,27 @@ async def screen_status(dev=Depends(device)):
 # Clara asking the user to take over her browser (CAPTCHA, 2FA code, a stuck sign-in…)
 help_request: Optional[dict] = None      # the open request, shown in the app until the user hands back
 _help_waiters: list = []                  # futures resolved when the user hands control back
+
+
+class ActivityIn(BaseModel):
+    conversation_id: Optional[str] = None
+    kind: str
+    detail: str
+
+
+@app.post("/internal/activity")
+async def internal_activity(body: ActivityIn, ok=Depends(link)):
+    """A browser step from Clara's browser loop ("Clicked \"Next\""), shown in the app's Updates page."""
+    if body.kind != "browser.step":
+        raise HTTPException(400, "unknown activity kind")
+    conv = store.get_conversation(body.conversation_id) if body.conversation_id else None
+    if not conv:
+        return {"ok": False}
+    run_id = conv.get("active_run")
+    detail = body.detail.strip()[:300]
+    store.add_activity(conv["id"], run_id, "browser.step", "browser_use", detail)
+    bus.publish("activity", conversation_id=conv["id"], run_id=run_id, kind="browser.step", tool="browser_use", detail=detail)
+    return {"ok": True}
 
 
 class HelpIn(BaseModel):

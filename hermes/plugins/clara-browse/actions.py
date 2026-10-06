@@ -349,6 +349,42 @@ def parse_verdict(text: str) -> dict:
     return {"verified": verified is True or str(verified).lower() == "true", "reason": str(data.get("reason") or "")[:300]}
 
 
+def step_text(action: dict, snapshot: str = "", result: dict = None, url: str = "") -> str:
+    """One browser step as a short sentence for the activity log. Never includes what was typed into a field."""
+    kind = action.get("action")
+    name = control(_line(snapshot, action.get("ref") or ""))[1] if action.get("ref") else ""
+    target = action.get("_target") or {}
+    if kind == "open":
+        text = f"Opened {urlparse(action.get('url') or '').hostname or action.get('url')}"
+    elif kind in ("click", "find"):
+        text = f'Clicked "{name or action.get("text") or "a control"}"'
+    elif kind == "fill":
+        text = f'Typed into "{name or "a field"}"'
+    elif kind == "set":
+        text = f'Set "{name or "a slider"}" to {(result or {}).get("value") or action.get("value")}'
+    elif kind == "select":
+        text = f'Chose {action.get("value")} in "{name or "a list"}"'
+    elif kind == "press":
+        text = f"Pressed {action.get('key')}"
+    elif kind == "scroll":
+        text = f"Scrolled {action.get('direction') or 'down'}" + (f' in "{name}"' if name else "")
+    elif kind in ("click_at", "drag"):
+        text = f'{"Clicked" if kind == "click_at" else "Dragged"} "{target.get("name") or target.get("tag") or "a spot"}" (by position)'
+    elif kind == "tab":
+        text = f"Switched to tab {action.get('to')}"
+    elif kind == "back":
+        text = "Went back"
+    elif kind == "sign_in":
+        text = f"Signed in with the saved login {action.get('name')}"
+    elif kind == "wait":
+        text = "Waited for the page"
+    else:
+        text = str(kind)
+    if result is not None and not result.get("success", True):
+        text += f" (didn't work: {str(result.get('error') or '')[:80]})"
+    return text[:300]
+
+
 def drag_events(x: float, y: float, to_x: float, to_y: float, steps: int = 12) -> list:
     """A press, a smooth move and a release, like a finger dragging. Sent through the stream like a tap,
     so the release always goes out even while the page holds the pointer."""

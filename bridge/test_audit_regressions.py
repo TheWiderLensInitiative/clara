@@ -220,6 +220,20 @@ class BrowserRaceTests(unittest.TestCase):
         with patch.object(browse,'_browser',side_effect=results),patch.object(browse,'_tap_point') as tap:
             self.assertFalse(browse._tap_ref('test','@e1','Send')['success']);tap.assert_not_called()
 
+    def test_blocked_browser_tools_are_hidden_from_the_model(self):
+        names=['browser_use','browser_snapshot','browser_vision','browser_click','browser_navigate','browser_type','browser_scroll',
+               'browser_press','browser_back','browser_console','browser_cdp','browser_dialog','browser_get_images','web_search','email_search']
+        tools=[{'type':'function','function':{'name':n,'parameters':{}}} for n in names]
+        out=guardian._hide_blocked_tools({'model':'bonsai','tools':tools})['request']
+        kept=[t['function']['name'] for t in out['tools']]
+        self.assertEqual(kept,['browser_use','browser_snapshot','browser_vision','web_search','email_search'])
+        self.assertEqual(out['model'],'bonsai')
+        self.assertIsNone(guardian._hide_blocked_tools({'tools':[t for t in tools if t['function']['name'] in kept]}))  # nothing to hide
+        self.assertIsNone(guardian._hide_blocked_tools({'messages':[]}))
+        for name in set(names)-set(kept):   # hidden means Guardian refuses it anyway (console: only harmless without a script)
+            verdict=guardian.rules.decide(name,{'expression':'1+1'} if name=='browser_console' else {})
+            self.assertEqual((verdict or ('',))[0],'block',name)
+
     def test_helper_lineage_and_cloud_header(self):
         guardian._session_owners['parent']=('chat-a','run-a')
         guardian._on_subagent_start(parent_session_id='parent',child_session_id='child')
@@ -442,6 +456,37 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             await app._check_takeover(now=9500);self.assertTrue(await app._check_takeover(now=9700))
         finally:
             app.TAKEOVER_FILE.unlink(missing_ok=True);app._screen_owners.clear();app._screen_devices.clear()
+
+    async def test_warm_up_once_per_restart_and_never_over_a_task(self):
+        app._warmed_for=None
+        warm=AsyncMock()
+        with patch.object(app,'_service_marks',return_value=('100','200')),patch.object(app,'_services_ready',new=AsyncMock(return_value=True)),\
+             patch.object(app,'_warm_agent',new=warm):
+            self.assertEqual(await app._maybe_warm(),'warmed')
+            self.assertEqual(await app._maybe_warm(),'skip')                 # same restart: nothing to do
+            self.assertEqual(warm.await_count,1)
+        with patch.object(app,'_service_marks',return_value=('100','300')),patch.object(app,'_services_ready',new=AsyncMock(return_value=True)),\
+             patch.object(app,'_warm_agent',new=warm):
+            app.store.set_active_run(self.cid,'run-real')                     # Hermes restarted while a task runs
+            self.assertEqual(await app._maybe_warm(),'busy')
+            self.assertEqual(warm.await_count,1)
+            app.store.set_active_run(self.cid,None)
+        with patch.object(app,'_service_marks',return_value=('400','300')),patch.object(app,'_services_ready',new=AsyncMock(return_value=False)),\
+             patch.object(app,'_warm_agent',new=warm):
+            self.assertEqual(await app._maybe_warm(),'skip')                 # Bonsai still loading: wait
+        self.assertEqual(app.WARMUP_INSTRUCTIONS.count('not a message from the user'),1)
+
+    async def test_browser_steps_land_in_the_activity_log(self):
+        app.store.set_active_run(self.cid,'run-b')
+        with patch.object(app.bus,'publish') as publish:
+            self.assertEqual(await app.internal_activity(app.ActivityIn(conversation_id=self.cid,kind='browser.step',detail='Clicked "Next"'),ok=True),{'ok':True})
+        row=app.store.activity(self.cid,1)[0]
+        self.assertEqual((row['kind'],row['run_id'],row['detail']),('browser.step','run-b','Clicked "Next"'))
+        publish.assert_called_once()
+        with self.assertRaises(HTTPException):   # only browser steps: Clara can't write other kinds of entries
+            await app.internal_activity(app.ActivityIn(conversation_id=self.cid,kind='approval.approved',detail='x'),ok=True)
+        self.assertEqual(await app.internal_activity(app.ActivityIn(conversation_id='nope',kind='browser.step',detail='x'),ok=True),{'ok':False})
+        app.store.set_active_run(self.cid,None)
 
     async def test_stop_tells_every_device_right_away(self):
         app.store.set_active_run(self.cid,'run-a')

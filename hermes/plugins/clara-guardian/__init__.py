@@ -100,6 +100,26 @@ def _cloud_request(request, base_url="", session_id=None, **_):
     return {"request": {**request, "extra_headers": headers}}
 
 
+# Hermes's own browser tools that Guardian always refuses (everything goes through browser_use). Leaving their
+# descriptions in every request costs prompt space and invites wasted turns (she tried browser_click/navigate),
+# so they're removed before the model sees them. Guardian still blocks them if one is called anyway.
+VISIBLE_BROWSER_TOOLS = {"browser_use", "browser_snapshot", "browser_vision"}
+
+
+def hidden_tool(name: str) -> bool:
+    return name.startswith("browser") and name not in VISIBLE_BROWSER_TOOLS
+
+
+def _hide_blocked_tools(request, **_):
+    tools = request.get("tools")
+    if not isinstance(tools, list):
+        return None
+    kept = [t for t in tools if not hidden_tool(str(((t or {}).get("function") or {}).get("name") or (t or {}).get("name") or ""))]
+    if len(kept) == len(tools):
+        return None
+    return {"request": {**request, "tools": kept}}
+
+
 def _mtime(path):
     try:
         return os.path.getmtime(path)
@@ -284,6 +304,7 @@ def register(ctx) -> None:
     ctx.register_hook("subagent_start", _on_subagent_start)
     ctx.register_hook("subagent_stop", _on_subagent_stop)
     ctx.register_middleware("llm_request", _cloud_request)
+    ctx.register_middleware("llm_request", _hide_blocked_tools)
     ctx.register_hook("pre_tool_call", _on_pre_tool_call)
     ctx.register_hook("transform_tool_result", _on_tool_result)
     ctx.register_tool(name="ask_user_for_browser_help", toolset="clara_guardian", schema=HELP_SCHEMA, handler=handle_help, emoji="🙋")

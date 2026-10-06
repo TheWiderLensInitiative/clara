@@ -237,8 +237,20 @@ render "$REPO/setup/49-clara.rules" | sudo tee /etc/polkit-1/rules.d/49-clara.ru
 mkdir -p "$HOME/.local/bin"; render "$REPO/setup/clara" > "$HOME/.local/bin/clara"; chmod +x "$HOME/.local/bin/clara"
 sudo systemctl daemon-reload
 sudo systemctl enable -q clara-model clara-bridge clara-hermes
-sudo systemctl restart clara-model clara-hermes clara-bridge
-ok "clara-model, clara-hermes, clara-bridge"
+# Restarting Bonsai empties its memory of Clara's long prompt (the next task rereads ~22K tokens, ~45 s) and reloading
+# the model takes a minute, so only restart it when something about it changed. CLARA_RESTART_MODEL=1 forces it.
+MODEL_FP=$( { render "$REPO/setup/clara-model.service"; cat "$BONSAI_DIR/scripts/start_agent_server.sh" 2>/dev/null
+              ls -lR --time-style=+%s "$BONSAI_DIR/models" 2>/dev/null; } | sha256sum | cut -d' ' -f1)
+if [ "${CLARA_RESTART_MODEL:-0}" = 1 ] || ! systemctl is-active -q clara-model \
+   || [ "$(cat "$DATA/.model-fingerprint" 2>/dev/null)" != "$MODEL_FP" ]; then
+    sudo systemctl restart clara-model
+    echo "$MODEL_FP" > "$DATA/.model-fingerprint"
+    ok "clara-model (re)started"
+else
+    ok "clara-model kept running: nothing about it changed, so it still remembers Clara's prompt"
+fi
+sudo systemctl restart clara-hermes clara-bridge
+ok "clara-hermes, clara-bridge"
 
 say "Waiting for Clara to wake up (loading the model takes a minute)"
 i=0

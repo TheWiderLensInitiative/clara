@@ -8,7 +8,10 @@ User=@USER@
 WorkingDirectory=@BONSAI_DIR@
 Environment=BONSAI_KV4=1 BONSAI_CTX=102400 AGENT_REASONING_BUDGET=4096
 # two slots sharing one KV cache: slot 0 keeps the agent's long prompt warm, slot 1 serves quick chat (see bridge/app.py CHAT_SLOT)
-ExecStart=/bin/sh @BONSAI_DIR@/scripts/start_agent_server.sh --chat-template-kwargs '{"reasoning_effort":"medium"}' --parallel 2 --kv-unified
+# --checkpoint-min-step 256: save a context checkpoint near the end of every request (the default only every 8192
+# tokens). Bonsai can only roll back to a checkpoint, so without them a new task in an existing chat rereads Clara's
+# whole ~22K-token prompt (~45 s); with them it rereads ~500 tokens (~1-2 s).
+ExecStart=/bin/sh @BONSAI_DIR@/scripts/start_agent_server.sh --chat-template-kwargs '{"reasoning_effort":"medium"}' --parallel 2 --kv-unified --checkpoint-min-step 256
 Restart=on-failure
 RestartSec=5
 

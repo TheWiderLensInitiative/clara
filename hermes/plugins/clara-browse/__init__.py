@@ -316,6 +316,14 @@ def _ok(label, url, session_id=None, action=None, snapshot=""):
     return choice in ("once", "session")
 
 
+def _report(session_id, text):
+    """Put one browser step in Clara's activity log (the app's Updates page), so the user can see what she did."""
+    try:
+        _link("/internal/activity", {"conversation_id": _conversation(session_id), "kind": "browser.step", "detail": text[:300]}, timeout=3)
+    except Exception as e:
+        logger.info("browser_use: couldn't log a step: %s", e)
+
+
 def _sign_in(name, task_id, session_id):
     import hermes_plugins.clara_vault as vault
     return json.loads(vault.handle_sign_in({"name": name}, task_id=task_id, session_id=session_id))
@@ -773,6 +781,8 @@ def _drive(goal, start_url, task_id, session_id, run=None):
                 except Exception as e:
                     logger.info("browser_use: couldn't check the result: %s", e)
                     verdict = {"verified": True, "reason": ""}
+                _report(session_id, "Checked the page: " + ("done" if verdict["verified"] else
+                        f"not done yet ({verdict['reason'][:120] or 'the page does not show it'})"))
                 if not verdict["verified"]:
                     rejected += 1
                     history.append(f"you said done, but the page doesn't show it yet: {verdict['reason'] or 'check the page again'}")
@@ -817,10 +827,12 @@ def _drive(goal, start_url, task_id, session_id, run=None):
                 return {"success": False, "summary": "Browser task stopped.", "steps": history[-12:]}
             if not answer:
                 history.append(f"the user did not approve: {label[:80]}")
+                _report(session_id, f"You didn't approve: {label[:120]}")
                 continue
             approved.add((url, label))   # kept only until it's done, so a page that shifts doesn't ask twice
         if action["action"] == "sign_in":
             outcome = _sign_in(action["name"], task_id, session_id)
+            _report(session_id, actions.step_text(action, snapshot, {"success": bool(outcome.get("success")), "error": outcome.get("error")}))
             history.append(f"sign_in {action['name']}: " + ("ok" if outcome.get("success") else str(outcome.get("error"))[:160]))
             _ready(task_id)
             continue
@@ -846,6 +858,7 @@ def _drive(goal, start_url, task_id, session_id, run=None):
             history.append("page or control changed; taking a fresh observation")
             continue
         approved.discard((url, label))   # an approval covers one click; the next risky step asks again
+        _report(session_id, actions.step_text(action, snapshot, result or {}, url))
         saved = playbooks.step(action, snapshot, url, result or {})
         if saved:
             run["steps"].append(saved)
