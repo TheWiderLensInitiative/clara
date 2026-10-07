@@ -9,6 +9,7 @@ import asyncio
 import base64
 import datetime as dt
 import hashlib
+import html
 import json
 import os
 import re
@@ -379,7 +380,7 @@ def _body_text(part) -> str:
 
 def summarize_message(m, with_body=False, body_limit=6000):
     out = {"id": m["id"], "thread_id": m.get("threadId"), "from": _header(m, "From"), "to": _header(m, "To"),
-           "subject": _header(m, "Subject"), "date": _header(m, "Date"), "snippet": m.get("snippet", ""),
+           "subject": _header(m, "Subject"), "date": _header(m, "Date"), "snippet": clean_body(html.unescape(m.get("snippet", ""))),
            "unread": "UNREAD" in m.get("labelIds", []), "important": "IMPORTANT" in m.get("labelIds", [])}
     if with_body:
         out["body"] = clean_body(_body_text(m.get("payload", {})))[:body_limit]
@@ -390,12 +391,10 @@ def summarize_message(m, with_body=False, body_limit=6000):
 
 async def gmail_search(store, query="", limit=10):
     lst = await api(store, "google", "GET", f"{GMAIL}/messages", params={"q": query or "in:inbox", "maxResults": max(1, min(limit, 25))})
-    out = []
-    for ref in lst.get("messages", []):
-        m = await api(store, "google", "GET", f"{GMAIL}/messages/{ref['id']}",
-                      params={"format": "metadata", "metadataHeaders": ["From", "To", "Subject", "Date"]})
-        out.append(summarize_message(m))
-    return out
+    async def one(ref):   # fetched side by side: one by one, 25 emails took several seconds
+        return summarize_message(await api(store, "google", "GET", f"{GMAIL}/messages/{ref['id']}",
+                                           params={"format": "metadata", "metadataHeaders": ["From", "To", "Subject", "Date"]}))
+    return list(await asyncio.gather(*(one(ref) for ref in lst.get("messages", []))))
 
 
 async def gmail_read(store, msg_id):
