@@ -677,12 +677,14 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             async def post(self,url,json=None,timeout=None):
                 sent.append(json);return httpx.Response(200,json={'ok':1})
         with patch.object(app,'llm',LLM()):
-            for mode in ('fast','light'):
+            for mode in ('fast','light','deep'):
                 req=types.SimpleNamespace(json=AsyncMock(return_value={'messages':[],'reasoning_effort':'high'}))
                 await app.bonsai_lighter(mode,req,ok=True)
         self.assertEqual(sent[0]['chat_template_kwargs'],{'enable_thinking':False});self.assertNotIn('thinking_budget_tokens',sent[0])
         self.assertEqual(sent[1]['thinking_budget_tokens'],app.LIGHT_BUDGET);self.assertIn('answer',sent[1]['reasoning_budget_message'])
         self.assertNotIn('reasoning_effort',sent[1])
+        self.assertEqual(sent[2]['thinking_budget_tokens'],app.DEEP_BUDGET);self.assertEqual(sent[2]['max_tokens'],app.TURN_MAX['deep'])
+        self.assertIn('/bonsai/deep/v1',(ROOT/'hermes/config.yaml.template').read_text())
         self.assertEqual(sent[1]['max_tokens'],app.TURN_MAX['light']);self.assertEqual(sent[0]['max_tokens'],app.TURN_MAX['fast'])   # no runaway replies
         with self.assertRaises(HTTPException):
             await app.bonsai_lighter('turbo',types.SimpleNamespace(json=AsyncMock(return_value={})),ok=True)

@@ -1,11 +1,11 @@
 # Clara's agent (Hermes) configuration. install.sh fills in {{...}} and copies this to /var/lib/clara/hermes-home/config.yaml.
 model:
   context_length: 102400
-  max_tokens: 16384
+  max_tokens: 12288   # the Bridge caps deep turns at 8K thinking + 4K reply (see bonsai_lighter in bridge/app.py)
   default: bonsai2-27b-pq2-v16_2
   provider: custom
-  base_url: http://127.0.0.1:8080/v1
-  api_key: sk-local
+  base_url: http://127.0.0.1:8700/bonsai/deep/v1
+  api_key: {{LINK_TOKEN}}
 terminal:
   backend: local
   cwd: /var/lib/clara/workspace

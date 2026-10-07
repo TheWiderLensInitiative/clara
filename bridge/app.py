@@ -2416,19 +2416,21 @@ async def cloud_chat(request: Request, ok=Depends(link)):
 
 # --- Bonsai's lighter modes: the same model, less (or no) thinking --------------------------------------------
 # Hermes has model routes "bonsai-fast" (thinking off) and "bonsai-light" (thinking capped at LIGHT_BUDGET tokens per
-# turn) pointing here; the Bridge picks one per task (Laya decides, see _pick_effort). Deep tasks use Bonsai directly
-# (the server's 16K cap). Only the last couple of prompt tokens differ, so all share the agent's warm prompt cache.
+# turn) pointing here, and its default model (deep: DEEP_BUDGET) comes through here too; the Bridge picks one per task
+# (Laya decides, see _pick_effort). Only the last couple of prompt tokens differ, so all share the warm prompt cache.
 LIGHT_BUDGET = int(os.environ.get("CLARA_LIGHT_BUDGET", "1024"))   # ~30 s of thinking at Bonsai's ~36 tokens/s
 LIGHT_WRAP = "\n\nOkay, I've thought about this enough. Time to act or answer.\n"   # ends a capped thought cleanly
 # A turn's whole output (thinking + reply or tool call) is capped too: on 2026-10-06 a reply after "remind me every day…"
 # looped for ~11,000 tokens (10 minutes) until the user stopped it. A phone reply never needs this much.
+DEEP_BUDGET = int(os.environ.get("CLARA_DEEP_BUDGET", "8192"))     # ~4-7 min of thinking: plenty for one step
 TURN_MAX = {"fast": int(os.environ.get("CLARA_FAST_MAX_TOKENS", "3000")),
-            "light": LIGHT_BUDGET + int(os.environ.get("CLARA_LIGHT_REPLY_TOKENS", "3000"))}
+            "light": LIGHT_BUDGET + int(os.environ.get("CLARA_LIGHT_REPLY_TOKENS", "3000")),
+            "deep": DEEP_BUDGET + int(os.environ.get("CLARA_DEEP_REPLY_TOKENS", "4096"))}
 
 
 @app.post("/bonsai/{mode}/v1/chat/completions")
 async def bonsai_lighter(mode: str, request: Request, ok=Depends(link)):
-    if mode not in ("fast", "light"):
+    if mode not in TURN_MAX:
         raise HTTPException(404)
     body = await request.json()
     body.pop("reasoning_effort", None)
@@ -2436,14 +2438,14 @@ async def bonsai_lighter(mode: str, request: Request, ok=Depends(link)):
     if mode == "fast":
         body["chat_template_kwargs"] = {**(body.get("chat_template_kwargs") or {}), "enable_thinking": False}
     else:   # without the message a capped thought spills into the reply
-        body.update(thinking_budget_tokens=LIGHT_BUDGET, reasoning_budget_message=LIGHT_WRAP)
+        body.update(thinking_budget_tokens=LIGHT_BUDGET if mode == "light" else DEEP_BUDGET, reasoning_budget_message=LIGHT_WRAP)
     if body.get("stream"):
         async def relay():
             async with llm.stream("POST", LLM_URL, json=body) as r:
                 async for chunk in r.aiter_raw():
                     yield chunk
         return StreamingResponse(relay(), media_type="text/event-stream")
-    r = await llm.post(LLM_URL, json=body, timeout=600)
+    r = await llm.post(LLM_URL, json=body, timeout=None)   # a capped deep turn can still take ~10 min on a long chat
     return JSONResponse(r.json(), status_code=r.status_code)
 
 
