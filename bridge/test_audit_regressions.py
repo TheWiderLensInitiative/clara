@@ -742,6 +742,19 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(delivered,[('job1','Good morning')])
         self.assertIn('brief.md',(home/'cron/delivered.txt').read_text())
 
+    def test_phone_gets_missed_briefs_when_it_reconnects(self):
+        import time as _t
+        cid=app.store.create_conversation()['id']
+        self.assertEqual(app._missed_notifications('phone-x'),[])   # never connected: nothing to replay
+        app.store.set_setting('events_seen:phone-x',_t.time())
+        app.store.add_message(cid,'assistant','Good morning, here is your brief',route='schedule')
+        app.store.add_message(cid,'assistant','A normal reply',route='task')
+        missed=app._missed_notifications('phone-x')
+        self.assertEqual([m['message']['content'] for m in missed],['Good morning, here is your brief'])
+        self.assertTrue(missed[0]['missed']);self.assertEqual(missed[0]['event'],'notification')
+        app.store.set_setting('events_seen:phone-x',_t.time())
+        self.assertEqual(app._missed_notifications('phone-x'),[])   # already delivered: not sent twice
+
     def test_telling_clara_about_yourself_goes_to_memory(self):
         for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
                      'my shoe size is 7.5','remember that I like oat milk']:

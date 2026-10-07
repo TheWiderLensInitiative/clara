@@ -3681,19 +3681,46 @@ async def latest_screenshot(dev=Depends(device)):
 
 
 # --- the phone's live event stream -------------------------------------------
+MISSED_ROUTES = ("schedule", "proactive", "share")   # what Clara sends on her own: briefs, reminders, check-ins, cards
+
+
+def _missed_notifications(dev_id, now=None):
+    """Clara's own messages that arrived while this phone's event stream was down (it was off Wi-Fi without Tailscale,
+    asleep, restarting…): sent again as notifications when it reconnects. On 2026-10-06 the 8:04 brief reached the
+    chat but never the phone, because the phone was offline then and got no notice when it came back."""
+    seen = store.setting(f"events_seen:{dev_id}")
+    if not seen:
+        return []
+    since = max(float(seen), (now or time.time()) - 86400)   # a phone off for days doesn't get a pile of old ones
+    rows = store._all("SELECT * FROM messages WHERE role = 'assistant' AND created > ? AND route IN (?, ?, ?) ORDER BY created DESC LIMIT 5",
+                      (since, *MISSED_ROUTES))
+    out = []
+    for r in reversed(rows):
+        r["attachments"] = json.loads(r.get("attachments") or "[]")
+        r["suggestions"] = json.loads(r.get("suggestions") or "[]")
+        r["meta"] = json.loads(r["meta"]) if r.get("meta") else None
+        out.append({"event": "notification", "ts": time.time(), "conversation_id": r["conversation_id"], "message": r, "missed": True})
+    return out
+
+
 @app.get("/v1/events")
 async def events(request: Request, dev=Depends(device)):
     q = bus.subscribe()
+    seen_key = f"events_seen:{dev['id']}"
 
     async def gen():
         try:
             yield "event: hello\ndata: {}\n\n"
+            for msg in _missed_notifications(dev["id"]):
+                yield f"event: notification\ndata: {json.dumps(msg)}\n\n"
+            store.set_setting(seen_key, time.time())
             while not await request.is_disconnected():
                 try:
                     msg = await asyncio.wait_for(q.get(), timeout=15)
                     yield f"event: {msg['event']}\ndata: {json.dumps(msg)}\n\n"
                 except asyncio.TimeoutError:
                     yield ": keepalive\n\n"
+                store.set_setting(seen_key, time.time())   # everything up to now has reached this phone
         finally:
             bus.queues.discard(q)
 
