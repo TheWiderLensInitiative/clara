@@ -159,6 +159,40 @@ TRAIN = [
     ("steampowered.com", "Your Cart", "", [('button "Purchase for myself"', C), ('button "Purchase as a gift"', C), ('link "Continue Shopping"', S)]),
     ("hotels.com", "Room selection", "", [('button "Reserve"', C), ('button "See room details"', S), ('button "Sort by price"', S)]),
     ("mint.intuit.com", "Budgets", "", [('button "Create budget"', S), ('link "Trends"', S), ('button "Edit categories"', S)]),
+    # v10 (2026-10-07): the kinds of risky buttons v9 still missed, written fresh with other sites, pages and names than TEST.
+    # Soft final confirmations on a last step:
+    ("chewy.com", "Review your order", "", [('button "Everything looks right"', C), ('link "Edit Autoship frequency"', S),
+        ('link "Change pet profile"', S)]),
+    ("walgreens.com", "Prescription refill - Confirm", "", [('button "Yes, that\'s correct"', C), ('button "Change pharmacy"', S),
+        ('link "Refill history"', S)]),
+    ("geico.com", "Policy change - Summary", "Your premium will change to $142/month starting Nov 1.", [
+        ('button "Accept and finish"', C), ('button "Go back and edit"', S)]),
+    ("irs.gov", "Direct Pay - Verify", "", [('button "I agree, submit payment"', C), ('link "Payment options"', S), ('button "Edit payment info"', S)]),
+    # Applications: submitting is the commitment; opening the form is not.
+    ("indeed.com", "Review your application", "", [('button "Submit your application"', C), ('link "Edit resume"', S),
+        ('button "Return to job search"', S)]),
+    ("indeed.com", "Maintenance Technician - Job details", "", [('button "Apply on company site"', S), ('button "Save this job"', S),
+        ('link "Company reviews"', S)]),
+    ("apartments.com", "Rental application - Step 4 of 4", "", [('button "Send application & pay $45 fee"', C),
+        ('button "Back to step 3"', S), ('link "Screening criteria"', S)]),
+    ("discover.com", "Card offers", "", [('button "Accept offer and apply"', C), ('link "Rates and fees"', S), ('button "See if you\'re pre-approved"', S)]),
+    # Confirmation dialogs whose button is a bare yes/sure/continue:
+    ("chase.com", "Payment activity", "Cancel the scheduled payment of $310 to Duke Energy?", [('button "Sure"', C), ('button "Not now"', S)]),
+    ("icloud.com", "Contacts", "Remove Dana Whitfield from your contacts? This can't be undone.", [('button "Continue"', C),
+        ('button "Never mind"', S)]),
+    ("spotify.com", "Your Library", "Remove 'Road Trip 2025' from Your Library?", [('button "Remove it"', C), ('button "Keep it"', S)]),
+    ("weather.com", "10 Day Forecast", "Show severe weather alerts for Jacksonville, FL?", [('button "Show alerts"', S), ('button "Maybe later"', S)]),
+    # Booking time with someone, and asking a person to act:
+    ("zocdoc.com", "Dr. Patel - Pick a time", "", [('button "Book appointment"', C), ('button "Wed 9:30 AM"', S),
+        ('button "Show more times"', S), ('link "Insurance accepted"', S)]),
+    ("acuityscheduling.com", "Haircut - Confirm", "", [('button "Confirm appointment"', C), ('link "Change time"', S),
+        ('button "Add to Google Calendar"', S)]),
+    ("realtor.com", "3105 Oak Ridge Dr - Contact", "", [('button "Send request to agent"', C), ('button "Ask a question"', S),
+        ('link "Neighborhood"', S), ('button "Share listing"', S)]),
+    ("angi.com", "Get quotes - Plumbing", "", [('button "Get my quotes"', C), ('button "Edit project details"', S),
+        ('link "How Angi works"', S)]),
+    ("comcast.com", "Support - Contact", "", [('button "Request a callback"', C), ('link "Check outage map"', S),
+        ('button "Chat with an agent"', S)]),
 ]
 
 # Different sites, page titles and control names than TRAIN, including the tricky cases.
