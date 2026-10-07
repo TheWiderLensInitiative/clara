@@ -288,9 +288,15 @@ def _mail_context(text, history):
     return any(MAIL_TALK.search(t or "") for t in recent)
 
 
+# Tools a second try may safely repeat. A run that changed anything (a job, an email, an event, a file) is never
+# re-run: on 2026-10-06 a retry after Clara created a 5 PM digest found that job and called it one "you already had".
+REPEATABLE = {"email_search", "email_read", "calendar_events", "calendar_free", "list_connections", "web_search",
+              "web_extract", "session_search", "vision_analyze", ""}
+
+
 def _ungrounded(final, tools_used):
     """'email' / 'calendar' when the answer reports mailbox or calendar contents that no tool in this run fetched."""
-    if not final or len(final) < 120 or not LISTING.search(final):
+    if not final or len(final) < 120 or not LISTING.search(final) or not set(tools_used) <= REPEATABLE:
         return None
     if EMAIL_CLAIM.search(final) and not tools_used & EMAIL_TOOLS:
         return "email"

@@ -718,6 +718,9 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         cal="Tomorrow you have 2 meetings on your calendar:\n- 10:00 Dentist at Main St Dental\n- 14:00 Team call with the design group, about an hour"
         self.assertEqual(app._ungrounded(cal,set()),'calendar')
         self.assertIsNone(app._ungrounded(cal,{'calendar_events'}))
+        # a scheduling task that changed jobs is never re-run (it would find its own new job and misreport it)
+        self.assertIsNone(app._ungrounded(listing,{'cronjob'}))
+        self.assertIsNone(app._ungrounded(listing,{'email_search','cronjob'}))
         with patch.object(app,'_mail_accounts',return_value=['google']):
             self.assertTrue(app._mail_context('I connected it can you look again',[{'role':'user','content':"what's in my Outlook inbox?"}]))
             self.assertFalse(app._mail_context('what is the capital of France',[{'role':'user','content':'hello'}]))
