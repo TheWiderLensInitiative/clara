@@ -683,6 +683,7 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sent[0]['chat_template_kwargs'],{'enable_thinking':False});self.assertNotIn('thinking_budget_tokens',sent[0])
         self.assertEqual(sent[1]['thinking_budget_tokens'],app.LIGHT_BUDGET);self.assertIn('answer',sent[1]['reasoning_budget_message'])
         self.assertNotIn('reasoning_effort',sent[1])
+        self.assertEqual(sent[1]['max_tokens'],app.TURN_MAX['light']);self.assertEqual(sent[0]['max_tokens'],app.TURN_MAX['fast'])   # no runaway replies
         with self.assertRaises(HTTPException):
             await app.bonsai_lighter('turbo',types.SimpleNamespace(json=AsyncMock(return_value={})),ok=True)
         client=types.SimpleNamespace(post=AsyncMock(return_value=response(500,{'detail':'isolated test'})))

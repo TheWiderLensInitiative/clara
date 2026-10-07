@@ -2420,6 +2420,10 @@ async def cloud_chat(request: Request, ok=Depends(link)):
 # (the server's 16K cap). Only the last couple of prompt tokens differ, so all share the agent's warm prompt cache.
 LIGHT_BUDGET = int(os.environ.get("CLARA_LIGHT_BUDGET", "1024"))   # ~30 s of thinking at Bonsai's ~36 tokens/s
 LIGHT_WRAP = "\n\nOkay, I've thought about this enough. Time to act or answer.\n"   # ends a capped thought cleanly
+# A turn's whole output (thinking + reply or tool call) is capped too: on 2026-10-06 a reply after "remind me every day…"
+# looped for ~11,000 tokens (10 minutes) until the user stopped it. A phone reply never needs this much.
+TURN_MAX = {"fast": int(os.environ.get("CLARA_FAST_MAX_TOKENS", "3000")),
+            "light": LIGHT_BUDGET + int(os.environ.get("CLARA_LIGHT_REPLY_TOKENS", "3000"))}
 
 
 @app.post("/bonsai/{mode}/v1/chat/completions")
@@ -2428,6 +2432,7 @@ async def bonsai_lighter(mode: str, request: Request, ok=Depends(link)):
         raise HTTPException(404)
     body = await request.json()
     body.pop("reasoning_effort", None)
+    body["max_tokens"] = min(int(body.get("max_tokens") or TURN_MAX[mode]), TURN_MAX[mode])
     if mode == "fast":
         body["chat_template_kwargs"] = {**(body.get("chat_template_kwargs") or {}), "enable_thinking": False}
     else:   # without the message a capped thought spills into the reply
