@@ -57,6 +57,59 @@ streaming:
   enabled: true
 skills:
   creation_nudge_interval: 15
+  # Hermes lists every skill in each prompt and tells Clara she MUST open any that look relevant. These ones clash with her
+  # own tools (email, calendar, browser, Notion, X…), need CLIs or accounts she doesn't have, or are developer/ML tooling.
+  # Cutting them shortens every prompt and avoids detours. Her own skills and the useful built-ins stay.
+  disabled:
+  - claude-code
+  - codex
+  - hermes-agent
+  - opencode
+  - browser-automation
+  - computer-use
+  - ascii-video
+  - baoyu-infographic
+  - comfyui
+  - design-md
+  - manim-video
+  - p5js
+  - popular-web-designs
+  - pretext
+  - touchdesigner-mcp
+  - jupyter-live-kernel
+  - dogfood
+  - himalaya
+  - github-auth
+  - github-code-review
+  - github-issues
+  - github-pr-workflow
+  - github-repo-management
+  - codebase-inspection
+  - hermes-desktop-plugins
+  - heartmula
+  - songsee
+  - huggingface-hub
+  - evaluating-llms-harness
+  - weights-and-biases
+  - llama-cpp
+  - serving-llms-vllm
+  - audiocraft-audio-generation
+  - segment-anything-model
+  - obsidian
+  - airtable
+  - google-workspace
+  - notion
+  - petdex
+  - teams-meeting-pipeline
+  - openhue
+  - xurl
+  - yuanbao
+  - hermes-agent-skill-authoring
+  - node-inspect-debugger
+  - python-debugpy
+  - requesting-code-review
+  - simplify-code
+  - polymarket
 agent:
   max_turns: 40
   coding_context: false
