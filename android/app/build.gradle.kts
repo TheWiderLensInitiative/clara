@@ -14,8 +14,8 @@ android {
         applicationId = "info.thewiderlens.clara"
         minSdk = 28
         targetSdk = 37
-        versionCode = 11
-        versionName = "1.4.3"
+        versionCode = 12
+        versionName = "1.4.4"
     }
 
     // Release signing: the key lives outside the repo (default ~/.clara-release/keystore.properties, or $CLARA_KEYSTORE_PROPS).
