@@ -2452,7 +2452,8 @@ def _note_prompt(mode, body):
     size = lambda m: len(m["content"] if isinstance(m.get("content"), str) else json.dumps(m.get("content")))
     _prompt_stats.update(mode=mode, at=time.time(), tools_chars=sum(n for _, n in tools), tools=tools,
                          system_chars=sum(size(m) for m in msgs if m.get("role") == "system"),
-                         conversation_chars=sum(size(m) for m in msgs if m.get("role") != "system"), messages=len(msgs))
+                         conversation_chars=sum(size(m) for m in msgs if m.get("role") != "system"), messages=len(msgs),
+                         system="\n\n".join(m["content"] for m in msgs if m.get("role") == "system" and isinstance(m.get("content"), str)))
 
 
 @app.get("/internal/prompt-stats")
