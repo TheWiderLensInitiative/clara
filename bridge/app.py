@@ -280,12 +280,17 @@ CALENDAR_CLAIM = re.compile(r"\b(on your calendar|your (calendar|schedule) (has|
 LISTING = re.compile(r"(^|\n)\s*([-*•]|\d+[.)])\s+\S|\b\d{1,2}:\d{2}\b|\b20\d\d-\d\d-\d\d\b")
 
 
-def _mail_context(text, history):
-    """An email/calendar conversation with a mail account connected: this message or one of the last few mentions it."""
+def _mail_context(text, history, source=""):
+    """An email/calendar request with a mail account connected: this message mentions it, or it's a follow-up
+    ("I connected it, look again") to a recent message that did. Only the message itself counts otherwise: digests now
+    land in whatever chat is open, so 'the last few messages mention email' was true almost all day and held back
+    every reply (no live text) for nothing."""
     if not _mail_accounts():
         return False
-    recent = [text or ""] + [_history_text(m) for m in history[-4:] if m.get("role") in ("user", "assistant")]
-    return any(MAIL_TALK.search(t or "") for t in recent)
+    if MAIL_TALK.search(text or ""):
+        return True
+    return source in ("followup", "active_run") and any(
+        MAIL_TALK.search(_history_text(m) or "") for m in history[-2:] if m.get("role") in ("user", "assistant"))
 
 
 # Tools a second try may safely repeat. A run that changed anything (a job, an email, an event, a file) is never
@@ -689,7 +694,7 @@ async def _send_message(cid: str, body: MessageIn, dev):
     bus.publish("message.routed", conversation_id=cid, message_id=user_msg["id"], route=route_name, source=source)
 
     effort = await _route_effort(cid, text, route_name, source, need, need_conf)
-    mail = route_name == "task" and _mail_context(text, history)
+    mail = route_name == "task" and _mail_context(text, history, source) and not _is_browse(text, route_name, source, need, need_conf)
     if mail and effort == "quick":   # quick mode once invented an inbox (2026-10-06): mail and calendar always think
         effort = _last_effort[cid] = "light"
         store.add_activity(cid, None, "route.effort", None, "light (email or calendar: Clara thinks and checks first)")
@@ -848,7 +853,7 @@ async def correct_route(mid: str, body: RouteFix, dev=Depends(device)):
 
 # --- chat path: Bonsai directly, no tools ------------------------------------
 IDENTITY_CACHE = paths.IDENTITY_CACHE   # mirror of Clara's memory files (she pushes it)
-identity_pending: dict = {}                                                 # edits from the app, waiting for Clara's side to apply
+identity_pending: dict = store.setting("identity_pending", {}) or {}        # edits from the app, waiting for Clara's side to apply
 
 
 def _identity_cache() -> dict:
@@ -1644,7 +1649,7 @@ def _reddit_post(a):
         return {"error": str(e)}
     if not str(a.get("title") or "").strip():
         return {"error": "a Reddit post needs a title"}
-    cid = store.latest_conversation_id() or store.create_conversation()["id"]
+    cid = _current_conversation()
     body = f"**Ready for r/{sub}:** {a.get('title')}\n\n" + (str(a.get("text") or a.get("url") or ""))[:1500]
     msg = store.add_message(cid, "assistant", body, route="share",
                             meta={"kind": "share", "url": link, "label": f"Open in Reddit (r/{sub})"})
@@ -1746,8 +1751,12 @@ async def _generic_call(act, a):
         return t
     ct = r.headers.get("content-type", "")
     out = {"status": r.status_code}
-    if "json" in ct or (r.content[:1] in (b"{", b"[")):
-        out["data"] = json.loads(scrub(json.dumps(r.json() if r.content else None)))
+    try:
+        parsed = r.json() if r.content and ("json" in ct or r.content[:1] in (b"{", b"[")) else None
+    except ValueError:   # looked like JSON but wasn't: show it as text
+        parsed, ct = None, "text/plain"
+    if parsed is not None:
+        out["data"] = json.loads(scrub(json.dumps(parsed)))
         if len(json.dumps(out["data"])) > 14000:
             out["data"] = scrub(json.dumps(out["data"]))[:14000] + "…(truncated)"
     elif ct.startswith("text/") or not r.content:
@@ -2089,6 +2098,7 @@ async def set_identity(name: str, body: IdentityIn, dev=Depends(device)):
         SOUL_FILE.write_text(text)
     elif name in ("user", "memory"):
         identity_pending[name] = text        # Clara's side picks this up within seconds and writes her own file
+        store.set_setting("identity_pending", identity_pending)   # kept if the Bridge restarts first
     else:
         raise HTTPException(404)
     store.add_activity(None, None, "identity.edited", None, f"{dev['name']} edited {name}")
@@ -2118,6 +2128,7 @@ class AppliedIn(BaseModel):
 @app.post("/internal/identity/applied")
 async def internal_identity_applied(body: AppliedIn, ok=Depends(link)):
     identity_pending.pop(body.name, None)
+    store.set_setting("identity_pending", identity_pending)
     return {"ok": True}
 
 

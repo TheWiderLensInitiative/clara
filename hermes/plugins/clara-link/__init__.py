@@ -24,22 +24,31 @@ def _push(job_id, text):
 
 
 def _watch():
+    """Deliver each new cron output file once. What's been delivered is kept on disk: a result written while the
+    Bridge was down used to live only in memory here, so a Hermes restart before the Bridge came back (install.sh
+    restarts both) lost that morning's brief."""
     out = Path(os.environ.get("HERMES_HOME", "~/.hermes")).expanduser() / "cron" / "output"
-    seen = {str(p) for p in out.glob("*/*.md")}
-    pending = []
+    ledger = out.parent / "delivered.txt"
+    if ledger.exists():
+        seen = set(ledger.read_text().split("\n"))
+    else:   # first run with the ledger: everything already there counts as delivered
+        seen = {str(p) for p in out.glob("*/*.md")}
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        ledger.write_text("\n".join(sorted(seen)))
     while True:
         time.sleep(5)
         for p in sorted(out.glob("*/*.md"), key=lambda p: p.stat().st_mtime):
-            if str(p) not in seen:
-                seen.add(str(p))
-                md = p.read_text(errors="replace")
-                pending.append((p.parent.name, (md.split(MARKER, 1)[1] if MARKER in md else md).strip()))
-        while pending:
+            if str(p) in seen or time.time() - p.stat().st_mtime < 2:   # skip a file still being written
+                continue
+            md = p.read_text(errors="replace")
             try:
-                _push(*pending[0]); pending.pop(0)
-            except Exception as e:  # Bridge restarting: keep it and retry next tick
-                logger.info("clara-link: will retry delivering %s (%s)", pending[0][0], type(e).__name__)
+                _push(p.parent.name, (md.split(MARKER, 1)[1] if MARKER in md else md).strip())
+            except Exception as e:  # Bridge restarting: not marked, so it's sent next tick (or after a restart)
+                logger.info("clara-link: will retry delivering %s (%s)", p.parent.name, type(e).__name__)
                 break
+            seen.add(str(p))
+            with ledger.open("a") as f:
+                f.write("\n" + str(p))
 
 
 def _call(method, path, body=None):

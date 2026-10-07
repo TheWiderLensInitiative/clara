@@ -721,6 +721,27 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             await app._deliver_cron('job-x','Reminder')
             self.assertEqual(app.store.messages(app.store.latest_conversation_id())[-1]['content'],'Reminder')
 
+    def test_cron_results_survive_a_restart_before_delivery(self):
+        link=plugin('audit_link',ROOT/'hermes/plugins/clara-link/__init__.py')
+        home=BASE/'link-home';out=home/'cron/output/job1';out.mkdir(parents=True)
+        delivered=[];calls={'n':0}
+        def push(job,text):
+            calls['n']+=1
+            if calls['n']==1:raise OSError('bridge down')
+            delivered.append((job,text))
+        class Stop(Exception):pass
+        ticks={'n':0}
+        def sleep(_):
+            ticks['n']+=1
+            if ticks['n']==1:   # a brief is written while the Bridge is down
+                f=out/'brief.md';f.write_text('## Response\nGood morning');os.utime(f,(time.time()-10,)*2)
+            if ticks['n']>3:raise Stop
+        import time
+        with patch.dict(os.environ,{'HERMES_HOME':str(home)}),patch.object(link,'_push',push),patch.object(link.time,'sleep',sleep):
+            with self.assertRaises(Stop):link._watch()
+        self.assertEqual(delivered,[('job1','Good morning')])
+        self.assertIn('brief.md',(home/'cron/delivered.txt').read_text())
+
     def test_telling_clara_about_yourself_goes_to_memory(self):
         for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
                      'my shoe size is 7.5','remember that I like oat milk']:
@@ -741,7 +762,10 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(app._ungrounded(listing,{'cronjob'}))
         self.assertIsNone(app._ungrounded(listing,{'email_search','cronjob'}))
         with patch.object(app,'_mail_accounts',return_value=['google']):
-            self.assertTrue(app._mail_context('I connected it can you look again',[{'role':'user','content':"what's in my Outlook inbox?"}]))
+            self.assertTrue(app._mail_context('I connected it can you look again',[{'role':'user','content':"what's in my Outlook inbox?"}],'followup'))
+            # a fresh request isn't an email one just because a digest landed in the chat earlier
+            self.assertFalse(app._mail_context('find me steel toe boots',[{'role':'assistant','content':'Good morning, 15 unread emails…'}],'laya'))
+            self.assertTrue(app._mail_context('anything new in my inbox?',[],'laya'))
             self.assertFalse(app._mail_context('what is the capital of France',[{'role':'user','content':'hello'}]))
         with patch.object(app,'_mail_accounts',return_value=[]):
             self.assertFalse(app._mail_context('check my email',[]))
