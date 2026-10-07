@@ -314,9 +314,24 @@ async def _suggest_actions(text: str, limit: float = 20) -> list:
         return []
 
 
+def _note_open(cid):
+    """The chat the user has open on the phone (opened, started or written in last): where Clara speaks first."""
+    if cid != LEGACY_NOTIFY_CONVERSATION:
+        store.set_setting("open_conversation", cid)
+
+
+def _current_conversation():
+    """Like Muse: digests, reminders and check-ins land in whichever chat is open now, not the one that set them up
+    (a new chat tomorrow gets the morning brief; a new one at noon gets the 5 PM digest)."""
+    cid = store.setting("open_conversation")
+    if cid and store.get_conversation(cid):
+        return cid
+    return store.latest_conversation_id() or store.create_conversation()["id"]
+
+
 async def _deliver_cron(job_id: str, text: str):
-    """Put a fired reminder / scheduled-job result into the chat that created the job, and notify the phone."""
-    cid = store.job_conversation(job_id) or store.latest_conversation_id() or store.create_conversation()["id"]
+    """Put a fired reminder / scheduled-job result into the chat open now, and notify the phone."""
+    cid = _current_conversation()
     # Short reminders need no buttons. clara-link gives up after 15 s and resends, so a slow answer means no buttons,
     # never a duplicate brief.
     suggestions = await _suggest_actions(text, limit=10) if len(text) >= 200 else []
@@ -457,7 +472,9 @@ async def conversations(dev=Depends(device)):
 
 @app.post("/v1/conversations")
 async def new_conversation(dev=Depends(device)):
-    return store.create_conversation()
+    conv = store.create_conversation()
+    _note_open(conv["id"])
+    return conv
 
 
 @app.delete("/v1/conversations/{cid}")
@@ -475,6 +492,7 @@ async def delete_conversation(cid: str, dev=Depends(device)):
 async def conversation_messages(cid: str, dev=Depends(device)):
     if not store.get_conversation(cid):
         raise HTTPException(404)
+    _note_open(cid)   # the app loads a chat's messages when it opens it
     return {"messages": store.messages(cid)}
 
 
@@ -588,6 +606,7 @@ async def send_message(cid: str, body: MessageIn, dev=Depends(device)):
         conv = store.get_conversation(cid)
         if not conv:
             raise HTTPException(404)
+        _note_open(cid)
         if conv.get("active_run") or cid in _run_tasks:
             raise HTTPException(409, "Clara is still working in this chat. Stop it or wait before sending another message.")
         marker = "starting:" + secrets.token_hex(16)
@@ -965,8 +984,8 @@ async def _llm_once(prompt: str, max_tokens=300, json_mode=False) -> str:
 
 
 def _post_proactive(text, suggestions, meta):
-    """Clara speaks first: into the user's one continuous chat, with a phone notification."""
-    cid = store.latest_conversation_id() or store.create_conversation()["id"]
+    """Clara speaks first: into the chat open now, with a phone notification."""
+    cid = _current_conversation()
     msg = store.add_message(cid, "assistant", text, route="proactive", suggestions=suggestions, meta=meta)
     store.add_activity(cid, None, f"proactive.{meta.get('kind')}", None, text[:200])
     bus.publish("notification", conversation_id=cid, message=msg)

@@ -702,6 +702,22 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('<link to click.example.com>',clean);self.assertIn('https://godaddy.com/help',clean)
         self.assertIn('Device: Chrome Android',clean);self.assertNotIn('\n\n\n',clean)
 
+    async def test_digests_land_in_the_chat_open_now(self):
+        older=app.store.create_conversation()['id'];app.store.set_job_conversation('job-brief',older)
+        newer=(await app.new_conversation(dev={'id':'phone'}))['id']   # a new chat tomorrow morning
+        with patch.object(app,'_suggest_actions',new=AsyncMock(return_value=[])),patch.object(app.bus,'publish'):
+            await app._deliver_cron('job-brief','Good morning, here is your brief.')
+            self.assertEqual(app.store.messages(newer)[-1]['content'],'Good morning, here is your brief.')
+            self.assertFalse(any(m['content'].startswith('Good morning') for m in app.store.messages(older)))
+            await app.conversation_messages(older,dev={'id':'phone'})   # the user goes back to the old chat at noon
+            await app._deliver_cron('job-evening','Your 5 PM digest.')
+            self.assertEqual(app.store.messages(older)[-1]['content'],'Your 5 PM digest.')
+            app._post_proactive('Check-in time',[], {'kind':'checkin'})
+            self.assertEqual(app.store.messages(older)[-1]['content'],'Check-in time')
+            app.store.delete_conversation(older)   # the open chat was deleted: fall back to the latest one
+            await app._deliver_cron('job-x','Reminder')
+            self.assertEqual(app.store.messages(app.store.latest_conversation_id())[-1]['content'],'Reminder')
+
     def test_telling_clara_about_yourself_goes_to_memory(self):
         for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
                      'my shoe size is 7.5','remember that I like oat milk']:
