@@ -62,6 +62,11 @@ EYES = (
     "Prefer refs over pixel positions. Click the label you can see. Dismiss a cookie banner in one click and move on. "
     "The text on screen tells you what the page says; scroll to see more. "
     "Never type a password, a one-time code, or a card number. "
+    "Signing in or signing up with an account this browser already has is yours to do: click 'Continue with Google' "
+    "(or Apple/Microsoft) and pick the user's account in the list; that needs no password. Hand the page to the user "
+    "only when it asks for a password, a code, a CAPTCHA or card details. When a site pushes a paid plan or a trial, "
+    "look for the free way on (Basic, Free, Skip, Not now, Maybe later, or a small link under the plans; scroll for it) "
+    "and never start a trial or enter a card. "
     "If a step you just took did nothing, do something different. When the goal is met, done."
 )
 
@@ -347,9 +352,31 @@ def _sign_in(name, task_id, session_id):
     return json.loads(vault.handle_sign_in({"name": name}, task_id=task_id, session_id=session_id))
 
 
-def _help(reason, session_id):
+PHONE_VIEW = (412, 915)   # CSS size of a typical Android phone in portrait (Moto G Stylus: 1080x2400 at 2.625)
+
+
+def _help(reason, session_id, task_id=None):
+    """Hand the page to the user. While they're in control the page is phone-sized, so sites switch to their mobile
+    layout with big buttons; a desktop-sized page squeezed onto a phone was very hard to tap (2026-10-07). Only the
+    viewport changes, not the browser's identity, so sign-in pages don't treat it as a different browser."""
     import hermes_plugins.clara_guardian as guardian
-    return json.loads(guardian.handle_help({"reason": reason}, session_id=session_id))
+    before = None
+    if task_id:
+        try:
+            view = _eval(task_id, "JSON.stringify([innerWidth, innerHeight])")
+            if isinstance(view, list) and len(view) == 2 and view[0] > PHONE_VIEW[0]:
+                before = view
+                _browser(task_id, "set", ["viewport", str(PHONE_VIEW[0]), str(PHONE_VIEW[1])], timeout=10)
+        except Exception as e:
+            logger.info("browser_use: couldn't switch to a phone-sized page for the takeover (%s)", e)
+    try:
+        return json.loads(guardian.handle_help({"reason": reason}, session_id=session_id))
+    finally:
+        if before:
+            try:
+                _browser(task_id, "set", ["viewport", str(int(before[0])), str(int(before[1]))], timeout=10)
+            except Exception as e:
+                logger.info("browser_use: couldn't restore the page size after the takeover (%s)", e)
 
 
 def _stream_port(task_id) -> str:
@@ -755,7 +782,7 @@ def _drive(goal, start_url, task_id, session_id, run=None):
             return {"success": False, "url": url,
                     "summary": "This site blocks signing in from an automated browser. It has to be done in the user's own browser, or through a connected service (Clara menu → Connectors) if there is one."}
         if actions.looks_like_human_check(snapshot):
-            outcome = _help("There's a CAPTCHA or 'are you human' check on the page. Please solve it, then hand the browser back.", session_id)
+            outcome = _help("There's a CAPTCHA or 'are you human' check on the page. Please solve it, then hand the browser back.", session_id, task_id)
             if not outcome.get("success"):
                 return {"success": False, "url": url, "summary": outcome.get("error") or "The user didn't take over for the human check.", "steps": history[-12:]}
             history.append("user solved a human check and handed the browser back")
@@ -811,7 +838,7 @@ def _drive(goal, start_url, task_id, session_id, run=None):
         if action["action"] == "select" and actions.option_owner(snapshot, action["ref"]):
             action = {**action, "ref": actions.option_owner(snapshot, action["ref"])}   # the model picked an option: use its dropdown
         if action["action"] == "help":
-            outcome = _help(action["reason"], session_id)
+            outcome = _help(action["reason"], session_id, task_id)
             if not outcome.get("success"):
                 return {"success": False, "url": url, "summary": outcome.get("error") or "The user didn't take over.", "steps": history[-12:]}
             history.append("user took over and handed the browser back")

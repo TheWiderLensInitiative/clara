@@ -253,9 +253,13 @@ private fun TakeoverView(
     onType: (String) -> Unit, onHandBack: () -> Unit,
 ) {
     val activity = androidx.activity.compose.LocalActivity.current
-    DisposableEffect(Unit) {
+    // Clara switches her page to phone size while you're in control (mobile layout, big buttons): then stay upright.
+    // A desktop-shaped page still turns the phone sideways so it's as big as possible.
+    val tall = device.second > device.first
+    DisposableEffect(tall) {
         val before = activity?.requestedOrientation
-        activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        activity?.requestedOrientation = if (tall) android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                                         else android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         onDispose { activity?.requestedOrientation = before ?: android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     }
     androidx.activity.compose.BackHandler { onHandBack() }   // Back = done: hand control back

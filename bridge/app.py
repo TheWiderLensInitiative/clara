@@ -1198,8 +1198,10 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                                 "If a safety guard denies an action, just say it was not done and that they can approve it next time. "
                                 "To use a website, call browser_use once with the goal (and a URL if you have one). "
                                 "It looks at the page and clicks for you, then returns a summary; tell the user the result, not every click. "
-                                "If the user has to do something in your browser themselves (sign in, sign up, a CAPTCHA, a code), hand it "
-                                "to them from inside the task: tell browser_use to use its help action there, or call ask_user_for_browser_help, "
+                                "Do as much as you can yourself: signing in or up with an account your browser already has ('Continue with "
+                                "Google' and picking their account) needs no password, and on plan or trial pages choose the free option, never "
+                                "a card. Only what a person must do (a password, a code, a CAPTCHA, card details) goes to the user, from inside "
+                                "the task: tell browser_use to use its help action there, or call ask_user_for_browser_help, "
                                 "then wait and carry on after they hand it back. Never end the task just to ask them to take over: your "
                                 "browser closes when the task ends, so there would be nothing to take over.")}
     if coding and store.api("openrouter"):
