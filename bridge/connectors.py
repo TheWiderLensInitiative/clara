@@ -336,6 +336,24 @@ def _header(msg, name):
     return next((h["value"] for h in msg.get("payload", {}).get("headers", []) if h["name"].lower() == name.lower()), "")
 
 
+_INVISIBLE = re.compile(r"[\u200b-\u200f\u034f\u00ad\u2060\u2061-\u2064\ufeff\u00a0\u2007\u202f]")
+_IMAGE_LINK = re.compile(r"\[?https?://\S+?\.(?:png|jpe?g|gif|webp|svg|bmp)(?:\?\S*)?\]?", re.I)
+_URL = re.compile(r"<?(https?://[^\s<>\]\)]+)>?")
+
+
+def clean_body(text: str) -> str:
+    """Email text without the filler newsletters pad it with: invisible spacing characters, image addresses and
+    tracking links hundreds of characters long (kept as their site). Bonsai reads every character, so a 2,000-character
+    sign-in alert that is mostly padding cost her time and once read as garbled (2026-10-06)."""
+    def link(m):
+        url = m.group(1)
+        return m.group(0) if len(url) <= 100 else f"<link to {urlparse(url).netloc}>"
+    text = _URL.sub(link, _IMAGE_LINK.sub("", _INVISIBLE.sub(" ", text or "")))
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r" *\r?\n *", "\n", text)
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+
 def _body_text(part) -> str:
     """Plain text of a message: prefer text/plain, fall back to stripped HTML."""
     def walk(p):
@@ -364,7 +382,7 @@ def summarize_message(m, with_body=False, body_limit=6000):
            "subject": _header(m, "Subject"), "date": _header(m, "Date"), "snippet": m.get("snippet", ""),
            "unread": "UNREAD" in m.get("labelIds", []), "important": "IMPORTANT" in m.get("labelIds", [])}
     if with_body:
-        out["body"] = _body_text(m.get("payload", {}))[:body_limit]
+        out["body"] = clean_body(_body_text(m.get("payload", {})))[:body_limit]
         out["message_id"] = _header(m, "Message-ID")
         out["cc"] = _header(m, "Cc")
     return out

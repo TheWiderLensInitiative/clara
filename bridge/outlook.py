@@ -45,10 +45,10 @@ def _recipients(field):
 def summarize_message(m, with_body=False, body_limit=6000):
     out = {"id": PREFIX + m["id"], "thread_id": m.get("conversationId"), "from": _person(m.get("from")),
            "to": ", ".join(_person(r) for r in m.get("toRecipients") or []), "subject": m.get("subject") or "",
-           "date": m.get("receivedDateTime") or "", "snippet": (m.get("bodyPreview") or "")[:300], "unread": not m.get("isRead", True),
+           "date": m.get("receivedDateTime") or "", "snippet": connectors.clean_body(m.get("bodyPreview") or "")[:300], "unread": not m.get("isRead", True),
            "important": m.get("importance") == "high" or m.get("inferenceClassification") == "focused"}
     if with_body:
-        out["body"] = ((m.get("body") or {}).get("content") or "")[:body_limit]
+        out["body"] = connectors.clean_body((m.get("body") or {}).get("content") or "")[:body_limit]
         out["message_id"] = m.get("internetMessageId") or ""
         out["cc"] = ", ".join(_person(r) for r in m.get("ccRecipients") or [])
     return out

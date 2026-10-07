@@ -693,6 +693,15 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         template=(ROOT/'hermes/config.yaml.template').read_text()
         self.assertIn('bonsai-light:',template);self.assertIn('/bonsai/light/v1',template)
 
+    def test_email_padding_is_cleaned(self):
+        track='https://click.example.com/email/'+'x'*300
+        body=('Sign-In detected \u200c \u200c \u200c\u200b\n\n\n\n[https://img.example.com/logo.png]\nHelp<'+track+'>\n'
+              'Device: Chrome  Android\nShort link: https://godaddy.com/help')
+        clean=connectors.clean_body(body)
+        self.assertNotIn('\u200c',clean);self.assertNotIn('logo.png',clean);self.assertNotIn('x'*50,clean)
+        self.assertIn('<link to click.example.com>',clean);self.assertIn('https://godaddy.com/help',clean)
+        self.assertIn('Device: Chrome Android',clean);self.assertNotIn('\n\n\n',clean)
+
     def test_telling_clara_about_yourself_goes_to_memory(self):
         for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
                      'my shoe size is 7.5','remember that I like oat milk']:
