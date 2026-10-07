@@ -763,6 +763,23 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             self.assertFalse(app.MEMORY_REQUEST.search(text),text)
         self.assertIn('profile',app._NEED_GUIDANCE)
 
+    async def test_browser_task_that_ends_asking_for_takeover_continues_with_the_card(self):
+        ask="I'm at step 1: Dropbox wants a sign-in. I need you to take over the browser and sign in with Google."
+        def run(tool,answer):
+            return Stream(200,[f'data: {json.dumps({"event":"tool.started","tool":tool})}',f'data: {json.dumps({"event":"tool.completed","tool":tool})}',
+                               f'data: {json.dumps({"event":"run.completed","output":answer})}'])
+        streams=[run('browser_use',ask),run('browser_use','Signed in, the app Clara-TheWiderLens is created.'),]
+        client=types.SimpleNamespace(post=AsyncMock(side_effect=[response(200,{'run_id':'r1'}),response(200,{'run_id':'r2'})]),
+                                     stream=lambda *a,**k:streams.pop(0))
+        with patch.object(app,'hermes',client),patch.object(app,'_job_ids',new=AsyncMock(return_value=set())),\
+             patch.object(app,'_grab_browser_frame',new=AsyncMock()),patch.object(app,'_browser_snapshot',new=AsyncMock(return_value=None)):
+            await app._agent(self.cid,[],'set up a Dropbox app','task',browse=True,effort='quick')
+        texts=[m['content'] for m in app.store.messages(self.cid)[-2:]]
+        self.assertEqual(texts,[ask,'Signed in, the app Clara-TheWiderLens is created.'])
+        self.assertEqual(client.post.await_args_list[1].kwargs['json']['input'],app.TAKEOVER_CONTINUE)
+        self.assertEqual(client.post.await_count,2)   # continued once, never in a loop
+        self.assertIn('never end the task just to ask them to take over',client.post.await_args_list[0].kwargs['json']['instructions'].lower())
+
     def test_grounding_only_flags_reports_without_a_look(self):
         listing="Here's what's in your inbox:\n- Sam: lunch Thursday (10:30)\n- Billing: invoice 77 is due Friday, please pay soon\n- GitHub: a review request"
         self.assertEqual(app._ungrounded(listing,{'calendar_events'}),'email')

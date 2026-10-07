@@ -1176,8 +1176,17 @@ _NEED_GUIDANCE = {
 }
 
 
+TAKEOVER_ASK = re.compile(r"\b(take ?over|hand (it|the browser|control) back|need you to (sign|log) ?in|sign (in|up) (for me|yourself|with your)|"
+                          r"you('ll| will)? need to (sign|log) ?in)\b", re.I)
+TAKEOVER_CONTINUE = ("(Automatic follow-up from Clara's app) You just ended the task to ask the user to take over the browser, but "
+                     "your browser closes when a task ends, so they had nothing to take over. Carry on with the same task now: "
+                     "call browser_use with the page you need and a goal that says to hand the page to the user with the help "
+                     "action at the point where they must act (sign in, sign up, CAPTCHA, code), and then to continue with the rest "
+                     "of the original task after they hand it back. Their phone shows a Take over card and you wait for them.")
+
+
 async def _agent(cid, history, text, route_name, coding=False, voice=False, effort="deep", browse=False,
-                 need="", need_conf=0.0, mail=False, reground=False):
+                 need="", need_conf=0.0, mail=False, reground=False, continued=False):
     """One Hermes run. mail: an email/calendar conversation, so the reply is held back until _ungrounded() has
     checked it (the phone shows it whole). reground: the second try after an answer that never looked."""
     conv_hist = [{"role": m["role"], "content": _history_text(m)} for m in history if m["role"] in ("user", "assistant")]
@@ -1188,7 +1197,11 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                                 "so never ask which platform to deliver to. Keep replies short and friendly, like a text message. "
                                 "If a safety guard denies an action, just say it was not done and that they can approve it next time. "
                                 "To use a website, call browser_use once with the goal (and a URL if you have one). "
-                                "It looks at the page and clicks for you, then returns a summary; tell the user the result, not every click.")}
+                                "It looks at the page and clicks for you, then returns a summary; tell the user the result, not every click. "
+                                "If the user has to do something in your browser themselves (sign in, sign up, a CAPTCHA, a code), hand it "
+                                "to them from inside the task: tell browser_use to use its help action there, or call ask_user_for_browser_help, "
+                                "then wait and carry on after they hand it back. Never end the task just to ask them to take over: your "
+                                "browser closes when the task ends, so there would be nothing to take over.")}
     if coding and store.api("openrouter"):
         payload["instructions"] += (" This is a coding task and the user has set up cloud boost for exactly this: hand the whole job to a cloud "
                                     "sub-agent with delegate_task (give it the complete goal, the folder to work in, and how to verify, e.g. run the tests), "
@@ -1323,10 +1336,23 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     suggestions = ["Undo my new look"] if restyled else None
     if not restyled and final and terminal and len(final) >= 200 and tools_used & ACTION_TOOLS:
         suggestions = await _suggest_actions(final) or None   # a digest of email/calendar: one-tap follow-ups
+    # She ended a browser task asking the user to take over (2026-10-07, Dropbox sign-up): the browser was gone when they
+    # tapped it. Keep her reply, then continue the task once so the takeover happens inside it, with the Take over card.
+    asked_takeover = (browser_used and completed and not continued and not reground and cid not in _stop_requested
+                      and TAKEOVER_ASK.search(final or "") and not store._one(
+                          "SELECT 1 AS x FROM activity WHERE conversation_id = ? AND kind = 'help.requested' AND created >= ?", (cid, run_started)))
+    if asked_takeover:   # no "Open browser" on this reply: that browser is closed, the follow-up opens it again
+        suggestions = None
+        meta.pop("browser", None); meta.pop("browser_url", None)
     msg = store.add_message(cid, "assistant", (final or "The task stream ended before completion could be confirmed. Please check the result before retrying.").strip(), route=route_name, run_id=run_id,
                             suggestions=suggestions, meta=meta or None)
     store.add_activity(cid, run_id, "run.finished", None, (final or "")[:300])
     bus.publish("message.completed", conversation_id=cid, message=msg)
+    if asked_takeover:
+        store.add_activity(cid, run_id, "browser.help.auto", None, "asked for a takeover in her reply: continuing so the Take over card appears")
+        follow = history + [{"role": "user", "content": text, "attachments": []}, msg]
+        return await _agent(cid, follow, TAKEOVER_CONTINUE, route_name, coding=coding, voice=voice, effort=effort, browse=True,
+                            need=need, need_conf=need_conf, continued=True)
 
 
 @app.post("/v1/conversations/{cid}/stop")
