@@ -5,6 +5,7 @@ import info.thewiderlens.clara.data.readBounded
 import androidx.compose.foundation.border
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
 import android.app.Activity
@@ -247,6 +248,28 @@ fun ChatScreen(
                     }
                     // last, so it's what the chat scrolls to: Clara is waiting on the user
                     state.help?.let { h -> item("help-" + h.id) { info.thewiderlens.clara.ui.components.HelpCard(h.reason, onTakeOver) } }
+                }
+                // Scrolled up: a small arrow above the type box jumps back to the newest message (like the Claude app)
+                val awayFromBottom by remember { androidx.compose.runtime.derivedStateOf { list.canScrollForward } }
+                val jump = androidx.compose.runtime.rememberCoroutineScope()
+                androidx.compose.animation.AnimatedVisibility(
+                    awayFromBottom, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp),
+                    enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(),
+                    exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut(),
+                ) {
+                    Box(
+                        Modifier.size(40.dp).clip(CircleShape).background(ClaraColors.Raised).border(1.dp, ClaraColors.Line, CircleShape)
+                            .clickable {
+                                jump.launch {
+                                    val far = itemCount - 1 - (list.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) > 15
+                                    if (far) list.scrollToItem((itemCount - 4).coerceAtLeast(0))   // a long way up: jump most of it
+                                    list.animateScrollToItem((itemCount - 1).coerceAtLeast(0), scrollOffset = 100_000)
+                                }
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(Icons.Filled.KeyboardArrowDown, "Jump to the newest message", tint = ClaraColors.Text)
+                    }
                 }
             }
         }
