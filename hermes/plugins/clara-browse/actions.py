@@ -164,6 +164,31 @@ def _line(snapshot: str, ref: str) -> str:
     return ""
 
 
+def box_points(box: dict):
+    """Where to press inside an element, best first: its center, then spots away from the middle. A big card (Dropbox's
+    "Scoped access" option) can have a link or an image in its center; another spot on the card still presses it."""
+    c = box_center(box)
+    if not c:
+        return []
+    x, y, w, h = float(box["x"]), float(box["y"]), float(box["width"]), float(box["height"])
+    spots = [c] + [(x + w * fx, y + h * fy) for fx, fy in ((.5, .25), (.15, .5), (.15, .25), (.85, .5), (.5, .75))]
+    return spots if w > 24 and h > 24 else [c]
+
+
+def same_control(seen: str, want: str) -> bool:
+    """Is the control under the pointer the one meant? The snapshot's accessible name can include text that isn't on
+    the page (an image's alt text, a 'New' badge's label), so an exact match refused real cards. Accept equal names,
+    or one name being the start of the other when the shared part is long enough to be specific."""
+    norm = lambda t: re.sub(r"\s+", " ", str(t or "")).strip().casefold()
+    a, b = norm(seen), norm(want)
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    short, long_ = sorted((a, b), key=len)
+    return len(short) >= 12 and long_.startswith(short)
+
+
 def box_center(box: dict):
     """Viewport center of an element box, or None when the box is missing or empty."""
     if not isinstance(box, dict):

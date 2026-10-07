@@ -421,29 +421,31 @@ def _tap_point(task_id, x, y):
         return None
 
 
+HIT_NAME = """(() => {
+  const [x,y] = PARAMS;
+  if(x<0||y<0||x>=innerWidth||y>=innerHeight) return null;
+  const el=document.elementFromPoint(x,y)?.closest('a,button,input,textarea,select,label,[role]');
+  if(!el || el.disabled || getComputedStyle(el).visibility==='hidden') return null;
+  return (el.getAttribute('aria-label')||Array.from(el.labels||[]).map(l=>l.innerText).join(' ')||el.innerText||
+          el.getAttribute('placeholder')||el.getAttribute('value')||'').trim();
+})()"""
+
+
 def _tap_ref(task_id, ref, expected_name=""):
     moved = _browser(task_id, "scrollintoview", [ref], timeout=10)
     if not moved.get("success", False):
         return {"success": False, "error": "Could not bring the target into view"}
     box = _browser(task_id, "get", ["box", ref], timeout=10)
-    center = actions.box_center((box or {}).get("data") or {})
-    if not center:
+    points = actions.box_points((box or {}).get("data") or {})
+    if not points:
         return {"success": False, "error": "Target has no visible box"}
-    x, y = center
-    # Check both the bounds and the top-most accessible control under the pointer.
-    script = """(() => {
-      const [x,y,want] = PARAMS;
-      if(x<0||y<0||x>=innerWidth||y>=innerHeight) return false;
-      const el=document.elementFromPoint(x,y)?.closest('a,button,input,textarea,select,[role]');
-      if(!el || el.disabled || getComputedStyle(el).visibility==='hidden') return false;
-      const name=(el.getAttribute('aria-label')||Array.from(el.labels||[]).map(l=>l.innerText).join(' ')||el.innerText||el.getAttribute('placeholder')||'').trim();
-      const norm=s=>String(s||'').replace(/\\s+/g,' ').trim();
-      return !!norm(want) && norm(name)===norm(want);
-    })()""".replace("PARAMS", json.dumps([x,y,expected_name]))
-    check = _browser(task_id, "eval", [script], timeout=10)
-    if (check.get("data") or {}).get("result") not in (True, "true"):
-        return {"success": False, "error": "The target is covered, ambiguous or changed. Observe again."}
-    return _tap_point(task_id, x, y) or {"success": False, "error": "Pointer dispatch failed"}
+    # Press only where the top-most control under the pointer is the one meant (never a link or button on top of it).
+    # A card's center can be a link or picture inside it, so other spots on the card are tried too.
+    for x, y in points:
+        seen = _eval(task_id, HIT_NAME, [x, y])
+        if isinstance(seen, str) and actions.same_control(seen, expected_name):
+            return _tap_point(task_id, x, y) or {"success": False, "error": "Pointer dispatch failed"}
+    return {"success": False, "error": "The target is covered, ambiguous or changed. Observe again."}
 
 
 def _tap_text(task_id, text):
