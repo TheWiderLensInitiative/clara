@@ -2441,11 +2441,31 @@ TURN_MAX = {"fast": int(os.environ.get("CLARA_FAST_MAX_TOKENS", "3000")),
             "deep": DEEP_BUDGET + int(os.environ.get("CLARA_DEEP_REPLY_TOKENS", "4096"))}
 
 
+_prompt_stats: dict = {}   # what the agent's last request to Bonsai was made of (GET /internal/prompt-stats)
+
+
+def _note_prompt(mode, body):
+    """Sizes (characters, ~3.5 per token) of each part of the agent's prompt: tools, system prompt, conversation."""
+    tools = sorted(((((t or {}).get("function") or {}).get("name") or "?", len(json.dumps(t))) for t in body.get("tools") or []),
+                   key=lambda x: -x[1])
+    msgs = body.get("messages") or []
+    size = lambda m: len(m["content"] if isinstance(m.get("content"), str) else json.dumps(m.get("content")))
+    _prompt_stats.update(mode=mode, at=time.time(), tools_chars=sum(n for _, n in tools), tools=tools,
+                         system_chars=sum(size(m) for m in msgs if m.get("role") == "system"),
+                         conversation_chars=sum(size(m) for m in msgs if m.get("role") != "system"), messages=len(msgs))
+
+
+@app.get("/internal/prompt-stats")
+async def prompt_stats(ok=Depends(link)):
+    return _prompt_stats
+
+
 @app.post("/bonsai/{mode}/v1/chat/completions")
 async def bonsai_lighter(mode: str, request: Request, ok=Depends(link)):
     if mode not in TURN_MAX:
         raise HTTPException(404)
     body = await request.json()
+    _note_prompt(mode, body)
     body.pop("reasoning_effort", None)
     body["max_tokens"] = min(int(body.get("max_tokens") or TURN_MAX[mode]), TURN_MAX[mode])
     if mode == "fast":
