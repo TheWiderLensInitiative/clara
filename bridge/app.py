@@ -1179,10 +1179,12 @@ _NEED_GUIDANCE = {
 TAKEOVER_ASK = re.compile(r"\b(take ?over|hand (it|the browser|control) back|need you to (sign|log) ?in|sign (in|up) (for me|yourself|with your)|"
                           r"you('ll| will)? need to (sign|log) ?in)\b", re.I)
 TAKEOVER_CONTINUE = ("(Automatic follow-up from Clara's app) You just ended the task to ask the user to take over the browser, but "
-                     "your browser closes when a task ends, so they had nothing to take over. Carry on with the same task now: "
-                     "call browser_use with the page you need and a goal that says to hand the page to the user with the help "
-                     "action at the point where they must act (sign in, sign up, CAPTCHA, code), and then to continue with the rest "
-                     "of the original task after they hand it back. Their phone shows a Take over card and you wait for them.")
+                     "your browser closes when a task ends, so they had nothing to take over. Carry on with the same task now. "
+                     "Clicks, ticks, tabs and form fields are yours to do: try again yourself (reload the page, scroll, or reach "
+                     "the same setting another way). Remember that a greyed-out Save or Submit usually means there's nothing left "
+                     "to save: if your change is still there after a reload, it was saved. Only if the page needs a password, a "
+                     "code, a CAPTCHA or card details, call browser_use with a goal that hands the page to the user with the help "
+                     "action at that point and then continues the rest of the task after they hand it back.")
 
 
 async def _agent(cid, history, text, route_name, coding=False, voice=False, effort="deep", browse=False,

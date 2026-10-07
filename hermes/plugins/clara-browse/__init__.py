@@ -67,6 +67,8 @@ EYES = (
     "only when it asks for a password, a code, a CAPTCHA or card details. When a site pushes a paid plan or a trial, "
     "look for the free way on (Basic, Free, Skip, Not now, Maybe later, or a small link under the plans; scroll for it) "
     "and never start a trial or enter a card. "
+    "A greyed-out Save or Submit usually means everything is already saved: reload, and if your change is still there, "
+    "it was saved, so move on. "
     "If a step you just took did nothing, do something different. When the goal is met, done."
 )
 
