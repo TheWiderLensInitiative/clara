@@ -755,6 +755,28 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         app.store.set_setting('events_seen:phone-x',_t.time())
         self.assertEqual(app._missed_notifications('phone-x'),[])   # already delivered: not sent twice
 
+    async def test_dropbox_is_one_tap(self):
+        from urllib.parse import urlparse,parse_qs
+        view=app._connector_view('dropbox')
+        self.assertTrue(view['builtin']);self.assertFalse(view['needs_secret'])
+        q=parse_qs(urlparse(connectors.start(app.store,'dropbox')).query)
+        self.assertEqual(q['client_id'],['xermamwglxzj4gt']);self.assertEqual(q['token_access_type'],['offline'])
+        self.assertEqual(q['code_challenge_method'],['S256']);self.assertEqual(q['redirect_uri'],[connectors.REDIRECT])
+        state=q['state'][0];sent={}
+        def fake(request):
+            if request.url.path=='/oauth2/token':
+                sent['form']=dict(x.split('=',1) for x in request.content.decode().split('&'))
+                return httpx.Response(200,json={'access_token':'sl.test','refresh_token':'rt','expires_in':14400,'scope':'files.content.read'})
+            sent['account_body']=request.content
+            return httpx.Response(200,json={'email':'tester@example.com','name':{'display_name':'Tester'}})
+        real=httpx.AsyncClient
+        with patch.object(connectors.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(fake),**{k:v for k,v in kw.items() if k!='transport'})):
+            done=await connectors.finish(app.store,state,'code123')
+        self.assertEqual(done['account'],'tester@example.com')
+        self.assertNotIn('client_secret',sent['form']);self.assertIn('code_verifier',sent['form'])
+        self.assertEqual(sent['account_body'],b'')   # Dropbox rejects a JSON "null" on no-argument calls
+        app.store.save_connector('dropbox',tokens=None,account='')
+
     def test_telling_clara_about_yourself_goes_to_memory(self):
         for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
                      'my shoe size is 7.5','remember that I like oat milk']:
