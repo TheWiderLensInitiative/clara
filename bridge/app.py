@@ -1690,6 +1690,15 @@ async def connector_token(provider: str, body: TokenIn, dev=Depends(device)):
     p = connectors.PROVIDERS.get(provider)
     if not p or p["kind"] != "token":
         raise HTTPException(404)
+    if provider == "shopify":   # client credentials, checked by asking Shopify for a token
+        f = {k: str((body.fields or {}).get(k) or "").strip() for k in ("client_id", "client_secret")}
+        try:
+            await shopify_catalog.access_token(f["client_id"], f["client_secret"])
+        except shopify_catalog.CatalogError as e:
+            raise HTTPException(400, str(e))
+        store.save_connector("shopify", tokens=broker.seal(json.dumps(f)), account="Catalog API key")
+        store.add_activity(None, None, "connector.connected", None, "Shopify Catalog key saved")
+        return _connector_view(provider)
     try:
         r = await connectors.save_token(store, provider, body.fields or {})
     except ValueError as e:
@@ -3664,8 +3673,16 @@ async def internal_shop_search(body: ShopSearchIn, ok=Depends(link)):
     """Clara's shop_search tool: products from Shopify-powered stores, cheapest first, that ship to the user."""
     zip_code = body.ships_to_zip.strip() or _user_zip()
     cents = lambda d: int(round(d * 100)) if d else None
+    token = profile = None
+    if "shopify" in _connected():   # the user's own Catalog key: Clara's own profile and limits
+        try:
+            cred = connectors._creds(store, "shopify")
+            token, profile = await shopify_catalog.access_token(cred["client_id"], cred["client_secret"]), shopify_catalog.OWN_PROFILE
+        except (shopify_catalog.CatalogError, KeyError) as e:
+            print("shop search: Shopify key not usable, searching without it:", e, flush=True)
     try:
-        found = await shopify_catalog.search(body.query, zip_code, cents(body.max_price), cents(body.min_price), body.limit)
+        found = await shopify_catalog.search(body.query, zip_code, cents(body.max_price), cents(body.min_price), body.limit,
+                                             token=token, profile=profile)
     except shopify_catalog.CatalogError as e:
         return {"error": str(e)}
     found.sort(key=lambda p: p.get("price_cents") or 10**9)

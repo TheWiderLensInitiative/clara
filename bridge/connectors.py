@@ -361,7 +361,7 @@ def secrets_of(store, provider) -> list[str]:
         row = store.connector(provider)
         if row and row.get("tokens"):
             t = json.loads(broker.unseal(row["tokens"]))
-            out += [v for k, v in t.items() if k in ("access_token", "refresh_token", "token", "id_token") and v]
+            out += [v for k, v in t.items() if k in ("access_token", "refresh_token", "token", "id_token", "client_secret") and v]
     except Exception:
         pass
     return out

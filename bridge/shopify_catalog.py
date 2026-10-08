@@ -13,13 +13,40 @@ from urllib.parse import urlparse
 import httpx
 
 ENDPOINT = os.environ.get("CLARA_SHOPIFY_CATALOG", "https://catalog.shopify.com/api/ucp/mcp")
-# Shopify asks every agent to point at a UCP profile declaring what it does. This is Shopify's reference profile, which
-# its docs allow during development; Clara's own lives at clara.thewiderlens.info/.well-known/ucp once published.
-PROFILE = os.environ.get("CLARA_UCP_PROFILE", "https://shopify.dev/ucp/agent-profiles/2026-04-08/valid-with-capabilities.json")
+# Shopify asks every agent to point at a UCP profile declaring what it does: Clara's own, published by clara-site
+# (accepted by the Global Catalog since 2026-10-08). Shopify's reference profile is the fallback for development.
+OWN_PROFILE = "https://clara.thewiderlens.info/.well-known/ucp"
+PROFILE = os.environ.get("CLARA_UCP_PROFILE", OWN_PROFILE)
 
 
 class CatalogError(Exception):
     pass
+
+
+TOKEN_URL = "https://api.shopify.com/auth/access_token"
+_token = {"value": None, "until": 0.0, "for": None}
+
+
+async def access_token(client_id, client_secret, client=None) -> str:
+    """A Catalog API bearer token from the user's own key (client credentials; Shopify's tokens last 60 minutes)."""
+    import time
+    if _token["value"] and _token["for"] == client_id and time.time() < _token["until"]:
+        return _token["value"]
+    own = client is None
+    client = client or httpx.AsyncClient(timeout=30)
+    try:
+        r = await client.post(TOKEN_URL, json={"client_id": client_id, "client_secret": client_secret, "grant_type": "client_credentials"})
+    finally:
+        if own:
+            await client.aclose()
+    try:
+        d = r.json()
+    except ValueError:
+        d = {}
+    if r.status_code >= 400 or not d.get("access_token"):
+        raise CatalogError(f"Shopify didn't accept the key ({d.get('error_description') or d.get('error') or r.status_code})")
+    _token.update(value=d["access_token"], until=time.time() + int(d.get("expires_in", 3600)) - 120, **{"for": client_id})
+    return d["access_token"]
 
 
 def _money(m) -> str:
@@ -47,7 +74,8 @@ def summarize(product: dict) -> dict:
     }
 
 
-async def search(query: str, ships_to_zip: str = "", max_price_cents=None, min_price_cents=None, limit=8, client=None) -> list:
+async def search(query: str, ships_to_zip: str = "", max_price_cents=None, min_price_cents=None, limit=8, client=None,
+                 token=None, profile=None) -> list:
     query = re.sub(r"\s+", " ", str(query or "")).strip()[:200]
     if not query:
         raise CatalogError("say what to search for")
@@ -57,13 +85,14 @@ async def search(query: str, ships_to_zip: str = "", max_price_cents=None, min_p
     if max_price_cents or min_price_cents:
         filters["price"] = {k: int(v) for k, v in (("min", min_price_cents), ("max", max_price_cents)) if v}
     body = {"jsonrpc": "2.0", "method": "tools/call", "id": 1, "params": {"name": "search_catalog", "arguments": {
-        "meta": {"ucp-agent": {"profile": PROFILE}},
+        "meta": {"ucp-agent": {"profile": profile or PROFILE}},
         "catalog": {"query": query, "context": {"address_country": "US", "currency": "USD", "language": "en"},
                     "filters": filters, "pagination": {"limit": max(1, min(int(limit), 20))}}}}}
     own = client is None
     client = client or httpx.AsyncClient(timeout=40)
     try:
-        r = await client.post(ENDPOINT, json=body, headers={"Accept": "application/json"})
+        r = await client.post(ENDPOINT, json=body, headers={"Accept": "application/json",
+                                                            **({"Authorization": f"Bearer {token}"} if token else {})})
     except httpx.HTTPError as e:
         raise CatalogError(f"couldn't reach Shopify's catalog ({type(e).__name__})")
     finally:

@@ -256,6 +256,18 @@ PROVIDERS = {
                  "fields=message,permalink_url; Instagram GET https://graph.facebook.com/v23.0/{ig_user_id}/media?fields=caption,permalink,"
                  "like_count,comments_count.",
     },
+    "shopify": {
+        # Shopify's Global Catalog (bridge/shopify_catalog.py): product search across Shopify stores. Works without a key
+        # today; a free Catalog API key (client credentials) gives Clara her own access and limits.
+        "name": "Shopify Catalog", "kind": "token", "category": "Shopping", "auth": "none",
+        "services": ["Product search across Shopify stores"], "hosts": ["api.shopify.com"],
+        "fields": [{"key": "client_id", "label": "Client ID", "pattern": r"[A-Za-z0-9_-]{16,}"},
+                   {"key": "client_secret", "label": "Client secret", "pattern": r"\S{16,}"}],
+        "setup_url": "https://dev.shopify.com/dashboard",
+        "steps": ["Open dev.shopify.com/dashboard (free Shopify developer account) → Catalogs → Get an API key → name it Clara → Create.",
+                  "Paste the Client ID and Client secret here. Clara searches without a key too; this gives her own access."],
+        "guide": "Use shop_search (never connection_call).",
+    },
     "link": {
         # Paying with Link (by Stripe): one-time cards, each purchase approved in the Link app. Signed in through Stripe's
         # link-cli on this PC (bridge/link.py), so there's no app to register and no secret; one tap shows Link's page.

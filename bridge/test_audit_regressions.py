@@ -977,6 +977,28 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             seen=browse._snapshot_text({'data':{'snapshot':'- textbox "Card number" [ref=e5]: 4000009990001984'}})
             self.assertNotIn('4000009990001984',seen);self.assertIn('••••1984',seen)
 
+    async def test_shopify_key_gives_clara_her_own_profile(self):
+        seen={}
+        def fake(request):
+            if request.url.path=='/auth/access_token':
+                body=json.loads(request.content)
+                if body['client_secret']!='good-secret-123456': return httpx.Response(401,json={'error':'invalid_client'})
+                return httpx.Response(200,json={'access_token':'shp_tok','expires_in':3600})
+            seen['auth']=request.headers.get('authorization');seen['profile']=json.loads(request.content)['params']['arguments']['meta']['ucp-agent']['profile']
+            return httpx.Response(200,json={'result':{'structuredContent':{'products':[]}}})
+        real=httpx.AsyncClient
+        mk=lambda **kw:real(transport=httpx.MockTransport(fake),**{k:v for k,v in kw.items() if k!='transport'})
+        app.shopify_catalog._token.update(value=None,until=0,**{'for':None})
+        with patch.object(app.shopify_catalog.httpx,'AsyncClient',mk):
+            with self.assertRaises(HTTPException):
+                await app.connector_token('shopify',app.TokenIn(fields={'client_id':'cid_1234567890abcdef','client_secret':'wrong-secret-12345'}),dev={'id':'p','name':'P'})
+            v=await app.connector_token('shopify',app.TokenIn(fields={'client_id':'cid_1234567890abcdef','client_secret':'good-secret-123456'}),dev={'id':'p','name':'P'})
+            self.assertTrue(v['connected'])
+            await app.internal_shop_search(app.ShopSearchIn(query='body wash'),ok=True)
+        self.assertEqual(seen['auth'],'Bearer shp_tok');self.assertEqual(seen['profile'],app.shopify_catalog.OWN_PROFILE)
+        self.assertIn('good-secret-123456',connectors.secrets_of(app.store,'shopify'))   # never shown to Clara
+        app.store.save_connector('shopify',tokens=None,account='')
+
     async def test_shop_search_uses_saved_zip_and_sorts_by_price(self):
         sent={}
         def fake(request):
