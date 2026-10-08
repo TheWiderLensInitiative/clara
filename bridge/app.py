@@ -2190,6 +2190,39 @@ async def library_file(path: str, dev=Depends(device)):
     return FileResponse(_safe_workspace_path(path), headers={"Cache-Control": "no-store"})
 
 
+@app.delete("/v1/library/file")
+async def library_delete(path: str, dev=Depends(device)):
+    """Delete a file from Clara's workspace (the app asks the user to confirm first). A video's poster frame goes with it."""
+    f = _safe_workspace_path(path)
+    f.unlink()
+    if f.suffix.lower() == ".mp4":
+        f.with_suffix(".jpg").unlink(missing_ok=True)
+    store.add_activity(None, None, "library.deleted", None, f"{dev['name']} deleted {f.relative_to(WORKSPACE)}")
+    return {"ok": True}
+
+
+class LibraryText(BaseModel):
+    text: str
+
+
+@app.put("/v1/library/file")
+async def library_edit(path: str, body: LibraryText, dev=Depends(device)):
+    """Save the user's edit of a text file (notes, checklists). The workspace folder is shared with Clara's group but
+    her files are read-only to it, so the new text goes into a new file that replaces the old one (group-writable,
+    so Clara can keep updating it)."""
+    f = _safe_workspace_path(path)
+    if _kind(f) != "text":
+        raise HTTPException(400, "only text files can be edited")
+    if len(body.text.encode()) > 1_000_000:
+        raise HTTPException(413, "too long to edit here")
+    tmp = f.with_name(f".{f.name}.{secrets.token_hex(4)}.tmp")
+    tmp.write_text(body.text)
+    tmp.chmod(0o664)
+    os.replace(tmp, f)
+    store.add_activity(None, None, "library.edited", None, f"{dev['name']} edited {f.relative_to(WORKSPACE)}")
+    return {"ok": True}
+
+
 # --- Identity: the user can read and edit Clara's soul and memory -----------
 SOUL_FILE = HERMES_HOME / "SOUL.md"   # owned by the user, read-only to Clara
 

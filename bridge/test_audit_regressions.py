@@ -899,6 +899,19 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         marks=app._workspace_marks()
         self.assertIn('checklist.md',marks);self.assertNotIn('uploads/photo.jpg',marks);self.assertFalse(any(k.startswith('.browser') for k in marks))
 
+    async def test_library_edit_and_delete(self):
+        ws=Path(app.WORKSPACE);(ws/'videos').mkdir(parents=True,exist_ok=True)
+        note=ws/'list.md';note.write_text('- [ ] milk');note.chmod(0o640)
+        await app.library_edit('list.md',app.LibraryText(text='- [x] milk\n- [ ] eggs'),dev={'id':'p','name':'Phone'})
+        self.assertEqual(note.read_text(),'- [x] milk\n- [ ] eggs');self.assertEqual(note.stat().st_mode & 0o777,0o664)
+        self.assertFalse(list(ws.glob('.list.md.*.tmp')))
+        (ws/'videos/a.mp4').write_bytes(b'v');(ws/'videos/a.jpg').write_bytes(b'p')
+        with self.assertRaises(HTTPException):await app.library_edit('videos/a.mp4',app.LibraryText(text='x'),dev={'id':'p','name':'Phone'})
+        await app.library_delete('videos/a.mp4',dev={'id':'p','name':'Phone'})
+        self.assertFalse((ws/'videos/a.mp4').exists());self.assertFalse((ws/'videos/a.jpg').exists())
+        for bad in ('../outside.txt','/etc/passwd'):
+            with self.assertRaises(HTTPException):await app.library_delete(bad,dev={'id':'p','name':'Phone'})
+
     def test_grounding_only_flags_reports_without_a_look(self):
         listing="Here's what's in your inbox:\n- Sam: lunch Thursday (10:30)\n- Billing: invoice 77 is due Friday, please pay soon\n- GitHub: a review request"
         self.assertEqual(app._ungrounded(listing,{'calendar_events'}),'email')

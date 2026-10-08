@@ -236,7 +236,7 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
                     onPlan = { g -> tab = 0; vm.send("Help me make a simple plan for my goal: ${g.title}") },
                     onCheckin = vm::setCheckin, loadLog = vm::goalLog,
                     onCheckinNow = { g -> tab = 0; vm.reachOutNow("checkin", g.id) })
-                2 -> LibraryScreen(state, vm::refreshLibrary, vm::libraryBytes)
+                2 -> LibraryScreen(state, vm::refreshLibrary, vm::libraryBytes, onDelete = vm::deleteLibraryFile, onSave = vm::saveLibraryFile)
             }
         }
     }

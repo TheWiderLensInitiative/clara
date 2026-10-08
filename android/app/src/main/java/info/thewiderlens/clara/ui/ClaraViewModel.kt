@@ -310,6 +310,8 @@ class ClaraViewModel : ViewModel() {
 
     fun refreshLibrary() = launchSafe { api?.let { a -> run { val fetched0 = a.library(); _ui.update { it.copy(library = fetched0) } } } }
     suspend fun libraryBytes(path: String): ByteArray? = api?.let { it.bytes(it.libraryUrl(path)) }
+    fun deleteLibraryFile(path: String) = launchSafe { api?.let { a -> a.deleteLibraryFile(path); val fetched = a.library(); _ui.update { it.copy(library = fetched) } } }
+    fun saveLibraryFile(path: String, text: String) = launchSafe { api?.let { a -> a.saveLibraryFile(path, text); val fetched = a.library(); _ui.update { it.copy(library = fetched) } } }
 
     // --- passwords: stored only on this phone; the PC gets names/sites/usernames ---------
     private fun localIndex() = ClaraHub.vault.logins().map { info.thewiderlens.clara.data.SavedLogin(it.name, it.site, it.username) }

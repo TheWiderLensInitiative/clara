@@ -143,6 +143,10 @@ class BridgeApi(val baseUrl: String, private val token: String?) {
 
     suspend fun library(): List<LibraryFile> = json.decodeFromString<LibraryList>(call("GET", "/v1/library")).files
     fun libraryUrl(path: String) = url("/v1/library/file?path=" + java.net.URLEncoder.encode(path, "UTF-8"))
+    suspend fun deleteLibraryFile(path: String) { call("DELETE", "/v1/library/file?path=" + java.net.URLEncoder.encode(path, "UTF-8")) }
+    suspend fun saveLibraryFile(path: String, text: String) {
+        call("PUT", "/v1/library/file?path=" + java.net.URLEncoder.encode(path, "UTF-8"), obj("text" to text))
+    }
     suspend fun bytes(fullUrl: String): ByteArray? = withContext(Dispatchers.IO) {
         http.newCall(Request.Builder().url(fullUrl).build()).execute().use { r -> if (r.isSuccessful) r.body.bytes() else null }
     }

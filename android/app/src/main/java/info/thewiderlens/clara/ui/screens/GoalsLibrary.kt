@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -274,9 +275,14 @@ private fun AddGoalDialog(onDismiss: () -> Unit, onAdd: (String, String) -> Unit
 
 // --- Library ----------------------------------------------------------------------------
 @Composable
-fun LibraryScreen(state: UiState, onRefresh: () -> Unit, load: suspend (String) -> ByteArray?) {
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+fun LibraryScreen(state: UiState, onRefresh: () -> Unit, load: suspend (String) -> ByteArray?,
+                  onDelete: (String) -> Unit = {}, onSave: (String, String) -> Unit = { _, _ -> }) {
     LaunchedEffect(Unit) { onRefresh() }
     var open by remember { mutableStateOf<LibraryFile?>(null) }
+    var menuFor by remember { mutableStateOf<LibraryFile?>(null) }      // long-pressed file: Edit / Delete
+    var editing by remember { mutableStateOf<LibraryFile?>(null) }
+    var deleting by remember { mutableStateOf<LibraryFile?>(null) }
     Column(Modifier.fillMaxSize()) {
         TabHeader("Library", "Everything Clara has made for you") {
             IconButton(onClick = onRefresh) { Icon(Icons.Filled.Refresh, "Refresh", tint = ClaraColors.Muted) }
@@ -286,7 +292,7 @@ fun LibraryScreen(state: UiState, onRefresh: () -> Unit, load: suspend (String) 
             items(state.library, key = { it.path }) { f ->
                 Row(
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(ClaraColors.Panel).border(1.dp, ClaraColors.Line, RoundedCornerShape(16.dp))
-                        .clickable { open = f }.padding(14.dp),
+                        .combinedClickable(onClick = { open = f }, onLongClick = { menuFor = f }).padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(ClaraColors.Raised), contentAlignment = Alignment.Center) {
@@ -305,6 +311,48 @@ fun LibraryScreen(state: UiState, onRefresh: () -> Unit, load: suspend (String) 
         }
     }
     open?.let { f -> FileViewer(f, load) { open = null } }
+    menuFor?.let { f ->
+        AlertDialog(
+            onDismissRequest = { menuFor = null }, containerColor = ClaraColors.Panel,
+            title = { Text(f.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            text = {
+                Column {
+                    if (f.kind == "text") TextButton(onClick = { editing = f; menuFor = null }) { Text("✏️  Edit", color = ClaraColors.Text) }
+                    TextButton(onClick = { deleting = f; menuFor = null }) { Text("🗑️  Delete", color = ClaraColors.Danger) }
+                }
+            },
+            confirmButton = { TextButton(onClick = { menuFor = null }) { Text("Cancel", color = ClaraColors.Muted) } },
+        )
+    }
+    deleting?.let { f ->
+        AlertDialog(
+            onDismissRequest = { deleting = null }, containerColor = ClaraColors.Panel,
+            title = { Text("Delete “${f.name}”?") },
+            text = { Text("It's removed from Clara's computer for good.") },
+            confirmButton = { TextButton(onClick = { onDelete(f.path); deleting = null }) { Text("Delete", color = ClaraColors.Danger) } },
+            dismissButton = { TextButton(onClick = { deleting = null }) { Text("Cancel", color = ClaraColors.Muted) } },
+        )
+    }
+    editing?.let { f -> FileEditor(f, load, onSave = { t -> onSave(f.path, t); editing = null }) { editing = null } }
+}
+
+/** Edit a note or any text file Clara made. Loads the current text, saves it back over the file. */
+@Composable
+private fun FileEditor(f: LibraryFile, load: suspend (String) -> ByteArray?, onSave: (String) -> Unit, onClose: () -> Unit) {
+    var text by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(f.path) { text = load(f.path)?.decodeToString() ?: "" }
+    AlertDialog(
+        onDismissRequest = onClose, containerColor = ClaraColors.Panel,
+        title = { Text("Edit ${f.name}", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        text = {
+            val t = text
+            if (t == null) Text("Loading…", color = ClaraColors.Muted)
+            else OutlinedTextField(t, { text = it }, modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp, max = 460.dp),
+                textStyle = MaterialTheme.typography.bodyMedium)
+        },
+        confirmButton = { TextButton(onClick = { text?.let(onSave) }, enabled = text != null) { Text("Save", color = ClaraColors.Cyan) } },
+        dismissButton = { TextButton(onClick = onClose) { Text("Cancel", color = ClaraColors.Muted) } },
+    )
 }
 
 private fun humanSize(b: Long) = when {
