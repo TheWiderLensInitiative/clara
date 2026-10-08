@@ -256,6 +256,16 @@ PROVIDERS = {
                  "fields=message,permalink_url; Instagram GET https://graph.facebook.com/v23.0/{ig_user_id}/media?fields=caption,permalink,"
                  "like_count,comments_count.",
     },
+    "link": {
+        # Paying with Link (by Stripe): one-time cards, each purchase approved in the Link app. Signed in through Stripe's
+        # link-cli on this PC (bridge/link.py), so there's no app to register and no secret; one tap shows Link's page.
+        "name": "Link (by Stripe)", "kind": "device", "via": "link-cli", "no_client": True, "category": "Payments",
+        "services": ["One-time cards for purchases"], "hosts": [],
+        "steps": ["Tap Connect, approve “Clara” in the Link app or on link.com, and come back. Each purchase is approved "
+                  "again in Link, for one store and one amount. US and Canada only."],
+        "setup_url": "https://link.com",
+        "guide": "Use pay_with_link at a checkout (never connection_call).",
+    },
     "homeassistant": {
         "name": "Home Assistant", "kind": "token", "category": "Music & home",
         "services": ["Lights", "Climate", "Devices"],

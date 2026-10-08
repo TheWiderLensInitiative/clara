@@ -229,6 +229,13 @@ if [ ! -f "$DATA/laya-for-clara/model.safetensors" ]; then
 else
     ok "Laya router"
 fi
+# Paying with Link (by Stripe): Stripe's link-cli, run by the Bridge as you; its sign-in stays in $DATA/link (0700)
+LINK_CLI_VERSION="${LINK_CLI_VERSION:-0.27.0}"
+if PATH="/opt/clara/node/bin:$PATH" npm i --silent --no-fund --no-audit --prefix "$DATA/link-cli" "@stripe/link-cli@$LINK_CLI_VERSION" >/dev/null 2>&1; then
+    ok "Link (by Stripe) for one-time purchase cards"
+else
+    warn "Couldn't install Stripe's link-cli; paying with Link won't be available"
+fi
 
 # ---------------------------------------------------------------------------------------------------------------------
 say "Services (start at boot, no login needed)"

@@ -78,6 +78,8 @@ CASES += [
   ("terminal", {"command": "cd /opt/x; timeout 15 ./chrome --remote-debugging-port=9222 --headless=new http://example.com"}, "block"),
   ("execute_code", {"code": "from playwright.sync_api import sync_playwright"}, "block"),
   ("terminal", {"command": "ls chromecast-notes"}, None),
+  ("terminal", {"command": "curl -s -X POST http://127.0.0.1:8700/internal/link/card -H \"Authorization: Bearer $CLARA_LINK_TOKEN\" -d '{}'"}, "block"),
+  ("execute_code", {"code": "import subprocess; subprocess.run(['link-cli','spend-request','retrieve','lsrq_1','--include','card'])"}, "block"),
 ]
 fails = 0
 for tool, args, want in CASES:

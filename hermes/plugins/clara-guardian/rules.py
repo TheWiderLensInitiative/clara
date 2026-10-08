@@ -91,6 +91,11 @@ SIDE_BROWSER_BLOCK = ("Don't start, restart or debug a browser yourself: your br
                       "If browser_use keeps failing, stop and tell the user what you see.")
 
 
+# Link's one-time cards go only to the browser's pay step: Clara may not fetch one or reach Link herself.
+PAY_BYPASS = re.compile(r"/internal/link|link-cli|LINK_AUTH_FILE|LINK_ACCESS_TOKEN|api\.link\.com|login\.link\.com", re.I)
+PAY_BLOCK = "Payments go only through pay_with_link and browser_use's pay action; card details never pass through you."
+
+
 # Human checks are for humans: never script around them, ask the user to take over instead.
 CAPTCHA = re.compile(r"captcha|recaptcha|hcaptcha|turnstile|cf-chl|g-recaptcha|i'?m not a robot|arkose|funcaptcha", re.I)
 CAPTCHA_BLOCK = ("Don't try to get around a CAPTCHA or human check. Call ask_user_for_browser_help with what you need "
@@ -107,6 +112,8 @@ def decide(tool_name, args):
             return ("block", VAULT_BLOCK)
         if SIDE_BROWSER.search(cmd):
             return ("block", SIDE_BROWSER_BLOCK)
+        if PAY_BYPASS.search(cmd):
+            return ("block", PAY_BLOCK)
         if _kills_infra(cmd):
             return ("block", "Clara may not stop her own model, agent, Bridge, or search service; that would take Clara offline.")
         for rx, what in CMD_RULES:
@@ -137,6 +144,8 @@ def decide(tool_name, args):
             return ("block", VAULT_BLOCK)
         if SIDE_BROWSER.search(code):
             return ("block", SIDE_BROWSER_BLOCK)
+        if PAY_BYPASS.search(code):
+            return ("block", PAY_BLOCK)
         for rx, what in PY_RULES:
             if rx.search(code):
                 return ("approve", f"Clara wants to {what}.")

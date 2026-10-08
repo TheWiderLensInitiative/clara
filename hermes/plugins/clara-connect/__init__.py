@@ -149,9 +149,41 @@ def _google(action):
     return handler
 
 
+PAY_SCHEMA = {
+    "name": "pay_with_link",
+    "description": (
+        "Pay for something with the user's Link wallet (by Stripe). Use it at the checkout page, after the user asked you to "
+        "buy the item: read the exact total from the checkout (including shipping and tax) and pass it in cents. Link asks the "
+        "user to approve this store and amount in the Link app; this waits for their answer (up to 10 minutes) and never "
+        "gives you card details. When approved, call browser_use with the checkout page and the returned spend_request id "
+        "and tell it to use its pay action, which fills the one-time card and places the order in one step. Never type card "
+        "details yourself and never pay any other way. Only for purchases the user asked for."),
+    "parameters": {"type": "object", "properties": {
+        "amount_cents": {"type": "integer", "description": "the checkout's exact total in cents, e.g. 899 for $8.99"},
+        "merchant_name": S, "merchant_url": {"type": "string", "description": "https:// page of the store or product"},
+        "context": {"type": "string", "description": "at least 100 characters: what is being bought, from which store, and that the user asked for it"},
+        "items": {"type": "array", "items": {"type": "object", "properties": {"name": S, "quantity": {"type": "integer"},
+                  "unit_amount": {"type": "integer", "description": "cents"}}}},
+        "shipping_cents": {"type": "integer"}, "tax_cents": {"type": "integer"},
+        "test": {"type": "boolean", "description": "Link test mode: a test card, no charge. Only when the user says it's a test."},
+    }, "required": ["amount_cents", "merchant_name", "merchant_url", "context"]},
+}
+
+
+def handle_pay(args, session_id=None, **_):
+    import hermes_plugins.clara_guardian as guardian
+    body = {**(args or {}), "conversation_id": _conversation(session_id)}
+    try:   # the user approves in Link, which can take a few minutes
+        res = guardian.patient(lambda: _link("/internal/link/purchase", body, timeout=None))
+        return json.dumps({"error": "The user stopped this task."} if res is guardian.STOPPED else res)
+    except Exception as e:
+        return json.dumps({"error": f"Couldn't reach the Clara Bridge: {type(e).__name__}"})
+
+
 def register(ctx) -> None:
     for name, (desc, params, emoji) in GOOGLE_TOOLS.items():
         ctx.register_tool(name=name, toolset="clara_connect", schema={"name": name, "description": desc, "parameters": params},
                           handler=_google(name), emoji=emoji)
+    ctx.register_tool(name="pay_with_link", toolset="clara_connect", schema=PAY_SCHEMA, handler=handle_pay, emoji="💳")
     ctx.register_tool(name="list_apis", toolset="clara_connect", schema=LIST_SCHEMA, handler=handle_list, emoji="🔌")
     ctx.register_tool(name="call_api", toolset="clara_connect", schema=CALL_SCHEMA, handler=handle_call, emoji="🔌")

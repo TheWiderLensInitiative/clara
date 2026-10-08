@@ -167,6 +167,23 @@ check("small control: center only", len(actions.box_points({"x": 0, "y": 0, "wid
 check("unnamed control: same box", actions.same_box([380, 580, 13, 13], {"x": 380.4, "y": 579.6, "width": 13, "height": 13}), True)
 check("unnamed control: another box", actions.same_box([380, 545, 13, 13], {"x": 380, "y": 580, "width": 13, "height": 13}), False)
 check("unnamed control: no box", actions.same_box([1, 2, 3, 4], {}), False)
+checkout = """- textbox "Email" [ref=e4]
+- textbox "ZIP code" [ref=e9]
+- Iframe "Secure card payment input frame" [ref=e2]
+  - textbox "Card number" [ref=e5]
+  - textbox "Expiration date MM / YY" [ref=e6]
+  - textbox "Security code" [ref=e7]
+  - textbox "ZIP" [ref=e8]
+- button "Place order" [ref=e3]"""
+cf = actions.card_fields(checkout)
+check("card fields found in the payment frame", {k: v[0] for k, v in cf.items()}, {"number": "@e5", "exp": "@e6", "cvc": "@e7", "zip": "@e8"})
+card = {"number": "4000009990001984", "cvc": "100", "exp_month": 6, "exp_year": 2029, "billing_address": {"name": "J M", "postal_code": "32277"}}
+check("card values", sorted(actions.card_values(card, cf)), sorted([("@e5", "textbox", "4000009990001984"), ("@e6", "textbox", "06 / 29"),
+      ("@e7", "textbox", "100"), ("@e8", "textbox", "32277")]))
+split = actions.card_fields('- textbox "Card number" [ref=e1]\n- combobox "Expiration month" [ref=e2]\n- combobox "Expiration year" [ref=e3]\n- textbox "CVV" [ref=e4]')
+check("separate month/year", sorted(v for _, _, v in actions.card_values(card, split)), sorted(["4000009990001984", "06", "2029", "100"]))
+check("scrub card digits", actions.scrub('- textbox "Card number" [ref=e5]: 4000009990001984 cvc 100', ["4000009990001984", "100"]),
+      '- textbox "Card number" [ref=e5]: ••••1984 cvc •••')
 tap = actions.tap_events(60, 24)
 check("tap ends up", [e["eventType"] for e in tap], ["mouseMoved", "mouseReleased", "mousePressed", "mouseReleased"])
 check("tap point", (tap[-1]["x"], tap[-1]["y"], tap[-1]["button"]), (60, 24, "left"))

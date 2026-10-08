@@ -1255,6 +1255,12 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     if others:
         payload["instructions"] += (f" Connected services: {', '.join(others)}. Use list_connections to see how to call them and "
                                     "connection_call to use them (never ask for tokens or passwords).")
+    if "link" in _connected():
+        payload["instructions"] += (" The user's Link wallet (by Stripe) is connected for purchases they ask for: find the item with "
+                                    "browser_use, go through checkout up to the payment step (guest checkout when possible; use their "
+                                    "name, address and email from memory), read the exact total including shipping and tax, call "
+                                    "pay_with_link, and once it's approved call browser_use with its spend_request id and the pay "
+                                    "action. Link asks the user to approve each purchase; never pay another way or type card details.")
     mail = _mail_accounts()
     if mail:
         names = " and ".join("Google (Gmail)" if p == "google" else "Microsoft (Outlook)" for p in mail)
@@ -1547,6 +1553,7 @@ async def _phone_approval(description: str, preview: str, rule: str, choices=("o
 # --- connectors: Gmail and Google Calendar (tokens sealed on this PC; Clara never sees them) -------------------------
 import connectors
 import outlook
+import link as linkpay
 
 CONNECTOR_POLICY_DEFAULTS = {"calendar_add": "ask", "writes": "ask"}   # the user can "trust" calendar adds / other writes per service
 
@@ -1575,7 +1582,7 @@ def _connector_view(provider):
     return {"provider": provider, "name": p["name"], "kind": p["kind"], "category": p.get("category", "Other"), "services": p["services"],
             "steps": p.get("steps", []), "setup_url": p.get("setup_url"), "needs_secret": bool(p.get("secret")),
             "fields": [{"key": f["key"], "label": f["label"]} for f in p.get("fields", [])], "redirect": p.get("redirect", connectors.REDIRECT),
-            "has_client": bool(row.get("client") or connectors.builtin_client(provider)),
+            "has_client": bool(row.get("client") or connectors.builtin_client(provider) or p.get("no_client")),
             "builtin": bool(connectors.builtin_client(provider)), "own_client": bool(row.get("client")),
             "connected": bool(row.get("tokens")), "account": row.get("account") or "",
             "connected_at": row.get("connected"), "policy": pol, "website": connectors.WEBSITES.get(provider),
@@ -1638,6 +1645,15 @@ class StartIn(BaseModel):
 async def connector_start(provider: str, body: StartIn, dev=Depends(device)):
     if provider not in connectors.PROVIDERS:
         raise HTTPException(404)
+    if connectors.PROVIDERS[provider].get("via") == "link-cli":   # Link: Stripe's own sign-in page, then we wait
+        if not linkpay.installed():
+            raise HTTPException(503, "Link isn't installed on this PC yet: run ./install.sh")
+        try:
+            code = await linkpay.login_start()
+        except linkpay.LinkError as e:
+            raise HTTPException(400, str(e))
+        asyncio.create_task(_link_finish())
+        return {"device": code}
     if connectors.PROVIDERS[provider]["kind"] == "device":   # GitHub: a code to enter on their site, then we wait
         try:
             code = await connectors.device_start(store, provider)
@@ -1649,6 +1665,19 @@ async def connector_start(provider: str, body: StartIn, dev=Depends(device)):
         return {"url": connectors.start(store, provider, body.redirect_uri)}
     except ValueError as e:
         raise HTTPException(400, "Add your sign-in client first" if str(e) == "no client" else str(e))
+
+
+async def _link_finish():
+    try:
+        email = await linkpay.login_wait()
+    except linkpay.LinkError as e:
+        store.add_activity(None, None, "connector.failed", None, f"Link: {e}")
+        bus.publish("connectors.changed", provider="link", error=str(e))
+        return
+    import broker as _broker
+    store.save_connector("link", tokens=_broker.seal(json.dumps({"via": "link-cli"})), account=email)
+    store.add_activity(None, None, "connector.connected", None, f"Link connected: {email}")
+    bus.publish("connectors.changed", provider="link")
 
 
 async def _device_finish(provider):
@@ -1683,6 +1712,8 @@ async def connector_finish(provider: str, body: FinishIn, dev=Depends(device)):
 async def connector_disconnect(provider: str, forget_client: bool = False, dev=Depends(device)):
     if provider not in connectors.PROVIDERS:
         raise HTTPException(404)
+    if provider == "link":
+        await linkpay.logout()
     await connectors.revoke(store, provider)
     if forget_client:
         store.save_connector(provider, client=None)
@@ -3466,6 +3497,101 @@ async def vault_answer(rid: str, body: VaultAnswer, dev=Depends(device)):
     verdict = "allowed" if body.approve else "denied"
     store.add_activity(info.get("conversation_id"), None, f"vault.{verdict}", None, f"{dev['name']} {verdict} signing in to “{info['name']}”")
     bus.publish("vault.resolved", id=rid, approve=body.approve)
+    return {"ok": True}
+
+
+# --- paying with Link: one-time cards, approved by the user in the Link app ------------------------------------------
+_link_cards_used: set = set()   # spend requests whose card was already handed to the browser (once only)
+
+
+class LinkPurchaseIn(BaseModel):
+    conversation_id: Optional[str] = None
+    amount_cents: int
+    merchant_name: str
+    merchant_url: str
+    context: str
+    items: list[dict] = []          # [{"name", "quantity", "unit_amount"}]
+    shipping_cents: Optional[int] = None
+    tax_cents: Optional[int] = None
+    test: bool = False
+
+
+def _cents(v):
+    return f"${v / 100:,.2f}"
+
+
+@app.post("/internal/link/purchase")
+async def internal_link_purchase(body: LinkPurchaseIn, ok=Depends(link)):
+    """Clara's pay_with_link tool: a spend request for one store and one total. The user approves it in Link (the card
+    in the chat opens it); this waits for the answer as Link allows (10 minutes) and never returns card details."""
+    if "link" not in _connected():
+        return {"error": "Link isn't connected. Ask the user to connect Link (by Stripe) in Clara menu -> Connectors."}
+    cid = body.conversation_id or _current_conversation()
+    items = [f"name:{str(i.get('name', 'Item'))[:80].replace(',', ' ')},quantity:{int(i.get('quantity') or 1)}"
+             + (f",unit_amount:{int(i['unit_amount'])}" if i.get("unit_amount") else "") for i in body.items[:10]]
+    totals = ([f"type:shipping,display_text:Shipping,amount:{body.shipping_cents}"] if body.shipping_cents is not None else []) + \
+             ([f"type:tax,display_text:Tax,amount:{body.tax_cents}"] if body.tax_cents is not None else []) + \
+             [f"type:total,display_text:Total,amount:{body.amount_cents}"]
+    try:
+        req = await linkpay.spend_create(body.amount_cents, body.merchant_name.strip(), body.merchant_url.strip(), body.context.strip(),
+                                         items, totals, test=body.test)
+    except linkpay.LinkError as e:
+        return {"error": f"Link refused the request: {e}"}
+    what = f"{_cents(body.amount_cents)} at {body.merchant_name}" + (" (test, no charge)" if body.test else "")
+    card_msg = store.add_message(cid, "assistant", f"💳 **Approve in Link:** {what}. Link shows the store, the items and the total; "
+                                 "Clara waits for your answer.", route="share",
+                                 meta={"kind": "share", "url": req["approval_url"], "label": "Approve in Link"})
+    bus.publish("notification", conversation_id=cid, message=card_msg)
+    store.add_activity(cid, None, "purchase.requested", None, f"{what} · {req['id']}")
+    conv_run = (store.get_conversation(cid) or {}).get("active_run")
+    stopped = lambda: (store.get_conversation(cid) or {}).get("active_run") != conv_run
+    try:
+        d = await linkpay.spend_wait(req["id"], stop=stopped)
+    except linkpay.LinkError as e:
+        return {"error": f"Couldn't check the purchase with Link: {e}"}
+    st = d.get("status")
+    store.add_activity(cid, None, f"purchase.{st}", None, f"{what} · {req['id']}")
+    if st == "approved":
+        return {"status": "approved", "spend_request": req["id"], "amount": _cents(body.amount_cents),
+                "next": "Pay with browser_use: give it the checkout page and this spend_request id, and tell it to use the pay "
+                        "action (it fills the one-time card and places the order in one step). Never type card details."}
+    if st == "requires_action":
+        na = ((d.get("status_details") or {}).get("requires_action") or {}).get("next_action") or {}
+        return {"status": "requires_action", "message": na.get("display_message") or "Link needs the user to do something first.",
+                "action_url": na.get("action_url")}
+    return {"status": st or "unknown", "note": "Not approved. Don't retry unless the user asks; never pay another way."}
+
+
+class LinkCardIn(BaseModel):
+    spend_request: str
+
+
+@app.post("/internal/link/card")
+async def internal_link_card(body: LinkCardIn, ok=Depends(link)):
+    """For the browser plugin's pay step only (Guardian blocks Clara from calling it herself). Each card once."""
+    if not re.fullmatch(r"lsrq_[A-Za-z0-9]+", body.spend_request) or body.spend_request in _link_cards_used:
+        return {"error": "This purchase's card was already used or isn't valid. Ask the user to approve a new one."}
+    try:
+        c = await linkpay.card(body.spend_request)
+    except linkpay.LinkError as e:
+        return {"error": f"Link didn't give a card: {e}"}
+    _link_cards_used.add(body.spend_request)
+    store.add_activity(None, None, "purchase.card", None, f"one-time {c.get('brand', 'card')} •••• {str(c['number'])[-4:]} filled in · {body.spend_request}")
+    return {"card": c}
+
+
+class LinkOutcomeIn(BaseModel):
+    spend_request: str
+    outcome: str        # success | blocked | abandoned
+    domain: str = ""
+    detail: str = ""
+
+
+@app.post("/internal/link/outcome")
+async def internal_link_outcome(body: LinkOutcomeIn, ok=Depends(link)):
+    store.add_activity(None, None, f"purchase.{body.outcome}", None, f"{body.domain} · {body.spend_request} · {body.detail[:200]}")
+    if body.outcome != "success":
+        await linkpay.cancel(body.spend_request)
     return {"ok": True}
 
 

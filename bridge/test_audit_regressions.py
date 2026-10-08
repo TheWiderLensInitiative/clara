@@ -912,6 +912,67 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         for bad in ('../outside.txt','/etc/passwd'):
             with self.assertRaises(HTTPException):await app.library_delete(bad,dev={'id':'p','name':'Phone'})
 
+    async def test_link_connect_and_purchase(self):
+        with patch.object(app.linkpay,'CLI',ROOT/'tools/fake_link_cli.py'),patch.object(app.linkpay,'AUTH',BASE/'link/auth.json'):
+            view=app._connector_view('link');self.assertTrue(view['has_client']);self.assertFalse(view['connected'])
+            code=(await app.connector_start('link',app.StartIn(),dev={'id':'p','name':'Phone'}))['device']
+            self.assertTrue(code['verification_uri'].startswith('https://app.link.com/device/setup?code='))
+            await app._link_finish()
+            self.assertEqual(app._connector_view('link')['account'],'tester@example.com')
+            ctx='Buying one bottle of body wash from Example Shop; the user asked Clara to find a cheap one and buy it today.'
+            short=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=899,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context='too short'),ok=True)
+            self.assertIn('error',short)
+            big=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=60000,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context=ctx),ok=True)
+            self.assertIn('500',big['error'])
+            r=await app.internal_link_purchase(app.LinkPurchaseIn(conversation_id=self.cid,amount_cents=899,merchant_name='Example Shop',
+                      merchant_url='https://shop.example/wash',context=ctx,items=[{'name':'Body wash, 18 oz','quantity':1,'unit_amount':899}],test=True),ok=True)
+            self.assertEqual(r['status'],'approved');self.assertNotIn('card',json.dumps(r).replace('one-time card','').lower().replace('card details',''))
+            card_msg=[m for m in app.store.messages(self.cid) if m['content'].startswith('💳')][-1]
+            self.assertEqual(card_msg['meta']['label'],'Approve in Link');self.assertIn('/activity/approve/',card_msg['meta']['url'])
+            c=await app.internal_link_card(app.LinkCardIn(spend_request=r['spend_request']),ok=True)
+            self.assertEqual(c['card']['number'][-4:],'1984')
+            again=await app.internal_link_card(app.LinkCardIn(spend_request=r['spend_request']),ok=True)
+            self.assertIn('error',again)   # a card is handed over once
+            self.assertFalse(list((BASE/'link').glob('card-*.json')))   # the card file is deleted right away
+            with patch.dict(os.environ,{'FAKE_LINK_DECISION':'denied'}):
+                d=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=899,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context=ctx),ok=True)
+            self.assertEqual(d['status'],'denied')
+            await app.connector_disconnect('link',dev={'id':'p','name':'Phone'})
+            self.assertFalse(app._connector_view('link')['connected'])
+
+    def test_browser_pay_step_fills_card_presses_order_and_hides_digits(self):
+        fields=browse.actions.card_fields("""- Iframe "Secure card payment input frame" [ref=e2]
+  - textbox "Card number" [ref=e5]
+  - textbox "Expiration date MM / YY" [ref=e6]
+  - textbox "CVC" [ref=e7]
+- button "Place order" [ref=e3]""")
+        card={'brand':'visa','number':'4000009990001984','cvc':'100','exp_month':6,'exp_year':2029,'billing_address':{}}
+        for outcome in ('confirmed','still_filled'):
+            calls=[];links=[]
+            def fake_browser(task,cmd,args=None,timeout=45):
+                calls.append((cmd,list(args or [])))
+                if cmd=='snapshot':
+                    page=('- heading "Thanks! Order #1001 is confirmed" [ref=e1]' if outcome=='confirmed' else
+                          '- Iframe "Secure card payment" [ref=e2]\n  - textbox "Card number" [ref=e5]: 4000009990001984\n  - textbox "CVC" [ref=e7]: 100\n  - textbox "Expiration date MM / YY" [ref=e6]: 06 / 29')
+                    return {'success':True,'data':{'snapshot':page}}
+                return {'success':True}
+            def fake_link(path,body=None,timeout=30):
+                links.append((path,body));return {'card':card} if path.endswith('/card') else {'ok':True}
+            with patch.object(browse,'_browser',fake_browser),patch.object(browse,'_link',fake_link),\
+                 patch.object(browse,'_do',lambda t,a:{'success':True}),patch.object(browse.time,'sleep',lambda s:None):
+                r=browse._pay('t','s','lsrq_fake1',fields,'@e3','Place order','https://shop.example/checkout')
+            fills=[a for c,a in calls if c=='fill']
+            self.assertIn(['@e5','4000009990001984'],fills);self.assertIn(['@e6','06 / 29'],fills);self.assertIn(['@e7','100'],fills)
+            self.assertNotIn('4000009990001984',json.dumps(r));self.assertNotIn('"100"',json.dumps(r))   # the model's result has no digits
+            report=[b for p,b in links if p.endswith('/outcome')][0]
+            if outcome=='confirmed':
+                self.assertTrue(r['success']);self.assertIn('1984',r['summary']);self.assertEqual(report['outcome'],'success')
+            else:
+                self.assertFalse(r['success']);self.assertEqual(report['outcome'],'blocked')
+                self.assertIn(['@e5',''],fills)   # the card is taken back off the page
+            seen=browse._snapshot_text({'data':{'snapshot':'- textbox "Card number" [ref=e5]: 4000009990001984'}})
+            self.assertNotIn('4000009990001984',seen);self.assertIn('••••1984',seen)
+
     def test_grounding_only_flags_reports_without_a_look(self):
         listing="Here's what's in your inbox:\n- Sam: lunch Thursday (10:30)\n- Billing: invoice 77 is due Friday, please pay soon\n- GitHub: a review request"
         self.assertEqual(app._ungrounded(listing,{'calendar_events'}),'email')

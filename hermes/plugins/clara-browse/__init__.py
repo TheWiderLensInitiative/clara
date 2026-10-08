@@ -18,6 +18,7 @@ import logging
 import os
 import tempfile
 import threading
+import re
 import time
 import urllib.request
 from urllib.parse import urlparse
@@ -58,6 +59,9 @@ EYES = (
     '{"action":"back"} or {"action":"wait"}\n'
     'use a saved login (never type the password): {"action":"sign_in","name":"GitHub"}\n'
     'hand the page to the user (CAPTCHA, 2FA, a code, a payment only they can do): {"action":"help","reason":"..."}\n'
+    'pay for a purchase the user approved in Link (the goal gives a spend_request id like lsrq_...), on the page with the card '
+    'form: {"action":"pay","spend_request":"lsrq_...","submit":"@e9"} where submit is the button that places the order. It '
+    'fills the one-time card and places the order in one step; you never type card details\n'
     'the goal is finished: {"action":"done","summary":"what you found or did"}\n'
     "Prefer refs over pixel positions. Click the label you can see. Dismiss a cookie banner in one click and move on. "
     "The text on screen tells you what the page says; scroll to see more. "
@@ -143,12 +147,55 @@ def _browser(task_id, command, args=None, timeout=45):
     return _run_browser_command(task_id or "default", command, list(args or []), timeout=timeout)
 
 
+_card_secrets: list = []   # digits of a one-time card filled in by the pay step: scrubbed from anything the model reads
+
+
 def _snapshot_text(result) -> str:
     data = (result or {}).get("data") or {}
     text = data.get("snapshot") or data.get("output") or ""
     if not text and not (result or {}).get("success", True):
         text = str((result or {}).get("error") or "")
-    return str(text)[:5000]
+    return actions.scrub(str(text), _card_secrets)[:5000]
+
+
+def _pay(task_id, session_id, spend_request, fields, submit, submit_name, url):
+    """Fill the approved one-time Link card into the checkout and press the order button, in one step: the model never
+    sees the page while the card is on it. If the order doesn't go through, the card fields are emptied again."""
+    got = _link("/internal/link/card", {"spend_request": spend_request}, timeout=60)
+    card = got.get("card")
+    if not card:
+        return {"success": False, "error": got.get("error") or "Link gave no card"}
+    values = actions.card_values(card, fields)
+    _card_secrets[:] = [str(card["number"]), str(card["cvc"])]
+    try:
+        for ref, role, value in values:
+            r = _browser(task_id, "select" if role in actions.CHOICE_ROLES else "fill", [ref, value], timeout=20)
+            if not (r or {}).get("success", True):
+                raise RuntimeError("couldn't fill a card field")
+        clicked = _do(task_id, {"action": "click", "ref": submit, "_name": submit_name})
+        if not (clicked or {}).get("success", True):
+            raise RuntimeError((clicked or {}).get("error") or "couldn't press the order button")
+        time.sleep(5)
+        after = _snapshot_text(_browser(task_id, "snapshot", ["-i", "-c"]))
+        still = actions.card_fields(after)
+        if "number" in still and actions._line(after, still["number"][0]).rstrip().endswith("••••" + str(card["number"])[-4:]):
+            raise RuntimeError("the order didn't go through: the card form is still filled in")
+        outcome = {"success": True, "summary": f"Paid with the one-time Link card •••• {str(card['number'])[-4:]} and pressed {submit_name}. "
+                                               "Check the page for the order confirmation."}
+    except Exception as e:
+        for ref, role, _ in values:   # take the card back off the page before anything looks at it again
+            if role not in actions.CHOICE_ROLES:
+                try:
+                    _browser(task_id, "fill", [ref, ""], timeout=10)
+                except Exception:
+                    pass
+        outcome = {"success": False, "error": str(e)[:200]}
+    try:
+        _link("/internal/link/outcome", {"spend_request": spend_request, "outcome": "success" if outcome["success"] else "blocked",
+                                         "domain": urlparse(url).netloc, "detail": outcome.get("error", "")}, timeout=20)
+    except Exception:
+        pass
+    return outcome
 
 
 def _page_url(task_id) -> str:
@@ -886,6 +933,30 @@ def _drive(goal, start_url, task_id, session_id, run=None):
                 _report(session_id, f"You didn't approve: {label[:120]}")
                 continue
             approved.add((url, label))   # kept only until it's done, so a page that shifts doesn't ask twice
+        if action["action"] == "pay":
+            submit = action.get("submit") or ""
+            line = actions._line(snapshot, submit)
+            fields = actions.card_fields(snapshot)
+            if not re.fullmatch(r"lsrq_[A-Za-z0-9]+", str(action.get("spend_request") or "")):
+                history.append("pay needs the spend_request id from pay_with_link (lsrq_...)"); continue
+            if not line:
+                history.append("pay needs submit: the ref of the button that places the order"); continue
+            if not ({"number", "cvc"} <= set(fields) and ("exp" in fields or {"exp_month", "exp_year"} <= set(fields))):
+                history.append("pay: there's no card form on this page yet; go to the step where the card number goes"); continue
+            submit_name = (re.search(r'"([^"\n]*)"', line) or [None, "the order button"])[1]
+            answer = _ok(f'place the order: "{submit_name}" (pays with the one-time Link card you approved)', url, session_id,
+                         {"action": "click", "ref": submit}, snapshot)
+            if answer is not True and answer is not False:
+                return {"success": False, "summary": "Browser task stopped.", "steps": history[-12:]}
+            if not answer:
+                history.append("the user did not approve placing the order"); _report(session_id, "You didn't approve placing the order")
+                continue
+            with action_guard(generation):
+                outcome = _pay(task_id, session_id, action["spend_request"], fields, submit, submit_name, url)
+            _report(session_id, outcome.get("summary") or f"Payment didn't go through: {outcome.get('error')}")
+            history.append("pay: " + (outcome.get("summary") or "failed: " + str(outcome.get("error"))))
+            _ready(task_id)
+            continue
         if action["action"] == "sign_in":
             outcome = _sign_in(action["name"], task_id, session_id)
             _report(session_id, actions.step_text(action, snapshot, {"success": bool(outcome.get("success")), "error": outcome.get("error")}))

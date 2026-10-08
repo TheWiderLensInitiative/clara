@@ -9,7 +9,7 @@ import re
 from urllib.parse import urlparse
 
 ACTIONS = {"open", "click", "fill", "set", "select", "press", "scroll", "find", "click_at", "drag", "tab", "back", "wait",
-           "sign_in", "help", "done"}
+           "sign_in", "help", "pay", "done"}
 CHOICE_ROLES = {"combobox", "listbox"}
 SLIDER_ROLES = {"slider", "spinbutton"}
 
@@ -197,6 +197,79 @@ def same_box(rect, box: dict, slack: float = 2.0) -> bool:
     except (KeyError, TypeError, ValueError):
         return False
     return len(got) == 4 and want[2] > 0 and want[3] > 0 and all(abs(a - b) <= slack for a, b in zip(got, want))
+
+
+_FIELD = re.compile(r'^(\s*)- (textbox|combobox|spinbutton|listbox) "([^"]*)"[^\n]*\[[^\]]*ref=(e\d+)')
+_IFRAME = re.compile(r'^(\s*)- [Ii]frame\b')
+CARD_KINDS = [
+    ("number", re.compile(r"card ?number|credit card|debit card|card no\b|cc-number|^number$", re.I)),
+    ("cvc", re.compile(r"\b(cvc|cvv|cvn|csc)\b|security code|card code|verification code", re.I)),
+    ("exp", re.compile(r"mm ?/ ?yy|exp\w*\.? ?date|valid thru|^exp(iry|iration)?$", re.I)),   # one box: MM/YY
+    ("exp_month", re.compile(r"(exp\w*|expir\w*) month|^month$|^mm$", re.I)),
+    ("exp_year", re.compile(r"(exp\w*|expir\w*) year|^year$|^yy(yy)?$", re.I)),
+    ("exp", re.compile(r"expir", re.I)),
+    ("name", re.compile(r"name on card|cardholder|card holder", re.I)),
+    ("zip", re.compile(r"\b(zip|postal)\b", re.I)),
+]
+
+
+def card_fields(snapshot: str) -> dict:
+    """Card form fields on a checkout page (also inside a payment iframe): kind -> (ref, role, name). A ZIP field only
+    counts inside the payment frame or when it says billing, so a shipping ZIP is never touched."""
+    found, frame_indent = {}, None
+    for line in snapshot.splitlines():
+        f = _IFRAME.match(line)
+        if f:
+            frame_indent = len(f.group(1))
+            continue
+        m = _FIELD.match(line)
+        if not m:
+            continue
+        indent, role, name, ref = len(m.group(1)), m.group(2), m.group(3), m.group(4)
+        in_frame = frame_indent is not None and indent > frame_indent
+        if frame_indent is not None and indent <= frame_indent:
+            frame_indent = None
+        for kind, rx in CARD_KINDS:
+            if rx.search(name) and kind not in found:
+                if kind == "zip" and not (in_frame or "billing" in name.lower()):
+                    break
+                found[kind] = ("@" + ref, role, name)
+                break
+    return found
+
+
+def card_values(card: dict, fields: dict) -> list:
+    """What to put in each field: [(ref, role, value)]. Expiry as MM/YY in one box, or month and year separately."""
+    mm, yy = int(card["exp_month"]), int(card["exp_year"])
+    addr = card.get("billing_address") or {}
+    out = []
+    for kind, (ref, role, name) in fields.items():
+        if kind == "number":
+            v = str(card["number"])
+        elif kind == "cvc":
+            v = str(card["cvc"])
+        elif kind == "exp":
+            v = f"{mm:02d} / {yy % 100:02d}" if " / " in name else f"{mm:02d}/{yy % 100:02d}"
+        elif kind == "exp_month":
+            v = f"{mm:02d}"
+        elif kind == "exp_year":
+            v = str(yy) if "yyyy" in name.lower() or role == "combobox" else f"{yy % 100:02d}"
+        elif kind == "name":
+            v = str(addr.get("name") or "")
+        elif kind == "zip":
+            v = str(addr.get("postal_code") or "")
+        else:
+            continue
+        if v:
+            out.append((ref, role, v))
+    return out
+
+
+def scrub(text: str, secrets) -> str:
+    """Card digits never reach the model: the number becomes ••••last4, the CVC and expiry dots."""
+    for s in sorted({str(x) for x in secrets if x and len(str(x)) >= 3}, key=len, reverse=True):
+        text = text.replace(s, "••••" + s[-4:] if len(s) >= 12 else "•" * len(s))
+    return text
 
 
 def box_center(box: dict):
