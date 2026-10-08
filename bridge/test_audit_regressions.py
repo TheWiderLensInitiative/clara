@@ -977,6 +977,25 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             seen=browse._snapshot_text({'data':{'snapshot':'- textbox "Card number" [ref=e5]: 4000009990001984'}})
             self.assertNotIn('4000009990001984',seen);self.assertIn('••••1984',seen)
 
+    async def test_shop_search_uses_saved_zip_and_sorts_by_price(self):
+        sent={}
+        def fake(request):
+            sent['body']=json.loads(request.content)
+            v=lambda price,shop:{'id':'gid://shopify/ProductVariant/1','price':{'amount':price,'currency':'USD'},
+                                 'checkout_url':f'https://{shop}/cart/1:1','seller':{'name':shop,'domain':shop}}
+            return httpx.Response(200,json={'jsonrpc':'2.0','id':1,'result':{'structuredContent':{'products':[
+                {'id':'gid://shopify/p/a','title':'Body wash 3-pack','variants':[v(1299,'b.example')]},
+                {'id':'gid://shopify/p/b','title':'Body wash 12 oz','variants':[v(699,'a.example')]}]}}})
+        client=httpx.AsyncClient(transport=httpx.MockTransport(fake))
+        with patch.object(app,'_identity_cache',return_value={'user':'Jorge, 3105 Sandhurst Rd, East Jacksonville FL 32277.','memory':''}),\
+             patch.object(app.shopify_catalog.httpx,'AsyncClient',lambda **kw:client):
+            r=await app.internal_shop_search(app.ShopSearchIn(query='body wash',max_price=15),ok=True)
+        args=sent['body']['params']['arguments']
+        self.assertEqual(args['catalog']['filters']['ships_to']['postal_code'],'32277')
+        self.assertEqual(args['catalog']['filters']['price'],{'max':1500})
+        self.assertIn('profile',args['meta']['ucp-agent'])
+        self.assertEqual([p['price'] for p in r['products']],['$6.99','$12.99']);self.assertEqual(r['products'][0]['store'],'a.example')
+
     def test_grounding_only_flags_reports_without_a_look(self):
         listing="Here's what's in your inbox:\n- Sam: lunch Thursday (10:30)\n- Billing: invoice 77 is due Friday, please pay soon\n- GitHub: a review request"
         self.assertEqual(app._ungrounded(listing,{'calendar_events'}),'email')

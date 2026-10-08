@@ -1261,6 +1261,8 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                                     "name, address and email from memory), read the exact total including shipping and tax, call "
                                     "pay_with_link, and once it's approved call browser_use with its spend_request id and the pay "
                                     "action. Link asks the user to approve each purchase; never pay another way or type card details. "
+                                    "To find products, use shop_search first (Shopify stores: prices, store and a checkout link "
+                                    "in one call), then open the chosen product's checkout_url with browser_use. "
                                     "Ship only to an address the user gave you or that's saved in your memory about them, copied exactly; "
                                     "never make one up or save a new one unless they tell you it. If you don't have it, ask.")
     mail = _mail_accounts()
@@ -1556,6 +1558,7 @@ async def _phone_approval(description: str, preview: str, rule: str, choices=("o
 import connectors
 import outlook
 import link as linkpay
+import shopify_catalog
 
 CONNECTOR_POLICY_DEFAULTS = {"calendar_add": "ask", "writes": "ask"}   # the user can "trust" calendar adds / other writes per service
 
@@ -3567,6 +3570,36 @@ async def internal_link_purchase(body: LinkPurchaseIn, ok=Depends(link)):
         return {"status": "requires_action", "message": na.get("display_message") or "Link needs the user to do something first.",
                 "action_url": na.get("action_url")}
     return {"status": st or "unknown", "note": "Not approved. Don't retry unless the user asks; never pay another way."}
+
+
+class ShopSearchIn(BaseModel):
+    query: str
+    ships_to_zip: str = ""
+    max_price: Optional[float] = None    # dollars
+    min_price: Optional[float] = None
+    limit: int = 8
+
+
+def _user_zip():
+    """The ZIP in the user's saved address (Clara's memory), so search only shows what ships there."""
+    m = re.findall(r"\b(\d{5})(?:-\d{4})?\b", _identity_cache().get("user", ""))
+    return m[0] if m else ""
+
+
+@app.post("/internal/shop/search")
+async def internal_shop_search(body: ShopSearchIn, ok=Depends(link)):
+    """Clara's shop_search tool: products from Shopify-powered stores, cheapest first, that ship to the user."""
+    zip_code = body.ships_to_zip.strip() or _user_zip()
+    cents = lambda d: int(round(d * 100)) if d else None
+    try:
+        found = await shopify_catalog.search(body.query, zip_code, cents(body.max_price), cents(body.min_price), body.limit)
+    except shopify_catalog.CatalogError as e:
+        return {"error": str(e)}
+    found.sort(key=lambda p: p.get("price_cents") or 10**9)
+    return {"ships_to_zip": zip_code or "(unknown)", "products": found,
+            "note": "Prices are before shipping and tax (the checkout shows those). Show the user a short numbered list "
+                    "(name, price, store) and let them pick. To buy, open the product's checkout_url with browser_use, "
+                    "fill in their name, email and saved address, read the total, then pay_with_link and the pay action."}
 
 
 class LinkCardIn(BaseModel):

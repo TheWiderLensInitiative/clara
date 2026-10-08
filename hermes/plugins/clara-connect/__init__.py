@@ -171,6 +171,29 @@ PAY_SCHEMA = {
 }
 
 
+SHOP_SCHEMA = {
+    "name": "shop_search",
+    "description": (
+        "Search products across millions of Shopify-powered online stores in one call: titles, prices, the store and a "
+        "direct checkout link, only items that ship to the user (their saved ZIP is used automatically). Faster and more "
+        "reliable than browsing shopping sites. Use it first when the user wants to find or buy a product; fall back to "
+        "the browser for stores that aren't on Shopify. Prices exclude shipping and tax."),
+    "parameters": {"type": "object", "properties": {
+        "query": {"type": "string", "description": "what to look for, e.g. 'arm and hammer body wash men'"},
+        "max_price": {"type": "number", "description": "dollars"}, "min_price": {"type": "number"},
+        "ships_to_zip": {"type": "string", "description": "only if the user gave a different ZIP"},
+        "limit": {"type": "integer", "description": "1-20, default 8"},
+    }, "required": ["query"]},
+}
+
+
+def handle_shop(args, **_):
+    try:
+        return json.dumps(_link("/internal/shop/search", args or {}, timeout=60))[:12000]
+    except Exception as e:
+        return json.dumps({"error": f"Couldn't reach the Clara Bridge: {type(e).__name__}"})
+
+
 def handle_pay(args, session_id=None, **_):
     import hermes_plugins.clara_guardian as guardian
     body = {**(args or {}), "conversation_id": _conversation(session_id)}
@@ -186,5 +209,6 @@ def register(ctx) -> None:
         ctx.register_tool(name=name, toolset="clara_connect", schema={"name": name, "description": desc, "parameters": params},
                           handler=_google(name), emoji=emoji)
     ctx.register_tool(name="pay_with_link", toolset="clara_connect", schema=PAY_SCHEMA, handler=handle_pay, emoji="💳")
+    ctx.register_tool(name="shop_search", toolset="clara_connect", schema=SHOP_SCHEMA, handler=handle_shop, emoji="🛍️")
     ctx.register_tool(name="list_apis", toolset="clara_connect", schema=LIST_SCHEMA, handler=handle_list, emoji="🔌")
     ctx.register_tool(name="call_api", toolset="clara_connect", schema=CALL_SCHEMA, handler=handle_call, emoji="🔌")
