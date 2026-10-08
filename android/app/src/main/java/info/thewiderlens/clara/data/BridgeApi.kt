@@ -192,6 +192,8 @@ class BridgeApi(val baseUrl: String, private val token: String?) {
     }
     suspend fun startConnect(p: String, redirect: String): String =
         json.decodeFromString<StartUrl>(call("POST", "/v1/connectors/$p/start", obj("redirect_uri" to redirect))).url
+    suspend fun startDevice(p: String): DeviceCode =
+        json.decodeFromString<DeviceStart>(call("POST", "/v1/connectors/$p/start", obj("redirect_uri" to "http://127.0.0.1:53682/cb"))).device
     suspend fun finishConnect(p: String, state: String, code: String): Connector =
         json.decodeFromString(call("POST", "/v1/connectors/$p/finish", obj("state" to state, "code" to code)))
     suspend fun disconnect(p: String, forgetClient: Boolean): Connector =

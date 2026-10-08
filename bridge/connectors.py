@@ -85,6 +85,60 @@ def start(store, provider: str, redirect_uri: str = REDIRECT) -> str:
     return p["auth_url"] + "?" + str(httpx.QueryParams(q))
 
 
+# --- device sign-in (GitHub): no redirect, no secret -----------------------------------------------------------
+_devices: dict = {}   # provider -> {device_code, interval, expires} while the user enters the code
+
+
+async def device_start(store, provider: str) -> dict:
+    """Ask the service for a short code the user types on its site. Returns what the phone shows."""
+    p, client = PROVIDERS[provider], get_client(store, provider)
+    if not client:
+        raise ValueError("no client")
+    async with httpx.AsyncClient(timeout=30) as c:
+        r = await c.post(p["device_url"], data={"client_id": client["client_id"], "scope": " ".join(p["scopes"])},
+                         headers={"Accept": "application/json"})
+    d = r.json() if r.content else {}
+    if r.status_code >= 400 or "device_code" not in d:
+        raise ValueError(f"{p['name']} said: {d.get('error_description') or d.get('error') or r.status_code}")
+    _devices[provider] = {"device_code": d["device_code"], "interval": int(d.get("interval", 5)),
+                          "expires": time.time() + int(d.get("expires_in", 900))}
+    return {"user_code": d["user_code"], "verification_uri": d.get("verification_uri") or p["verify_url"],
+            "expires_in": int(d.get("expires_in", 900))}
+
+
+async def device_wait(store, provider: str, sleep=asyncio.sleep) -> dict:
+    """Poll until the user has entered the code (or it expired / they declined). Saves the token like a sign-in."""
+    p, client, pend = PROVIDERS[provider], get_client(store, provider), _devices.get(provider)
+    if not pend:
+        raise ValueError("no sign-in in progress")
+    interval = pend["interval"]
+    async with httpx.AsyncClient(timeout=30) as c:
+        while time.time() < pend["expires"]:
+            await sleep(interval)
+            if _devices.get(provider) is not pend:
+                raise ValueError("a newer sign-in replaced this one")
+            r = await c.post(p["token_url"], headers={"Accept": "application/json"},
+                             data={"client_id": client["client_id"], "device_code": pend["device_code"],
+                                   "grant_type": "urn:ietf:params:oauth:grant-type:device_code"})
+            d = r.json() if r.content else {}
+            if d.get("access_token"):
+                _devices.pop(provider, None)
+                tok = {**d, "expires_at": time.time() + int(d["expires_in"]) - 60 if d.get("expires_in") else time.time() + 10 * 365 * 86400}
+                store.save_connector(provider, tokens=broker.seal(json.dumps(tok)), scopes=d.get("scope", " ".join(p["scopes"])))
+                account = await _account(store, provider, tok)
+                store.save_connector(provider, account=account)
+                return {"provider": provider, "account": account}
+            err = d.get("error")
+            if err == "slow_down":
+                interval = int(d.get("interval", interval + 5))
+            elif err != "authorization_pending":
+                _devices.pop(provider, None)
+                raise ValueError({"expired_token": "the code expired; tap Connect again",
+                                  "access_denied": "you declined on GitHub"}.get(err, d.get("error_description") or err or str(r.status_code)))
+    _devices.pop(provider, None)
+    raise ValueError("the code expired; tap Connect again")
+
+
 def _client_form(client, extra):
     f = {"client_id": client["client_id"], **extra}
     if client.get("client_secret"):
@@ -260,7 +314,7 @@ async def request(store, provider, method, url, *, query=None, body=None, conten
     p = PROVIDERS[provider]
     url = resolve_url(store, provider, url)
     h = {**p.get("headers", {}), **{k: v for k, v in (headers or {}).items() if k.lower() not in ("authorization", "host", "cookie")}}
-    if p["kind"] == "oauth":
+    if p["kind"] in ("oauth", "device"):
         h["Authorization"] = f"Bearer {await token(store, provider)}"
     else:
         cred = _creds(store, provider)
@@ -277,7 +331,7 @@ async def request(store, provider, method, url, *, query=None, body=None, conten
         kw["json"] = body
     async with httpx.AsyncClient(timeout=timeout, follow_redirects=False) as c:
         r = await c.request(method, url, **kw)
-        if r.status_code == 401 and p["kind"] == "oauth":   # token died early: refresh once
+        if r.status_code == 401 and p["kind"] == "oauth":   # token died early: refresh once (device tokens don't refresh)
             row = store.connector(provider)
             tok = json.loads(broker.unseal(row["tokens"]))
             tok["expires_at"] = 0

@@ -1583,7 +1583,7 @@ async def connector_client(provider: str, body: ClientIn, dev=Depends(device)):
     if provider not in connectors.PROVIDERS:
         raise HTTPException(404)
     p = connectors.PROVIDERS[provider]
-    if p["kind"] != "oauth":
+    if p["kind"] not in ("oauth", "device"):
         raise HTTPException(400, f"{p['name']} uses a token; paste it instead")
     cid_, sec = body.client_id.strip(), (body.client_secret or "").strip()
     if not re.fullmatch(p.get("client_pattern", r"\S{8,}"), cid_):
@@ -1603,10 +1603,29 @@ class StartIn(BaseModel):
 async def connector_start(provider: str, body: StartIn, dev=Depends(device)):
     if provider not in connectors.PROVIDERS:
         raise HTTPException(404)
+    if connectors.PROVIDERS[provider]["kind"] == "device":   # GitHub: a code to enter on their site, then we wait
+        try:
+            code = await connectors.device_start(store, provider)
+        except ValueError as e:
+            raise HTTPException(400, "Add your sign-in client first" if str(e) == "no client" else str(e))
+        asyncio.create_task(_device_finish(provider))
+        return {"device": code}
     try:
         return {"url": connectors.start(store, provider, body.redirect_uri)}
     except ValueError as e:
         raise HTTPException(400, "Add your sign-in client first" if str(e) == "no client" else str(e))
+
+
+async def _device_finish(provider):
+    name = connectors.PROVIDERS[provider]["name"]
+    try:
+        r = await connectors.device_wait(store, provider)
+    except ValueError as e:
+        store.add_activity(None, None, "connector.failed", None, f"{name}: {e}")
+        bus.publish("connectors.changed", provider=provider, error=str(e))
+        return
+    store.add_activity(None, None, "connector.connected", None, f"{name} connected: {r['account']}")
+    bus.publish("connectors.changed", provider=provider)
 
 
 class FinishIn(BaseModel):

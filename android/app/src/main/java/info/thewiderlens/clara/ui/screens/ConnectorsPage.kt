@@ -145,7 +145,8 @@ private fun ConnectorCard(
                     c.kind == "token" -> TokenSetup(c, onSaveToken)
                     else -> OAuthSetup(c, state, onSaveClient, onConnect, onDisconnect)
                 }
-                if (!c.connected && !viaBrowser && c.website != null) SavedLoginOption(c) { onSavedLogin(c.name, c.website) }
+                // a one-tap sign-in (built-in app) is easier still: only offer saved logins where there isn't one
+                if (!c.connected && !viaBrowser && c.website != null && !c.hasClient) SavedLoginOption(c) { onSavedLogin(c.name, c.website) }
             }
         }
     }
@@ -248,6 +249,23 @@ private fun OAuthSetup(c: Connector, state: UiState, onSaveClient: (String, Stri
             onSaveClient(c.provider, id, secret)
         }
         if (c.hasClient) TextButton(onClick = { editing = false }) { Text("Cancel", color = ClaraColors.Muted) }
+    } else if (state.deviceCode?.first == c.provider) {
+        // Device sign-in: no redirect. Copy the code, enter it on the service's page, come back; Clara finishes on her own.
+        val code = state.deviceCode.second
+        Text("Enter this code on ${c.name}:", style = MaterialTheme.typography.bodyMedium)
+        SelectionContainer {
+            Text(code.userCode, style = MaterialTheme.typography.headlineMedium.copy(fontFamily = FontFamily.Monospace),
+                color = ClaraColors.Cyan, modifier = Modifier.padding(vertical = 8.dp))
+        }
+        GradientButton("Copy code & open ${c.name}", modifier = Modifier.fillMaxWidth()) {
+            context.getSystemService(android.content.ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("${c.name} code", code.userCode))
+            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(code.verificationUri))) }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+            CircularProgressIndicator(Modifier.padding(end = 10.dp).size(16.dp), color = ClaraColors.Cyan, strokeWidth = 2.dp)
+            Text("Paste the code there and tap Authorize. This updates by itself.", style = MaterialTheme.typography.labelSmall,
+                color = ClaraColors.Muted)
+        }
     } else if (state.connectBusy) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             CircularProgressIndicator(Modifier.padding(end = 10.dp).size(18.dp), color = ClaraColors.Cyan, strokeWidth = 2.dp)

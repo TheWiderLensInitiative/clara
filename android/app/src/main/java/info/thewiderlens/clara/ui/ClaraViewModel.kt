@@ -42,6 +42,7 @@ data class UiState(
     val character: info.thewiderlens.clara.data.CharacterView = info.thewiderlens.clara.data.CharacterView(),
     val connectLink: String? = null,       // sign-in link while waiting for the browser to come back
     val connectBusy: Boolean = false,
+    val deviceCode: Pair<String, info.thewiderlens.clara.data.DeviceCode>? = null,   // provider + code while a device sign-in waits
     val brandLogoVersion: Int = 0,   // bumps when the logo changes, so previews reload
     val paired: Boolean? = null,            // null = still loading settings
     val bridgeUrl: String = "",
@@ -372,6 +373,7 @@ class ClaraViewModel : ViewModel() {
     /** Sign in with Google in the phone's browser; the redirect comes back to 127.0.0.1 on this phone (see LoopbackReceiver). */
     fun connect(p: String, openBrowser: (String) -> Boolean) = viewModelScope.launch {
         val a = api ?: return@launch
+        if (_ui.value.connectors.firstOrNull { it.provider == p }?.kind == "device") { connectDevice(a, p); return@launch }
         val port = _ui.value.connectors.firstOrNull { it.provider == p }?.redirect?.substringAfterLast(':')?.substringBefore('/')?.toIntOrNull() ?: 53682
         val receiver = try { info.thewiderlens.clara.connect.LoopbackReceiver(port) } catch (e: Exception) {
             _ui.update { it.copy(error = "Couldn't start sign-in (port $port busy). Close other sign-ins and try again.") }; return@launch
@@ -382,7 +384,7 @@ class ClaraViewModel : ViewModel() {
             _ui.update { it.copy(connectLink = url) }
             if (!openBrowser(url)) _ui.update { it.copy(error = "No browser found. Copy the link below into a browser on this phone.") }
             val result = receiver.await(android.net.Uri.parse(url).getQueryParameter("state"))   // up to 10 minutes
-            if (result.error != null) _ui.update { it.copy(error = "Google sign-in: ${result.error}") }
+            if (result.error != null) _ui.update { it.copy(error = "Sign-in: ${result.error}") }
             else { a.finishConnect(p, result.state!!, result.code!!); run { val fetched0 = a.connectors(); _ui.update { it.copy(connectors = fetched0) } } }
         } catch (e: Exception) {
             _ui.update { it.copy(error = e.message ?: e.toString()) }
@@ -391,6 +393,28 @@ class ClaraViewModel : ViewModel() {
             _ui.update { it.copy(connectBusy = false, connectLink = null) }
         }
     }
+
+    /** GitHub-style sign-in: show the code, then check until the Bridge reports the account connected (or it expires). */
+    private suspend fun connectDevice(a: info.thewiderlens.clara.data.BridgeApi, p: String) {
+        try {
+            _ui.update { it.copy(connectBusy = true) }
+            val code = a.startDevice(p)
+            _ui.update { it.copy(deviceCode = p to code) }
+            val until = System.currentTimeMillis() + code.expiresIn * 1000L
+            while (System.currentTimeMillis() < until && _ui.value.deviceCode?.first == p) {
+                kotlinx.coroutines.delay(4000)
+                val fetched = runCatching { a.connectors() }.getOrNull() ?: continue
+                _ui.update { it.copy(connectors = fetched) }
+                if (fetched.firstOrNull { it.provider == p }?.connected == true) break
+            }
+        } catch (e: Exception) {
+            _ui.update { it.copy(error = e.message ?: e.toString()) }
+        } finally {
+            _ui.update { it.copy(connectBusy = false, deviceCode = null) }
+        }
+    }
+
+    fun cancelDeviceCode() = _ui.update { it.copy(deviceCode = null) }
 
     fun refreshSpend() = launchSafe { api?.let { a -> run { val fetched0 = a.spend(); _ui.update { it.copy(spend = fetched0) } } } }
     /** Caps only the user can set. null = leave as is; clear = remove the cap. */

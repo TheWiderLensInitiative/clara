@@ -262,6 +262,14 @@ data class ConnectorList(val connectors: List<Connector>)
 @Serializable
 data class StartUrl(val url: String)
 
+/** A device sign-in (GitHub): the code the user types on the service's site. */
+@Serializable
+data class DeviceCode(@SerialName("user_code") val userCode: String, @SerialName("verification_uri") val verificationUri: String,
+                      @SerialName("expires_in") val expiresIn: Int = 900)
+
+@Serializable
+data class DeviceStart(val device: DeviceCode)
+
 @Serializable
 data class CharacterOptions(val shape: List<String> = emptyList(), val hair: List<String> = emptyList(),
                             val eyes: List<String> = emptyList(), val accessories: List<String> = emptyList())

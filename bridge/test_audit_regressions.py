@@ -797,6 +797,35 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         finally:
             app.store.set_vault_index([])
 
+    async def test_github_device_sign_in(self):
+        import broker
+        app.store.save_connector('github',client=broker.seal(json.dumps({'client_id':'Ov23liTEST12345','client_secret':''})))
+        polls=[{'error':'authorization_pending'},{'error':'slow_down','interval':7},{'access_token':'gho_test','token_type':'bearer','scope':'repo'}]
+        seen={'polls':0,'auth':None}
+        def fake(request):
+            if request.url.path=='/login/device/code':
+                self.assertIn(b'client_id=Ov23liTEST12345',request.content);self.assertNotIn(b'client_secret',request.content)
+                return httpx.Response(200,json={'device_code':'dc1','user_code':'ABCD-1234','verification_uri':'https://github.com/login/device','expires_in':900,'interval':5})
+            if request.url.path=='/login/oauth/access_token':
+                self.assertIn(b'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Adevice_code',request.content)
+                seen['polls']+=1;return httpx.Response(200,json=polls.pop(0))
+            seen['auth']=request.headers.get('authorization');return httpx.Response(200,json={'login':'devignite'})
+        real=httpx.AsyncClient;waits=[]
+        async def no_sleep(s):waits.append(s)
+        with patch.object(connectors.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(fake),**{k:v for k,v in kw.items() if k!='transport'})):
+            code=await connectors.device_start(app.store,'github')
+            self.assertEqual(code['user_code'],'ABCD-1234')
+            done=await connectors.device_wait(app.store,'github',sleep=no_sleep)
+        self.assertEqual(done['account'],'devignite');self.assertEqual(seen['polls'],3);self.assertEqual(waits,[5,5,7])   # slow_down respected
+        self.assertEqual(seen['auth'],'Bearer gho_test')
+        self.assertTrue(app._connector_view('github')['connected'])
+        polls[:]=[{'error':'access_denied'}]
+        with patch.object(connectors.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(fake),**{k:v for k,v in kw.items() if k!='transport'})):
+            await connectors.device_start(app.store,'github')
+            with self.assertRaises(ValueError) as e:await connectors.device_wait(app.store,'github',sleep=no_sleep)
+        self.assertIn('declined',str(e.exception))
+        app.store.save_connector('github',tokens=None,account='',client=None)
+
     def test_telling_clara_about_yourself_goes_to_memory(self):
         for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
                      'my shoe size is 7.5','remember that I like oat milk']:
