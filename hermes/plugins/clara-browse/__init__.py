@@ -69,6 +69,8 @@ EYES = (
     "and never start a trial or enter a card. "
     "A greyed-out Save or Submit usually means everything is already saved: reload, and if your change is still there, "
     "it was saved, so move on. "
+    "A 404 or 'not found' on a settings, account or admin page usually means you're signed out (GitHub does this): "
+    "look for Sign in and use a saved login before deciding the page doesn't exist. "
     "If a step you just took did nothing, do something different. When the goal is met, done."
 )
 
