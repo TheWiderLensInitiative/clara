@@ -189,6 +189,16 @@ def same_control(seen: str, want: str) -> bool:
     return len(short) >= 12 and long_.startswith(short)
 
 
+def same_box(rect, box: dict, slack: float = 2.0) -> bool:
+    """Is the control under the pointer (x, y, width, height) the very element the snapshot ref points at?"""
+    try:
+        want = [float(box[k]) for k in ("x", "y", "width", "height")]
+        got = [float(v) for v in rect]
+    except (KeyError, TypeError, ValueError):
+        return False
+    return len(got) == 4 and want[2] > 0 and want[3] > 0 and all(abs(a - b) <= slack for a, b in zip(got, want))
+
+
 def box_center(box: dict):
     """Viewport center of an element box, or None when the box is missing or empty."""
     if not isinstance(box, dict):

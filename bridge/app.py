@@ -1180,7 +1180,8 @@ _NEED_GUIDANCE = {
 TAKEOVER_ASK = re.compile(r"\b(take ?over|hand (it|the browser|control) back|need you to (sign|log) ?in|sign (in|up) (for me|yourself|with your)|"
                           r"you('ll| will)? need to (sign|log) ?in)\b", re.I)
 TAKEOVER_CONTINUE = ("(Automatic follow-up from Clara's app) You just ended the task to ask the user to take over the browser, but "
-                     "your browser closes when a task ends, so they had nothing to take over. Carry on with the same task now. "
+                     "your browser closes when a task ends, so they had nothing to take over. Pick up exactly where you left off: "
+                     "don't redo steps you already finished, and never create, send or buy something a second time. "
                      "Clicks, ticks, tabs and form fields are yours to do: try again yourself (reload the page, scroll, or reach "
                      "the same setting another way). Remember that a greyed-out Save or Submit usually means there's nothing left "
                      "to save: if your change is still there after a reload, it was saved. Only if the page needs a password, a "

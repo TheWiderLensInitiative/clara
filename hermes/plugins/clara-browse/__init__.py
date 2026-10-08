@@ -430,8 +430,9 @@ HIT_NAME = """(() => {
   if(x<0||y<0||x>=innerWidth||y>=innerHeight) return null;
   const el=document.elementFromPoint(x,y)?.closest('a,button,input,textarea,select,label,[role]');
   if(!el || el.disabled || getComputedStyle(el).visibility==='hidden') return null;
-  return (el.getAttribute('aria-label')||Array.from(el.labels||[]).map(l=>l.innerText).join(' ')||el.innerText||
-          el.getAttribute('placeholder')||el.getAttribute('value')||'').trim();
+  const r=el.getBoundingClientRect();
+  return JSON.stringify([(el.getAttribute('aria-label')||Array.from(el.labels||[]).map(l=>l.innerText).join(' ')||el.innerText||
+          el.getAttribute('placeholder')||el.getAttribute('value')||'').trim(), r.x, r.y, r.width, r.height]);
 })()"""
 
 
@@ -439,15 +440,17 @@ def _tap_ref(task_id, ref, expected_name=""):
     moved = _browser(task_id, "scrollintoview", [ref], timeout=10)
     if not moved.get("success", False):
         return {"success": False, "error": "Could not bring the target into view"}
-    box = _browser(task_id, "get", ["box", ref], timeout=10)
-    points = actions.box_points((box or {}).get("data") or {})
+    box = (_browser(task_id, "get", ["box", ref], timeout=10) or {}).get("data") or {}
+    points = actions.box_points(box)
     if not points:
         return {"success": False, "error": "Target has no visible box"}
-    # Press only where the top-most control under the pointer is the one meant (never a link or button on top of it).
+    # Press only where the top-most control under the pointer is the one meant (never a link or button on top of it):
+    # same name, or (for a control with no name, like GitHub's "Enable Device Flow" checkbox) exactly the same box.
     # A card's center can be a link or picture inside it, so other spots on the card are tried too.
     for x, y in points:
         seen = _eval(task_id, HIT_NAME, [x, y])
-        if isinstance(seen, str) and actions.same_control(seen, expected_name):
+        if isinstance(seen, list) and len(seen) == 5 and (
+                actions.same_control(seen[0], expected_name) or actions.same_box(seen[1:], box)):
             return _tap_point(task_id, x, y) or {"success": False, "error": "Pointer dispatch failed"}
     return {"success": False, "error": "The target is covered, ambiguous or changed. Observe again."}
 
