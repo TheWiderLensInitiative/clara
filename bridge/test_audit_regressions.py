@@ -777,6 +777,26 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sent['account_body'],b'')   # Dropbox rejects a JSON "null" on no-argument calls
         app.store.save_connector('dropbox',tokens=None,account='')
 
+    async def test_saved_logins_make_services_usable_through_the_browser(self):
+        app.store.set_vault_index([{"name":"Notion","site":"https://www.notion.so/login","username":"clara@thewiderlens.info"},
+                                   {"name":"SpotifyMusic","site":"https://accounts.spotify.com/en/login","username":"c"},
+                                   {"name":"Bank","site":"https://bank.example","username":"x"}])
+        try:
+            self.assertEqual(app._connector_view('notion')['browser_login'],'Notion')
+            self.assertEqual(app._connector_view('spotify')['browser_login'],'SpotifyMusic')   # accounts.spotify.com matches
+            self.assertIsNone(app._connector_view('todoist')['browser_login'])
+            self.assertEqual(app._connector_view('notion')['website'],'https://www.notion.so/login')
+            r=await app._generic_call('connections',{})
+            self.assertEqual({b['service'] for b in r['through_browser']},{'notion','spotify'})
+            self.assertNotIn('Notion',r['not_connected']);self.assertIn('sign_in',r['note'])
+            self.assertTrue(app._mentions_connected('add this to my notion page'))
+            client=types.SimpleNamespace(post=AsyncMock(return_value=response(500,{'detail':'isolated test'})))
+            with patch.object(app,'hermes',client),patch.object(app,'_job_ids',new=AsyncMock(return_value=set())):
+                await app._agent(self.cid,[],'test','task')
+            self.assertIn('Notion (saved login “Notion”)',client.post.call_args.kwargs['json']['instructions'])
+        finally:
+            app.store.set_vault_index([])
+
     def test_telling_clara_about_yourself_goes_to_memory(self):
         for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
                      'my shoe size is 7.5','remember that I like oat milk']:

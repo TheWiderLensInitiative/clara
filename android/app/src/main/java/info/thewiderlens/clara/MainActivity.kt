@@ -157,6 +157,7 @@ class MainActivity : FragmentActivity() {
 private fun Home(state: UiState, vm: ClaraViewModel) {
     var tab by rememberSaveable { mutableIntStateOf(0) }            // 0 Chats · 1 Goals · 2 Library
     var page by rememberSaveable { mutableStateOf<String?>(null) }  // assistant menu and its pages
+    var loginPrefill by remember { mutableStateOf<Pair<String, String>?>(null) }   // Connectors -> Passwords with that service filled in
     val api by ClaraHub.api.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
     val snack = remember { SnackbarHostState() }
@@ -181,14 +182,17 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
                 "connectors" -> info.thewiderlens.clara.ui.screens.ConnectorsPage(state, vm::refreshConnectors, vm::setConnectorClient, vm::setConnectorToken,
                     onConnect = { p -> vm.connect(p) { url ->
                         runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) }.isSuccess
-                    } }, onDisconnect = vm::disconnect, onPolicy = vm::setConnectorPolicy, onBack = back)
+                    } }, onDisconnect = vm::disconnect, onPolicy = vm::setConnectorPolicy, onBack = back,
+                    onSavedLogin = { name, site -> loginPrefill = name to site; page = "passwords" })
                 "look" -> info.thewiderlens.clara.ui.screens.LookPage(state, vm::refreshCharacter, vm::setCharacterPreset, vm::setCharacterStyle, vm::undoCharacter, back)
                 "spending" -> info.thewiderlens.clara.ui.screens.SpendingPage(state, vm::refreshSpend, vm::setCaps, back)
                 "brand" -> info.thewiderlens.clara.ui.screens.BrandPage(state, vm::refreshBrand, vm::saveBrand, vm::setBrandLogo, vm::removeBrandLogo, vm::libraryBytes, back)
                 "settings" -> SettingsPage(state, vm::unpair, back, onVoiceRefresh = vm::refreshVoice, onPickVoice = vm::setVoice, speech = vm::speech,
                     onProactiveRefresh = vm::refreshProactive, onProactive = vm::setProactive,
                     onSendNow = { vm.reachOutNow("suggestions"); page = null })
-                "passwords" -> PasswordsPage(state, vm::refreshLogins, vm::saveLogin, vm::deleteLogin, back)
+                "passwords" -> PasswordsPage(state, vm::refreshLogins, vm::saveLogin, vm::deleteLogin,
+                    { val fromConnectors = loginPrefill != null; loginPrefill = null; vm.refreshConnectors()
+                      page = if (fromConnectors) "connectors" else "hub" }, prefill = loginPrefill)
                 "apikeys" -> ApiKeysPage(state, vm::refreshApis, vm::saveApi, vm::deleteApi, back)
                 "cloud" -> CloudPage(state, vm::refreshCloud, vm::setOpenRouterKey,
                     { a, i, cap, clear, always -> vm.updateCloud(a, i, cap, clear, always) }, vm::answerBudget, back,

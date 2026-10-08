@@ -13,6 +13,14 @@ guide:      a short API cheat-sheet for Clara
 REDIRECT_PORT = 53682
 REDIRECT = f"http://127.0.0.1:{REDIRECT_PORT}/cb"
 
+# Services without a one-tap sign-in can still be used through Clara's browser with a saved login (Clara menu → Passwords):
+# the login lives only on the phone and is typed into this site's own sign-in page. website = where that sign-in starts.
+WEBSITES = {
+    "notion": "https://www.notion.so/login", "todoist": "https://app.todoist.com/auth/login", "github": "https://github.com/login",
+    "slack": "https://slack.com/signin", "discord": "https://discord.com/login", "spotify": "https://accounts.spotify.com/login",
+    "x": "https://x.com/i/flow/login", "meta": "https://www.facebook.com/login",
+}
+
 PROVIDERS = {
     # ---------------------------------------------------------------- email, calendar, files ---
     "google": {

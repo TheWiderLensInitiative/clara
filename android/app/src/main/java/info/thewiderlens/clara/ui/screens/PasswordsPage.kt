@@ -50,9 +50,11 @@ private val NAME_OK = Regex("^[A-Za-z0-9_-]{1,64}$")
  * but no password is ever sent back to this phone — and Clara never sees them at all.
  */
 @Composable
-fun PasswordsPage(state: UiState, onRefresh: () -> Unit, onSave: (String, String, String, String) -> Unit, onDelete: (String) -> Unit, onBack: () -> Unit) {
+fun PasswordsPage(state: UiState, onRefresh: () -> Unit, onSave: (String, String, String, String) -> Unit, onDelete: (String) -> Unit, onBack: () -> Unit,
+                  prefill: Pair<String, String>? = null) {
     LaunchedEffect(Unit) { onRefresh() }
-    var adding by remember { mutableStateOf(false) }
+    // Opened from a connector ("Use with a saved login"): the add form starts with that service's name and sign-in page
+    var adding by remember { mutableStateOf(prefill != null && state.logins.none { it.name == prefill.first.replace(' ', '-') }) }
     var confirmDelete by remember { mutableStateOf<SavedLogin?>(null) }
     PageScaffold("Passwords", onBack) {
         Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
@@ -101,7 +103,8 @@ fun PasswordsPage(state: UiState, onRefresh: () -> Unit, onSave: (String, String
             }
         }
     }
-    if (adding) AddLoginDialog(onDismiss = { adding = false }) { n, u, user, pw -> onSave(n, u, user, pw); adding = false }
+    if (adding) AddLoginDialog(onDismiss = { adding = false }, startName = prefill?.first?.replace(' ', '-') ?: "",
+        startUrl = prefill?.second?.ifBlank { null } ?: "https://") { n, u, user, pw -> onSave(n, u, user, pw); adding = false }
     confirmDelete?.let { l ->
         AlertDialog(
             onDismissRequest = { confirmDelete = null }, containerColor = ClaraColors.Panel,
@@ -114,9 +117,9 @@ fun PasswordsPage(state: UiState, onRefresh: () -> Unit, onSave: (String, String
 }
 
 @Composable
-private fun AddLoginDialog(onDismiss: () -> Unit, onSave: (String, String, String, String) -> Unit) {
-    var name by remember { mutableStateOf("") }
-    var url by remember { mutableStateOf("https://") }
+private fun AddLoginDialog(onDismiss: () -> Unit, startName: String = "", startUrl: String = "https://", onSave: (String, String, String, String) -> Unit) {
+    var name by remember { mutableStateOf(startName) }
+    var url by remember { mutableStateOf(startUrl) }
     var user by remember { mutableStateOf("") }
     var pw by remember { mutableStateOf("") }
     val nameOk = NAME_OK.matches(name)

@@ -22,7 +22,7 @@ from urllib.parse import urlparse
 import httpx
 
 import broker
-from connector_defs import PROVIDERS, REDIRECT, REDIRECT_PORT
+from connector_defs import PROVIDERS, REDIRECT, REDIRECT_PORT, WEBSITES
 
 GMAIL = "https://gmail.googleapis.com/gmail/v1/users/me"
 CAL = "https://www.googleapis.com/calendar/v3"

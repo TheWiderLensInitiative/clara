@@ -728,7 +728,8 @@ SERVICE_WORDS = {"google": r"drive|youtube", "microsoft": r"outlook|onedrive|mic
 
 
 def _mentions_connected(text):
-    return any(re.search(r"\b(" + SERVICE_WORDS[p] + r")\b", text, re.I) for p in _connected() if p in SERVICE_WORDS)
+    usable = set(_connected()) | {p for p in connectors.WEBSITES if _browser_login(p)}   # API or saved login
+    return any(re.search(r"\b(" + SERVICE_WORDS[p] + r")\b", text, re.I) for p in usable if p in SERVICE_WORDS)
 
 
 RESTYLE_REQUEST = re.compile(r"\b(make yourself|change (your|ur) (look|looks|color|colou?rs|style|outfit|appearance|hair|eyes|shape)|"
@@ -1212,6 +1213,12 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                                     "then check what it produced and report back briefly. Only write the code yourself if cloud use is denied or unavailable. "
                                     "Tell the sub-agent to keep scratch and debug files in a temporary folder (e.g. /tmp) and to delete any "
                                     "throwaway files before finishing, so only the real deliverables are left in the project folder.")
+    via_browser = [f"{connectors.PROVIDERS[p]['name']} (saved login “{_browser_login(p)['name']}”)" for p in connectors.WEBSITES
+                   if p not in _connected() and _browser_login(p)]
+    if via_browser:
+        payload["instructions"] += (" Through your browser with a saved login (no API connection): " + ", ".join(via_browser) +
+                                    ". For these, use browser_use on the service's website and sign in with that saved login when "
+                                    "it asks (never ask the user for the password).")
     others = [connectors.PROVIDERS[p]["name"] + (" (OneDrive, To Do)" if p == "microsoft" else "") for p in _connected() if p != "google"]
     if others:
         payload["instructions"] += (f" Connected services: {', '.join(others)}. Use list_connections to see how to call them and "
@@ -1509,9 +1516,26 @@ import outlook
 CONNECTOR_POLICY_DEFAULTS = {"calendar_add": "ask", "writes": "ask"}   # the user can "trust" calendar adds / other writes per service
 
 
+def _site(url):
+    """Registrable part of a host (accounts.spotify.com -> spotify.com), enough to match a saved login to a service."""
+    from urllib.parse import urlparse as _up
+    host = (_up(url if "//" in str(url) else "https://" + str(url)).hostname or "").lower()
+    return ".".join(host.split(".")[-2:])
+
+
+def _browser_login(provider):
+    """The saved login (Passwords) Clara can use for this service through her browser, if there is one."""
+    website = connectors.WEBSITES.get(provider)
+    if not website:
+        return None
+    want = {_site(website)} | ({"instagram.com"} if provider == "meta" else set()) | ({"twitter.com"} if provider == "x" else set())
+    return next((e for e in store.vault_index() if _site(e.get("site") or "") in want), None)
+
+
 def _connector_view(provider):
     p = connectors.PROVIDERS[provider]
     row = store.connector(provider) or {}
+    login = _browser_login(provider)
     pol = {**CONNECTOR_POLICY_DEFAULTS, **json.loads(row.get("policy") or "{}")}
     return {"provider": provider, "name": p["name"], "kind": p["kind"], "category": p.get("category", "Other"), "services": p["services"],
             "steps": p.get("steps", []), "setup_url": p.get("setup_url"), "needs_secret": bool(p.get("secret")),
@@ -1519,7 +1543,8 @@ def _connector_view(provider):
             "has_client": bool(row.get("client") or connectors.builtin_client(provider)),
             "builtin": bool(connectors.builtin_client(provider)), "own_client": bool(row.get("client")),
             "connected": bool(row.get("tokens")), "account": row.get("account") or "",
-            "connected_at": row.get("connected"), "policy": pol}
+            "connected_at": row.get("connected"), "policy": pol, "website": connectors.WEBSITES.get(provider),
+            "browser_login": (login or {}).get("name")}
 
 
 def _connected():
@@ -1702,9 +1727,15 @@ async def _generic_call(act, a):
             p = connectors.PROVIDERS[pid]
             out.append({"service": pid, "name": p["name"], "account": (store.connector(pid) or {}).get("account"),
                         "what": p["services"], "hosts": connectors.allowed_hosts(store, pid), "guide": p.get("guide", "")})
-        not_connected = [connectors.PROVIDERS[p]["name"] for p in connectors.PROVIDERS if p not in _connected()]
-        return {"connected": out, "not_connected": not_connected,
-                "note": "Only connected services can be called. The user connects more in the app (Clara menu -> Connectors)."}
+        browser = [{"service": p, "name": connectors.PROVIDERS[p]["name"], "saved_login": _browser_login(p)["name"],
+                    "website": connectors.WEBSITES[p]} for p in connectors.PROVIDERS if p not in _connected() and _browser_login(p)]
+        not_connected = [connectors.PROVIDERS[p]["name"] for p in connectors.PROVIDERS
+                         if p not in _connected() and not any(b["service"] == p for b in browser)]
+        return {"connected": out, "through_browser": browser, "not_connected": not_connected,
+                "note": "Connected services are called with connection_call. Services under through_browser have no API connection "
+                        "but a saved login: use browser_use on their website and sign in with that saved login (the sign_in action; "
+                        "the user approves with their fingerprint and you never see the password). The user connects more in the "
+                        "app (Clara menu -> Connectors or Passwords)."}
     if act == "youtube_upload":
         if "google" not in _connected():
             return {"error": "Google isn't connected. Ask the user to connect Google (with YouTube) in Clara menu -> Connectors."}

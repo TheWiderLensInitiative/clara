@@ -80,6 +80,7 @@ private val OK = Color(0xFF34D399)
 fun ConnectorsPage(
     state: UiState, onRefresh: () -> Unit, onSaveClient: (String, String, String) -> Unit, onSaveToken: (String, Map<String, String>) -> Unit,
     onConnect: (String) -> Unit, onDisconnect: (String, Boolean) -> Unit, onPolicy: (String, String, String) -> Unit, onBack: () -> Unit,
+    onSavedLogin: (name: String, website: String) -> Unit = { _, _ -> },
 ) {
     LaunchedEffect(Unit) { onRefresh() }
     var open by remember { mutableStateOf<String?>(null) }
@@ -94,9 +95,9 @@ fun ConnectorsPage(
             (CATEGORY_ORDER + (groups.keys - CATEGORY_ORDER.toSet())).forEach { cat ->
                 val list = groups[cat] ?: return@forEach
                 Text(cat, style = MaterialTheme.typography.labelMedium, color = ClaraColors.Cyan, modifier = Modifier.padding(top = 10.dp))
-                list.sortedByDescending { it.connected }.forEach { c ->
+                list.sortedByDescending { it.connected || it.browserLogin != null }.forEach { c ->
                     ConnectorCard(c, state, open == c.provider, { open = if (open == c.provider) null else c.provider },
-                        onSaveClient, onSaveToken, onConnect, onDisconnect, onPolicy)
+                        onSaveClient, onSaveToken, onConnect, onDisconnect, onPolicy, onSavedLogin)
                 }
             }
             Text("Not possible yet: posting to TikTok and Instagram (their APIs need a business review). Clara makes the videos and you share them from the player.",
@@ -111,27 +112,40 @@ private fun ConnectorCard(
     c: Connector, state: UiState, expanded: Boolean, onToggle: () -> Unit,
     onSaveClient: (String, String, String) -> Unit, onSaveToken: (String, Map<String, String>) -> Unit,
     onConnect: (String) -> Unit, onDisconnect: (String, Boolean) -> Unit, onPolicy: (String, String, String) -> Unit,
+    onSavedLogin: (String, String) -> Unit,
 ) {
+    val viaBrowser = !c.connected && c.browserLogin != null
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(ClaraColors.Panel)
-        .border(1.dp, if (c.connected) OK.copy(alpha = 0.5f) else ClaraColors.Line, RoundedCornerShape(18.dp))) {
+        .border(1.dp, if (c.connected || viaBrowser) OK.copy(alpha = 0.5f) else ClaraColors.Line, RoundedCornerShape(18.dp))) {
         Row(Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             BrandTile(c.provider)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(c.name, style = MaterialTheme.typography.titleMedium)
-                Text(if (c.connected) c.account.ifBlank { "Connected" } else c.services.joinToString(" · "),
-                    style = MaterialTheme.typography.labelMedium, color = if (c.connected) OK else ClaraColors.Muted, maxLines = 1)
+                Text(if (c.connected) c.account.ifBlank { "Connected" } else if (viaBrowser) "Through the browser · ${c.browserLogin}"
+                     else c.services.joinToString(" · "),
+                    style = MaterialTheme.typography.labelMedium, color = if (c.connected || viaBrowser) OK else ClaraColors.Muted, maxLines = 1)
             }
-            Text(if (c.connected) "●" else if (expanded) "▾" else "Set up ›", color = if (c.connected) OK else ClaraColors.Cyan,
+            Text(if (c.connected || viaBrowser) "●" else if (expanded) "▾" else "Set up ›", color = if (c.connected || viaBrowser) OK else ClaraColors.Cyan,
                 style = MaterialTheme.typography.labelMedium)
         }
         AnimatedVisibility(expanded) {
             Column(Modifier.padding(start = 14.dp, end = 14.dp, bottom = 14.dp)) {
                 when {
                     c.connected -> ConnectedPanel(c, onDisconnect, onPolicy)
+                    viaBrowser -> {
+                        Text("Clara uses ${c.name} in her browser and signs in with your saved login “${c.browserLogin}”. You approve each " +
+                            "sign-in with your fingerprint and she never sees the password. Slower than a direct connection, but it works " +
+                            "for anything you can do on the website.", style = MaterialTheme.typography.bodySmall, color = ClaraColors.Muted)
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(onClick = { onSavedLogin(c.name, c.website ?: "") }, shape = RoundedCornerShape(14.dp)) {
+                            Text("Manage in Passwords", color = ClaraColors.Text)
+                        }
+                    }
                     c.kind == "token" -> TokenSetup(c, onSaveToken)
                     else -> OAuthSetup(c, state, onSaveClient, onConnect, onDisconnect)
                 }
+                if (!c.connected && !viaBrowser && c.website != null) SavedLoginOption(c) { onSavedLogin(c.name, c.website) }
             }
         }
     }
@@ -155,6 +169,20 @@ private fun ConnectedPanel(c: Connector, onDisconnect: (String, Boolean) -> Unit
     }
     Spacer(Modifier.height(8.dp))
     OutlinedButton(onClick = { onDisconnect(c.provider, false) }, shape = RoundedCornerShape(14.dp)) { Text("Disconnect", color = ClaraColors.Danger) }
+}
+
+/** No one-tap sign-in for this service: Clara can still use its website with a login saved on the phone. */
+@Composable
+private fun SavedLoginOption(c: Connector, onUse: () -> Unit) {
+    Spacer(Modifier.height(14.dp))
+    Box(Modifier.fillMaxWidth().height(1.dp).background(ClaraColors.Line))
+    Spacer(Modifier.height(12.dp))
+    Text("Easier: use a saved login", style = MaterialTheme.typography.titleSmall)
+    Text("Skip the setup above. Save your ${c.name} login on this phone and Clara signs in on the website in her browser. " +
+        "You approve each sign-in with your fingerprint and she never sees the password.",
+        style = MaterialTheme.typography.bodySmall, color = ClaraColors.Muted)
+    Spacer(Modifier.height(8.dp))
+    GradientButton("Use with a saved login", modifier = Modifier.fillMaxWidth()) { onUse() }
 }
 
 @Composable

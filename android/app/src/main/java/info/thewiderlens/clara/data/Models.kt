@@ -253,6 +253,7 @@ data class Connector(
     val fields: List<ConnectorField> = emptyList(), val redirect: String = "http://127.0.0.1:53682/cb",
     @SerialName("has_client") val hasClient: Boolean = false, val connected: Boolean = false, val account: String = "",
     @SerialName("connected_at") val connectedAt: Double? = null, val policy: Map<String, String> = emptyMap(),
+    val website: String? = null, @SerialName("browser_login") val browserLogin: String? = null,
 )
 
 @Serializable
