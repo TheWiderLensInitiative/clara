@@ -96,6 +96,9 @@ PAY_BYPASS = re.compile(r"/internal/link|link-cli|LINK_AUTH_FILE|LINK_ACCESS_TOK
 PAY_BLOCK = "Payments go only through pay_with_link and browser_use's pay action; card details never pass through you."
 
 
+HARMLESS_WAIT = re.compile(r'(?:(?:echo(?: +"[^"$`\\]*"| +[\w .,:!?-]*)?|sleep +\d{1,3}(?:\.\d+)?|true)\s*(?:&&|;)?\s*){1,4}')
+
+
 # Human checks are for humans: never script around them, ask the user to take over instead.
 CAPTCHA = re.compile(r"captcha|recaptcha|hcaptcha|turnstile|cf-chl|g-recaptcha|i'?m not a robot|arkose|funcaptcha", re.I)
 CAPTCHA_BLOCK = ("Don't try to get around a CAPTCHA or human check. Call ask_user_for_browser_help with what you need "
@@ -125,6 +128,8 @@ def decide(tool_name, args):
             tokens = shlex.split(cmd)
         except ValueError:
             tokens = []
+        if HARMLESS_WAIT.fullmatch(cmd.strip()):
+            return None   # "echo … && sleep 3": only waits (she used it as a pause during a purchase search on 2026-10-08)
         read_only = {"pwd", "ls", "cat", "head", "tail", "wc", "stat", "file", "du", "df", "whoami", "date"}
         if not tokens or tokens[0] not in read_only or any(c in cmd for c in (";", "|", "&", ">", "<", "$", "`", "\n")):
             return ("approve", "Clara wants to execute a command that can run code or change external state: " + cmd[:300])

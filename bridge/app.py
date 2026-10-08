@@ -1260,7 +1260,9 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                                     "browser_use, go through checkout up to the payment step (guest checkout when possible; use their "
                                     "name, address and email from memory), read the exact total including shipping and tax, call "
                                     "pay_with_link, and once it's approved call browser_use with its spend_request id and the pay "
-                                    "action. Link asks the user to approve each purchase; never pay another way or type card details.")
+                                    "action. Link asks the user to approve each purchase; never pay another way or type card details. "
+                                    "Ship only to an address the user gave you or that's saved in your memory about them, copied exactly; "
+                                    "never make one up or save a new one unless they tell you it. If you don't have it, ask.")
     mail = _mail_accounts()
     if mail:
         names = " and ".join("Google (Gmail)" if p == "google" else "Microsoft (Outlook)" for p in mail)
@@ -3511,6 +3513,7 @@ class LinkPurchaseIn(BaseModel):
     merchant_url: str
     context: str
     items: list[dict] = []          # [{"name", "quantity", "unit_amount"}]
+    ship_to: str = ""               # the delivery address used at checkout: shown to the user in the approval
     shipping_cents: Optional[int] = None
     tax_cents: Optional[int] = None
     test: bool = False
@@ -3526,6 +3529,9 @@ async def internal_link_purchase(body: LinkPurchaseIn, ok=Depends(link)):
     in the chat opens it); this waits for the answer as Link allows (10 minutes) and never returns card details."""
     if "link" not in _connected():
         return {"error": "Link isn't connected. Ask the user to connect Link (by Stripe) in Clara menu -> Connectors."}
+    if len(body.ship_to.strip()) < 8:
+        return {"error": "ship_to is required: the delivery address you entered at checkout, exactly as entered (or 'pickup' / "
+                         "'digital' when nothing is shipped). The user checks it before approving."}
     cid = body.conversation_id or _current_conversation()
     items = [f"name:{str(i.get('name', 'Item'))[:80].replace(',', ' ')},quantity:{int(i.get('quantity') or 1)}"
              + (f",unit_amount:{int(i['unit_amount'])}" if i.get("unit_amount") else "") for i in body.items[:10]]
@@ -3533,12 +3539,13 @@ async def internal_link_purchase(body: LinkPurchaseIn, ok=Depends(link)):
              ([f"type:tax,display_text:Tax,amount:{body.tax_cents}"] if body.tax_cents is not None else []) + \
              [f"type:total,display_text:Total,amount:{body.amount_cents}"]
     try:
-        req = await linkpay.spend_create(body.amount_cents, body.merchant_name.strip(), body.merchant_url.strip(), body.context.strip(),
-                                         items, totals, test=body.test)
+        req = await linkpay.spend_create(body.amount_cents, body.merchant_name.strip(), body.merchant_url.strip(),
+                                         (body.context.strip() + f" Ships to: {body.ship_to.strip()}")[:1000], items, totals, test=body.test)
     except linkpay.LinkError as e:
         return {"error": f"Link refused the request: {e}"}
     what = f"{_cents(body.amount_cents)} at {body.merchant_name}" + (" (test, no charge)" if body.test else "")
-    card_msg = store.add_message(cid, "assistant", f"💳 **Approve in Link:** {what}. Link shows the store, the items and the total; "
+    card_msg = store.add_message(cid, "assistant", f"💳 **Approve in Link:** {what}.\n📦 Ships to: **{body.ship_to.strip()[:200]}**\n"
+                                 "Check the address, then approve in Link (it shows the store, the items and the total). "
                                  "Clara waits for your answer.", route="share",
                                  meta={"kind": "share", "url": req["approval_url"], "label": "Approve in Link"})
     bus.publish("notification", conversation_id=cid, message=card_msg)

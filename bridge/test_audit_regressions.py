@@ -920,14 +920,18 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             await app._link_finish()
             self.assertEqual(app._connector_view('link')['account'],'tester@example.com')
             ctx='Buying one bottle of body wash from Example Shop; the user asked Clara to find a cheap one and buy it today.'
-            short=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=899,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context='too short'),ok=True)
+            short=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=899,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context='too short',ship_to='pickup in store'),ok=True)
             self.assertIn('error',short)
-            big=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=60000,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context=ctx),ok=True)
+            big=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=60000,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context=ctx,ship_to='pickup in store'),ok=True)
             self.assertIn('500',big['error'])
             r=await app.internal_link_purchase(app.LinkPurchaseIn(conversation_id=self.cid,amount_cents=899,merchant_name='Example Shop',
-                      merchant_url='https://shop.example/wash',context=ctx,items=[{'name':'Body wash, 18 oz','quantity':1,'unit_amount':899}],test=True),ok=True)
+                      merchant_url='https://shop.example/wash',context=ctx,items=[{'name':'Body wash, 18 oz','quantity':1,'unit_amount':899}],test=True,
+                      ship_to='3105 Sandhurst Rd, Jacksonville FL 32277'),ok=True)
             self.assertEqual(r['status'],'approved');self.assertNotIn('card',json.dumps(r).replace('one-time card','').lower().replace('card details',''))
             card_msg=[m for m in app.store.messages(self.cid) if m['content'].startswith('💳')][-1]
+            self.assertIn('Ships to: **3105 Sandhurst Rd',card_msg['content'])
+            no_addr=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=899,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context=ctx),ok=True)
+            self.assertIn('ship_to is required',no_addr['error'])
             self.assertEqual(card_msg['meta']['label'],'Approve in Link');self.assertIn('/activity/approve/',card_msg['meta']['url'])
             c=await app.internal_link_card(app.LinkCardIn(spend_request=r['spend_request']),ok=True)
             self.assertEqual(c['card']['number'][-4:],'1984')
@@ -935,7 +939,7 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn('error',again)   # a card is handed over once
             self.assertFalse(list((BASE/'link').glob('card-*.json')))   # the card file is deleted right away
             with patch.dict(os.environ,{'FAKE_LINK_DECISION':'denied'}):
-                d=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=899,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context=ctx),ok=True)
+                d=await app.internal_link_purchase(app.LinkPurchaseIn(amount_cents=899,merchant_name='Example Shop',merchant_url='https://shop.example/wash',context=ctx,ship_to='pickup in store'),ok=True)
             self.assertEqual(d['status'],'denied')
             await app.connector_disconnect('link',dev={'id':'p','name':'Phone'})
             self.assertFalse(app._connector_view('link')['connected'])

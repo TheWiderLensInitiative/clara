@@ -164,9 +164,10 @@ PAY_SCHEMA = {
         "context": {"type": "string", "description": "at least 100 characters: what is being bought, from which store, and that the user asked for it"},
         "items": {"type": "array", "items": {"type": "object", "properties": {"name": S, "quantity": {"type": "integer"},
                   "unit_amount": {"type": "integer", "description": "cents"}}}},
+        "ship_to": {"type": "string", "description": "the delivery address you entered at checkout, exactly as entered; the user checks it"},
         "shipping_cents": {"type": "integer"}, "tax_cents": {"type": "integer"},
         "test": {"type": "boolean", "description": "Link test mode: a test card, no charge. Only when the user says it's a test."},
-    }, "required": ["amount_cents", "merchant_name", "merchant_url", "context"]},
+    }, "required": ["amount_cents", "merchant_name", "merchant_url", "context", "ship_to"]},
 }
 
 
