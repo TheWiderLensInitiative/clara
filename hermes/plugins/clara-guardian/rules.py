@@ -84,6 +84,13 @@ VAULT_BYPASS = re.compile(r"agent-browser|\.agent-browser", re.I)
 VAULT_BLOCK = "Clara's browser and password vault can only be used through her browser tools, never directly."
 
 
+# Her browser is browser_use. Starting another Chrome from the terminal (2026-10-07: a headless Chrome with a remote
+# debugging port, to "restart the browser" mid sign-up) can't fix it, and a debug port would let scripts read pages.
+SIDE_BROWSER = re.compile(r"(\b|/)(google-chrome|chrome|chromium(-browser)?|chromedriver|playwright|puppeteer)\b|--remote-debugging|--headless", re.I)
+SIDE_BROWSER_BLOCK = ("Don't start, restart or debug a browser yourself: your browser is browser_use, and it reopens on its own. "
+                      "If browser_use keeps failing, stop and tell the user what you see.")
+
+
 # Human checks are for humans: never script around them, ask the user to take over instead.
 CAPTCHA = re.compile(r"captcha|recaptcha|hcaptcha|turnstile|cf-chl|g-recaptcha|i'?m not a robot|arkose|funcaptcha", re.I)
 CAPTCHA_BLOCK = ("Don't try to get around a CAPTCHA or human check. Call ask_user_for_browser_help with what you need "
@@ -98,6 +105,8 @@ def decide(tool_name, args):
             return ("block", "Clara may not touch her own configuration, Guardian, or the Bridge.")
         if VAULT_BYPASS.search(cmd):
             return ("block", VAULT_BLOCK)
+        if SIDE_BROWSER.search(cmd):
+            return ("block", SIDE_BROWSER_BLOCK)
         if _kills_infra(cmd):
             return ("block", "Clara may not stop her own model, agent, Bridge, or search service; that would take Clara offline.")
         for rx, what in CMD_RULES:
@@ -126,6 +135,8 @@ def decide(tool_name, args):
             return ("block", "Clara may not touch her own configuration, Guardian, or the Bridge.")
         if VAULT_BYPASS.search(code):
             return ("block", VAULT_BLOCK)
+        if SIDE_BROWSER.search(code):
+            return ("block", SIDE_BROWSER_BLOCK)
         for rx, what in PY_RULES:
             if rx.search(code):
                 return ("approve", f"Clara wants to {what}.")
