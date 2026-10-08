@@ -314,7 +314,7 @@ private fun humanSize(b: Long) = when {
 }
 
 @Composable
-private fun FileViewer(f: LibraryFile, load: suspend (String) -> ByteArray?, onClose: () -> Unit) {
+fun FileViewer(f: LibraryFile, load: suspend (String) -> ByteArray?, onClose: () -> Unit) {
     var text by remember { mutableStateOf<String?>(null) }
     var image by remember { mutableStateOf<ImageBitmap?>(null) }
     LaunchedEffect(f.path) {
@@ -334,8 +334,13 @@ private fun FileViewer(f: LibraryFile, load: suspend (String) -> ByteArray?, onC
             Box(Modifier.heightIn(max = 520.dp)) {
                 image?.let { Image(it, f.name, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth()) }
                 text?.let {
-                    Text(
-                        it, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = if (f.name.endsWith(".md")) FontFamily.Default else FontFamily.Monospace),
+                    if (f.name.endsWith(".md")) {   // notes and checklists: show them formatted, with real check boxes
+                        val shown = it.replace(Regex("(?m)^(\\s*)[-*] \\[[xX]\\] "), "$1☑ ").replace(Regex("(?m)^(\\s*)[-*] \\[ \\] "), "$1☐ ")
+                            .replace(Regex("(?m)^#{1,6} "), "")
+                        Text(info.thewiderlens.clara.ui.components.markdown(shown), style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.verticalScroll(rememberScrollState()))
+                    } else Text(
+                        it, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                         modifier = Modifier.verticalScroll(rememberScrollState()),
                     )
                 }

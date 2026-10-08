@@ -88,6 +88,29 @@ fun markdown(raw: String): AnnotatedString = buildAnnotatedString {
     append(text.substring(i))
 }
 
+/** A file Clara made, under her reply: tap to read it in the Library's viewer. */
+@Composable
+private fun MadeFileCard(path: String, load: suspend (String) -> ByteArray?) {
+    var open by remember { mutableStateOf(false) }
+    val name = path.substringAfterLast('/')
+    val ext = name.substringAfterLast('.', "").lowercase()
+    val kind = when (ext) { "md", "txt", "csv", "json", "log", "py", "html", "sh", "yaml", "yml" -> "text"; "pdf" -> "pdf"; else -> "file" }
+    Row(
+        Modifier.padding(top = 6.dp, start = 4.dp).widthIn(max = 330.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp))
+            .background(ClaraColors.Panel).border(1.dp, ClaraColors.Line, RoundedCornerShape(14.dp))
+            .clickable { open = true }.padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(when (kind) { "text" -> "📝"; "pdf" -> "📄"; else -> "📦" }, style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(name, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            Text("Saved in your Library · tap to open", style = MaterialTheme.typography.labelSmall, color = ClaraColors.Muted)
+        }
+    }
+    if (open) info.thewiderlens.clara.ui.screens.FileViewer(info.thewiderlens.clara.data.LibraryFile(path, name, kind = kind), load) { open = false }
+}
+
 @Composable
 fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, onOpenBrowser: () -> Unit = {}) {
     val mine = m.role == "user"
@@ -162,6 +185,10 @@ fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, on
                     }
                 }
                 if (load != null) images.forEach { if (isVideoPath(it)) InlineVideo(it, load) else InlineImage(it, load) }
+                // files Clara made or changed in this task (like Muse): a card under her reply that opens the file
+                if (load != null) m.attachments.filter { it !in images }.forEach { p ->
+                    if (isImagePath(p)) InlineImage(p, load) else if (isVideoPath(p)) InlineVideo(p, load) else MadeFileCard(p, load)
+                }
                 val shot = m.meta?.get("browser")
                 if (shot != null && load != null) BrowserSnapshotCard(shot, m.meta["browser_url"].orEmpty(), load, onOpenBrowser)
                 // a post Clara prepared for a site that doesn't let apps post (Reddit): one tap opens it, the user posts it

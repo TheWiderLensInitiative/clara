@@ -890,6 +890,15 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(client.post.await_args_list[1].kwargs['json']['input'],app.TAKEOVER_NO_BROWSER)
         self.assertEqual(client.post.await_count,2)
 
+    def test_files_a_task_made_are_attached_to_the_reply(self):
+        before={'notes/old.md':1.0,'report.pdf':2.0,'videos/a.mp4':3.0}
+        after={'notes/old.md':1.0,'report.pdf':5.0,'checklist.md':6.0,'videos/a.mp4':3.0,'videos/b.mp4':7.0,'videos/b.jpg':7.0}
+        self.assertEqual(app._made_files(before,after),['videos/b.mp4','checklist.md','report.pdf'])   # new and changed, newest first
+        ws=Path(app.WORKSPACE);(ws/'uploads').mkdir(parents=True,exist_ok=True);(ws/'.browser').mkdir(exist_ok=True)
+        (ws/'uploads/photo.jpg').write_bytes(b'x');(ws/'.browser/shot.jpg').write_bytes(b'x');(ws/'checklist.md').write_text('- [ ] milk')
+        marks=app._workspace_marks()
+        self.assertIn('checklist.md',marks);self.assertNotIn('uploads/photo.jpg',marks);self.assertFalse(any(k.startswith('.browser') for k in marks))
+
     def test_grounding_only_flags_reports_without_a_look(self):
         listing="Here's what's in your inbox:\n- Sam: lunch Thursday (10:30)\n- Billing: invoice 77 is due Friday, please pay soon\n- GitHub: a review request"
         self.assertEqual(app._ungrounded(listing,{'calendar_events'}),'email')

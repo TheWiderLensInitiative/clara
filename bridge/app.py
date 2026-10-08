@@ -1196,6 +1196,30 @@ TAKEOVER_NO_BROWSER = ("(Automatic follow-up from Clara's app) You asked the use
                        "action, and then carry on after they hand it back.")
 
 
+def _workspace_marks() -> dict:
+    """Files in Clara's workspace and when each last changed (not uploads from the phone, not hidden folders)."""
+    out = {}
+    try:
+        for p in WORKSPACE.rglob("*"):
+            rel = p.relative_to(WORKSPACE)
+            if rel.parts[0] == "uploads" or any(part.startswith(".") or part == "__pycache__" for part in rel.parts):
+                continue
+            with suppress(OSError):
+                if p.is_file():
+                    out[str(rel)] = p.stat().st_mtime
+    except OSError:
+        pass
+    return out
+
+
+def _made_files(before: dict, after: dict, limit=6) -> list:
+    """Files a task created or changed, newest first: shown as cards under Clara's reply (like Muse), so a note or a
+    report she wrote is one tap away instead of only in the Library."""
+    changed = [r for r, m in after.items() if before.get(r) != m]
+    changed = [r for r in changed if not (r.lower().endswith(".jpg") and r[:-4] + ".mp4" in after)]   # a video's poster frame
+    return sorted(changed, key=lambda r: -after[r])[:limit]
+
+
 async def _agent(cid, history, text, route_name, coding=False, voice=False, effort="deep", browse=False,
                  need="", need_conf=0.0, mail=False, reground=False, continued=False):
     """One Hermes run. mail: an email/calendar conversation, so the reply is held back until _ungrounded() has
@@ -1262,6 +1286,7 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     if effort in ("quick", "light") and not coding:   # Hermes model routes: same Bonsai, less thinking (see bonsai_lighter)
         payload["model"] = "bonsai-fast" if effort == "quick" else "bonsai-light"
     jobs_before = await _job_ids()
+    files_before = await asyncio.to_thread(_workspace_marks)
     try:
         response = await hermes.post("/v1/runs", json=payload, timeout=30)
         response.raise_for_status()
@@ -1363,8 +1388,9 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     if asked_takeover:   # no "Open browser" on this reply: that browser is closed, the follow-up opens it again
         suggestions = None
         meta.pop("browser", None); meta.pop("browser_url", None)
+    made = _made_files(files_before, await asyncio.to_thread(_workspace_marks)) if terminal else []
     msg = store.add_message(cid, "assistant", (final or "The task stream ended before completion could be confirmed. Please check the result before retrying.").strip(), route=route_name, run_id=run_id,
-                            suggestions=suggestions, meta=meta or None)
+                            suggestions=suggestions, meta=meta or None, attachments=made)
     store.add_activity(cid, run_id, "run.finished", None, (final or "")[:300])
     bus.publish("message.completed", conversation_id=cid, message=msg)
     if asked_takeover:
