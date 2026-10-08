@@ -69,6 +69,7 @@ data class UiState(
     val doneAt: Long = 0L,
     val goals: List<info.thewiderlens.clara.data.Goal> = emptyList(),
     val library: List<info.thewiderlens.clara.data.LibraryFile> = emptyList(),
+    val recipes: List<info.thewiderlens.clara.data.RecipeView> = emptyList(),
     val identity: info.thewiderlens.clara.data.Identity = info.thewiderlens.clara.data.Identity(),
     val screenAt: Long = 0L,
     val logins: List<info.thewiderlens.clara.data.SavedLogin> = emptyList(),
@@ -308,6 +309,8 @@ class ClaraViewModel : ViewModel() {
 
     fun deleteGoal(g: info.thewiderlens.clara.data.Goal) = launchSafe { api?.let { a -> a.deleteGoal(g.id); run { val fetched0 = a.goals(); _ui.update { it.copy(goals = fetched0) } } } }
 
+    fun refreshRecipes() = launchSafe { api?.let { a -> val fetched = a.recipes(); _ui.update { it.copy(recipes = fetched) } } }
+    fun deleteRecipe(name: String) = launchSafe { api?.let { a -> a.deleteRecipe(name); val fetched = a.recipes(); _ui.update { it.copy(recipes = fetched) } } }
     fun refreshLibrary() = launchSafe { api?.let { a -> run { val fetched0 = a.library(); _ui.update { it.copy(library = fetched0) } } } }
     suspend fun libraryBytes(path: String): ByteArray? = api?.let { it.bytes(it.libraryUrl(path)) }
     fun deleteLibraryFile(path: String) = launchSafe { api?.let { a -> a.deleteLibraryFile(path); val fetched = a.library(); _ui.update { it.copy(library = fetched) } } }

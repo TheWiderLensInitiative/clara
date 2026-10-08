@@ -996,6 +996,63 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('profile',args['meta']['ucp-agent'])
         self.assertEqual([p['price'] for p in r['products']],['$6.99','$12.99']);self.assertEqual(r['products'][0]['store'],'a.example')
 
+    def test_recipes_match_track_steps_and_learn(self):
+        import recipes
+        with patch.object(recipes,'LEARNED',BASE/'recipes-learned'):
+            buy=recipes.match('buy me a bottle of arm and hammer body wash',connected=['link'])
+            self.assertEqual(buy.name,'buy_product')
+            self.assertIsNone(recipes.match('buy me a bottle of body wash',connected=[]))   # needs Link
+            self.assertEqual(recipes.match('reply to the email from Sam',connected=[]).name,'reply_email')
+            self.assertIsNone(recipes.match('what is the weather tomorrow',connected=['link']))
+            st=recipes.start(buy,'buy me body wash')
+            st=recipes.advance(buy,st,['shop_search','browser_use'],answered=False,completed=True)
+            self.assertEqual(st['done'],['search']);self.assertTrue(st['waiting'])   # stops at "which one?"
+            self.assertIn('→ 2.',recipes.instructions(buy,st));self.assertIn('✓ 1.',recipes.instructions(buy,st))
+            st=recipes.advance(buy,st,[],answered=True)
+            self.assertEqual(st['done'],['search','choose'])
+            # a browser call before paying is the checkout, not the "place the order" step
+            st=recipes.advance(buy,st,['browser_use','browser_use'],answered=False,completed=True)
+            self.assertEqual(st['done'],['search','choose','checkout'])
+            st=recipes.advance(buy,st,['pay_with_link','browser_use'],answered=False,completed=True)
+            self.assertTrue(recipes.finished(buy,st))
+            # learning: a 3-tool job is saved, trusted after it worked twice, then matched for a similar request
+            seq=['web_search','browser_use','cronjob']
+            first=recipes.learn('track the price of the steam deck oled every morning',seq,'Done!')
+            self.assertEqual(first.wins,1);self.assertIsNone(recipes.match('track the price of the steam deck oled each morning'))
+            recipes.learn('track the price of the steam deck oled daily',seq,'Done!')
+            self.assertEqual(recipes.match('track the price of the steam deck oled every morning').name,first.name)
+            self.assertIsNone(recipes.learn('what time is it',['web_search'],'3pm'))   # too small to be a recipe
+
+    async def test_recipes_page_lists_and_deletes_only_learned(self):
+        import recipes
+        with patch.object(recipes,'LEARNED',BASE/'recipes-page'):
+            learned=recipes.learn('check my dropbox and email me a summary of new files',['connection_call','web_extract','email_send'],'Done')
+            names={r['name']:r for r in (await app.recipes_list(dev={'id':'p','name':'P'}))['recipes']}
+            self.assertIn('buy_product',names);self.assertTrue(names[learned.name]['learned']);self.assertFalse(names[learned.name]['trusted'])
+            with self.assertRaises(HTTPException):await app.recipes_delete('buy_product',dev={'id':'p','name':'P'})
+            await app.recipes_delete(learned.name,dev={'id':'p','name':'P'})
+            self.assertIsNone(recipes.get(learned.name))
+
+    async def test_recipe_runs_through_the_agent(self):
+        import recipes
+        cid=app.store.create_conversation()['id']
+        with patch.object(app,'_connected',return_value=['link']):
+            app._pick_recipe(cid,'buy me a bottle of body wash','laya')
+        self.assertEqual(app.store.setting(f'recipe:{cid}')['name'],'buy_product')
+        streams=[Stream(200,[f'data: {json.dumps({"event":"tool.started","tool":"shop_search"})}',
+                             f'data: {json.dumps({"event":"run.completed","output":"1. Body wash $6.99 at marketcol.com. Which one?"})}'])]
+        client=types.SimpleNamespace(post=AsyncMock(return_value=response(200,{'run_id':'r1'})),stream=lambda *a,**k:streams.pop(0))
+        with patch.object(app,'hermes',client),patch.object(app,'_job_ids',new=AsyncMock(return_value=set())),patch.object(app,'_connected',return_value=['link']):
+            await app._agent(cid,[],'buy me a bottle of body wash','task')
+        instr=client.post.call_args.kwargs['json']['instructions']
+        self.assertIn('Find and buy a product',instr);self.assertIn('→ 1. Search for the product',instr)
+        st=app.store.setting(f'recipe:{cid}');self.assertEqual(st['done'],['search']);self.assertTrue(st['waiting'])
+        app._pick_recipe(cid,'the first one','followup')
+        self.assertEqual(app.store.setting(f'recipe:{cid}')['done'],['search','choose'])
+        app.store.set_setting(f'recipe:{cid}',{**app.store.setting(f'recipe:{cid}'),'waiting':True})
+        app._pick_recipe(cid,"what's the weather tomorrow",'laya')
+        self.assertIsNone(app.store.setting(f'recipe:{cid}'))   # a new, unrelated request ends it
+
     def test_grounding_only_flags_reports_without_a_look(self):
         listing="Here's what's in your inbox:\n- Sam: lunch Thursday (10:30)\n- Billing: invoice 77 is due Friday, please pay soon\n- GitHub: a review request"
         self.assertEqual(app._ungrounded(listing,{'calendar_events'}),'email')

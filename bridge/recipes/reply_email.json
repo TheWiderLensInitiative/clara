@@ -1,0 +1,15 @@
+{
+ "name": "reply_email",
+ "title": "Reply to an email",
+ "triggers": [
+  "\\b(reply|respond|answer|write back)\\b.{0,40}\\b(e-?mail|message)\\b",
+  "\\b(reply|respond|write back) to\\b"
+ ],
+ "steps": [
+  {"id": "find", "tool": "email_search", "do": "Find the email with email_search (sender, subject or words the user mentioned)."},
+  {"id": "read", "tool": "email_read", "do": "Read that email in full with email_read."},
+  {"id": "review", "ask": true, "do": "Write the reply in the user's voice and show it to them; ask if it's good to send or what to change."},
+  {"id": "send", "tool": "email_send", "do": "Send the approved reply with email_send, using reply_to_id so it stays in the thread (they approve it on their phone)."},
+  {"id": "confirm", "do": "Tell the user it was sent, in one short sentence."}
+ ]
+}

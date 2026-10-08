@@ -178,6 +178,13 @@ data class LibraryFile(val path: String, val name: String, val size: Long = 0, v
 data class LibraryList(val files: List<LibraryFile>)
 
 @Serializable
+data class RecipeView(val name: String, val title: String, val learned: Boolean = false, val wins: Int = 0, val trusted: Boolean = true,
+                      val examples: List<String> = emptyList(), val steps: List<String> = emptyList())
+
+@Serializable
+data class RecipeList(val recipes: List<RecipeView>)
+
+@Serializable
 data class Identity(val soul: String = "", val user: String = "", val memory: String = "")
 
 @Serializable

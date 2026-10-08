@@ -194,6 +194,7 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
                     { val fromConnectors = loginPrefill != null; loginPrefill = null; vm.refreshConnectors()
                       page = if (fromConnectors) "connectors" else "hub" }, prefill = loginPrefill)
                 "apikeys" -> ApiKeysPage(state, vm::refreshApis, vm::saveApi, vm::deleteApi, back)
+                "recipes" -> info.thewiderlens.clara.ui.screens.RecipesPage(state, vm::refreshRecipes, vm::deleteRecipe, back)
                 "cloud" -> CloudPage(state, vm::refreshCloud, vm::setOpenRouterKey,
                     { a, i, cap, clear, always -> vm.updateCloud(a, i, cap, clear, always) }, vm::answerBudget, back,
                     onVideoRefresh = vm::refreshVideoModels, onVideoModel = vm::setVideoModel, onSpending = { page = "spending" })
