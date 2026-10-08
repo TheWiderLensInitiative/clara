@@ -380,7 +380,9 @@ class ClaraViewModel : ViewModel() {
         }
         try {
             _ui.update { it.copy(connectBusy = true, connectLink = null) }
-            val url = a.startConnect(p, receiver.redirectUri)
+            // Slack only treats "localhost" as a desktop sign-in; the same loopback receiver answers either name
+            val wantsLocalhost = _ui.value.connectors.firstOrNull { it.provider == p }?.redirect?.startsWith("http://localhost") == true
+            val url = a.startConnect(p, if (wantsLocalhost) receiver.redirectUri.replace("127.0.0.1", "localhost") else receiver.redirectUri)
             _ui.update { it.copy(connectLink = url) }
             if (!openBrowser(url)) _ui.update { it.copy(error = "No browser found. Copy the link below into a browser on this phone.") }
             val result = receiver.await(android.net.Uri.parse(url).getQueryParameter("state"))   // up to 10 minutes

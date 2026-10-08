@@ -80,7 +80,8 @@ def start(store, provider: str, redirect_uri: str = REDIRECT) -> str:
     for st in [st for st, v in _pending.items() if time.time() - v["created"] > 900]:
         _pending.pop(st, None)
     _pending[state] = {"provider": provider, "verifier": verifier, "redirect_uri": redirect_uri, "created": time.time()}
-    q = {"client_id": client["client_id"], "redirect_uri": redirect_uri, "response_type": "code", "scope": " ".join(p["scopes"]),
+    q = {"client_id": client["client_id"], "redirect_uri": redirect_uri, "response_type": "code",
+         p.get("scope_param", "scope"): (" " if p.get("scope_param") != "user_scope" else ",").join(p["scopes"]),
          "state": state, "code_challenge": challenge, "code_challenge_method": "S256", **p.get("extra", {})}
     return p["auth_url"] + "?" + str(httpx.QueryParams(q))
 
@@ -139,6 +140,16 @@ async def device_wait(store, provider: str, sleep=asyncio.sleep) -> dict:
     raise ValueError("the code expired; tap Connect again")
 
 
+def _token_reply(p, data: dict) -> dict:
+    """A token response in one shape: Slack nests a user token under authed_user and reports errors with ok:false."""
+    if not isinstance(data, dict):
+        return {"error": "bad response"}
+    if data.get("ok") is False:
+        return {"error": data.get("error") or "rejected"}
+    inner = data.get(p["token_path"]) if p.get("token_path") else None
+    return {**data, **inner} if isinstance(inner, dict) and inner.get("access_token") else data
+
+
 def _client_form(client, extra):
     f = {"client_id": client["client_id"], **extra}
     if client.get("client_secret"):
@@ -157,12 +168,14 @@ async def finish(store, state: str, code: str) -> dict:
         r = await c.post(p["token_url"], data=_client_form(client, {"code": code, "redirect_uri": pend["redirect_uri"],
                                                                      "grant_type": "authorization_code", "code_verifier": pend["verifier"]}))
     try:
-        tok = r.json()
+        tok = _token_reply(p, r.json())
     except Exception:
         tok = {"error": r.text[:200]}
     if r.status_code >= 400 or "access_token" not in tok:
         raise ValueError(f"{p['name']} said: {tok.get('error_description') or tok.get('error') or r.status_code}")
-    if not tok.get("refresh_token"):
+    if not tok.get("refresh_token") and p.get("refresh_optional") and not tok.get("expires_in"):
+        tok["expires_in"] = 10 * 365 * 86400   # a non-rotating token: it doesn't expire
+    elif not tok.get("refresh_token"):
         raise ValueError(f"{p['name']} didn't allow offline access; remove Clara's access in your {p['name']} account settings and connect again")
     tok["expires_at"] = time.time() + int(tok.get("expires_in", 3600)) - 60
     store.save_connector(provider, tokens=broker.seal(json.dumps(tok)), scopes=tok.get("scope", " ".join(p["scopes"])))
@@ -229,7 +242,7 @@ async def token(store, provider: str) -> str:
     async with httpx.AsyncClient(timeout=30) as c:
         r = await c.post(p["token_url"], data=_client_form(client, {"refresh_token": tok["refresh_token"], "grant_type": "refresh_token"}))
     try:
-        new = r.json()
+        new = _token_reply(p, r.json())
     except Exception:
         new = {"error": r.status_code}
     if r.status_code >= 400 or "access_token" not in new:

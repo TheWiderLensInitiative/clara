@@ -1539,7 +1539,7 @@ def _connector_view(provider):
     pol = {**CONNECTOR_POLICY_DEFAULTS, **json.loads(row.get("policy") or "{}")}
     return {"provider": provider, "name": p["name"], "kind": p["kind"], "category": p.get("category", "Other"), "services": p["services"],
             "steps": p.get("steps", []), "setup_url": p.get("setup_url"), "needs_secret": bool(p.get("secret")),
-            "fields": [{"key": f["key"], "label": f["label"]} for f in p.get("fields", [])], "redirect": connectors.REDIRECT,
+            "fields": [{"key": f["key"], "label": f["label"]} for f in p.get("fields", [])], "redirect": p.get("redirect", connectors.REDIRECT),
             "has_client": bool(row.get("client") or connectors.builtin_client(provider)),
             "builtin": bool(connectors.builtin_client(provider)), "own_client": bool(row.get("client")),
             "connected": bool(row.get("tokens")), "account": row.get("account") or "",

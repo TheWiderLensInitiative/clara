@@ -826,6 +826,34 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('declined',str(e.exception))
         app.store.save_connector('github',tokens=None,account='',client=None)
 
+    async def test_slack_pkce_user_token(self):
+        import broker
+        from urllib.parse import urlparse,parse_qs
+        app.store.save_connector('slack',client=broker.seal(json.dumps({'client_id':'1234567890.987654321','client_secret':''})))
+        self.assertEqual(app._connector_view('slack')['redirect'],'http://localhost:53682/cb')
+        q=parse_qs(urlparse(connectors.start(app.store,'slack','http://localhost:53682/cb')).query)
+        self.assertIn('chat:write',q['user_scope'][0]);self.assertNotIn('scope',q);self.assertEqual(q['code_challenge_method'],['S256'])
+        sent={}
+        def fake(request):
+            if request.url.path=='/api/oauth.v2.access':
+                sent['form']=request.content.decode()
+                return httpx.Response(200,json={'ok':True,'authed_user':{'id':'U1','scope':'chat:write','access_token':'xoxp-test','token_type':'user'},'team':{'id':'T1'}})
+            sent['auth']=request.headers.get('authorization')
+            return httpx.Response(200,json={'ok':True,'user':'jorge','team':'TheWiderLens'})
+        real=httpx.AsyncClient
+        with patch.object(connectors.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(fake),**{k:v for k,v in kw.items() if k!='transport'})):
+            done=await connectors.finish(app.store,q['state'][0],'code1')
+        self.assertEqual(done['account'],'jorge');self.assertEqual(sent['auth'],'Bearer xoxp-test')
+        self.assertIn('code_verifier',sent['form']);self.assertNotIn('client_secret',sent['form'])
+        tok=json.loads(broker.unseal(app.store.connector('slack')['tokens']))
+        self.assertGreater(tok['expires_at'],__import__('time').time()+86400*365)   # non-rotating user token: no refresh needed
+        q=parse_qs(urlparse(connectors.start(app.store,'slack','http://localhost:53682/cb')).query)
+        def denied(request):return httpx.Response(200,json={'ok':False,'error':'invalid_code'})
+        with patch.object(connectors.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(denied),**{k:v for k,v in kw.items() if k!='transport'})):
+            with self.assertRaises(ValueError) as e:await connectors.finish(app.store,q['state'][0],'bad')
+        self.assertIn('invalid_code',str(e.exception))
+        app.store.save_connector('slack',tokens=None,account='',client=None)
+
     def test_telling_clara_about_yourself_goes_to_memory(self):
         for text in ['my name is Jorge Maure my address is 3105 Sandhurst road','I\'m a man','call me J','I live in Jacksonville',
                      'my shoe size is 7.5','remember that I like oat milk']:
