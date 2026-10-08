@@ -1188,6 +1188,13 @@ TAKEOVER_CONTINUE = ("(Automatic follow-up from Clara's app) You just ended the 
                      "action at that point and then continues the rest of the task after they hand it back.")
 
 
+TAKEOVER_NO_BROWSER = ("(Automatic follow-up from Clara's app) You asked the user to take over your browser, but you didn't use "
+                       "your browser at all in this task, so you can't know what's on the page. Do it now: call browser_use with "
+                       "the user's goal. Do the clicks yourself, including 'Continue with Google' and picking their account. "
+                       "Only a password, a code, a CAPTCHA or card details go to the user, from inside browser_use with its help "
+                       "action, and then carry on after they hand it back.")
+
+
 async def _agent(cid, history, text, route_name, coding=False, voice=False, effort="deep", browse=False,
                  need="", need_conf=0.0, mail=False, reground=False, continued=False):
     """One Hermes run. mail: an email/calendar conversation, so the reply is held back until _ungrounded() has
@@ -1349,7 +1356,7 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
         suggestions = await _suggest_actions(final) or None   # a digest of email/calendar: one-tap follow-ups
     # She ended a browser task asking the user to take over (2026-10-07, Dropbox sign-up): the browser was gone when they
     # tapped it. Keep her reply, then continue the task once so the takeover happens inside it, with the Take over card.
-    asked_takeover = (browser_used and completed and not continued and not reground and cid not in _stop_requested
+    asked_takeover = (completed and not continued and not reground and cid not in _stop_requested
                       and TAKEOVER_ASK.search(final or "") and not store._one(
                           "SELECT 1 AS x FROM activity WHERE conversation_id = ? AND kind = 'help.requested' AND created >= ?", (cid, run_started)))
     if asked_takeover:   # no "Open browser" on this reply: that browser is closed, the follow-up opens it again
@@ -1362,7 +1369,8 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     if asked_takeover:
         store.add_activity(cid, run_id, "browser.help.auto", None, "asked for a takeover in her reply: continuing so the Take over card appears")
         follow = history + [{"role": "user", "content": text, "attachments": []}, msg]
-        return await _agent(cid, follow, TAKEOVER_CONTINUE, route_name, coding=coding, voice=voice, effort=effort, browse=True,
+        # 2026-10-07: she once described "the GitHub sign-in page" without having opened her browser in that task
+        return await _agent(cid, follow, TAKEOVER_CONTINUE if browser_used else TAKEOVER_NO_BROWSER, route_name, coding=coding, voice=voice, effort=effort, browse=True,
                             need=need, need_conf=need_conf, continued=True)
 
 

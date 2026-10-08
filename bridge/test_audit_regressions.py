@@ -879,6 +879,17 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(client.post.await_count,2)   # continued once, never in a loop
         self.assertIn('never end the task just to ask them to take over',client.post.await_args_list[0].kwargs['json']['instructions'].lower())
 
+    async def test_takeover_ask_without_opening_the_browser_sends_her_to_the_browser(self):
+        ask="I'm at the GitHub sign-in page. I need you to take over: click Continue with Google and sign in."
+        streams=[Stream(200,[f'data: {json.dumps({"event":"run.completed","output":ask})}']),
+                 Stream(200,[f'data: {json.dumps({"event":"tool.started","tool":"browser_use"})}',f'data: {json.dumps({"event":"run.completed","output":"Signed in and created the app."})}'])]
+        client=types.SimpleNamespace(post=AsyncMock(side_effect=[response(200,{'run_id':'r1'}),response(200,{'run_id':'r2'})]),stream=lambda *a,**k:streams.pop(0))
+        with patch.object(app,'hermes',client),patch.object(app,'_job_ids',new=AsyncMock(return_value=set())),\
+             patch.object(app,'_grab_browser_frame',new=AsyncMock()),patch.object(app,'_browser_snapshot',new=AsyncMock(return_value=None)):
+            await app._agent(self.cid,[],'set up the GitHub app','task')
+        self.assertEqual(client.post.await_args_list[1].kwargs['json']['input'],app.TAKEOVER_NO_BROWSER)
+        self.assertEqual(client.post.await_count,2)
+
     def test_grounding_only_flags_reports_without_a_look(self):
         listing="Here's what's in your inbox:\n- Sam: lunch Thursday (10:30)\n- Billing: invoice 77 is due Friday, please pay soon\n- GitHub: a review request"
         self.assertEqual(app._ungrounded(listing,{'calendar_events'}),'email')
