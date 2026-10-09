@@ -185,6 +185,15 @@ data class RecipeView(val name: String, val title: String, val learned: Boolean 
 data class RecipeList(val recipes: List<RecipeView>)
 
 @Serializable
+data class PurchaseView(val id: String, val title: String, val image: String = "", val store: String = "", val url: String = "",
+                        val total: String = "", val shipping: String = "", val order: String = "", val at: Double = 0.0,
+                        val times: Int = 1, val quantity: Int = 1, val ship_to: String = "", val can_repeat: Boolean = false,
+                        val steps: List<String> = emptyList())
+
+@Serializable
+data class PurchaseList(val purchases: List<PurchaseView>)
+
+@Serializable
 data class Identity(val soul: String = "", val user: String = "", val memory: String = "")
 
 @Serializable

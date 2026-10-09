@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 import tempfile
 import threading
+import time
 import types
 import unittest
 from unittest.mock import AsyncMock, patch
@@ -966,6 +967,45 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(d['status'],'denied')
             await app.connector_disconnect('link',dev={'id':'p','name':'Phone'})
             self.assertFalse(app._connector_view('link')['connected'])
+
+    async def test_purchase_is_saved_as_a_playbook_and_buy_again_replays_it(self):
+        product={'choice':1,'title':'Dr. Squatch Body Wash','price':'$6.99','seller':'Squatch','store':'drsquatch.com','image':'https://cdn.shopify.com/a.jpg',
+                 'checkout_url':'https://drsquatch.com/cart/123:1','url':'https://drsquatch.com/p/wash','product_id':'p1','variant_id':'v1'}
+        app.store.set_setting(f'shop_last:{self.cid}',{'at':time.time(),'products':[product]})
+        self.assertEqual(app._chosen_product(self.cid,'#1 · Dr. Squatch Body Wash')['checkout_url'],product['checkout_url'])
+        app.store.set_setting(f'shop_chosen:{self.cid}',{**product,'at':time.time()})
+        app._link_handed['lsrq_test1']={'cid':self.cid,'at':time.time(),'amount':1494,'ship_to':'3105 Sandhurst Rd, Jacksonville FL 32277',
+            'merchant_name':'Dr. Squatch','merchant_url':'https://drsquatch.com','items':[{'name':'Body wash','quantity':1,'unit_amount':699}],
+            'subtotal':699,'shipping':795,'tax':None}
+        with patch.object(app.linkpay,'cancel',AsyncMock()) as cancel:
+            await app.internal_link_outcome(app.LinkOutcomeIn(spend_request='lsrq_test1',outcome='success',domain='drsquatch.com',order='#1001'),ok=True)
+        cancel.assert_not_awaited()
+        listed=(await app.purchases_list(dev={'id':'p','name':'Phone'}))['purchases']
+        self.assertEqual(len(listed),1);p=listed[0]
+        self.assertEqual((p['title'],p['total'],p['shipping'],p['order'],p['can_repeat']),('Dr. Squatch Body Wash','$14.94','$7.95','1001',True))
+        # the steps she took in that run are kept
+        app.store.add_activity(self.cid,'run9','tool.started','browser_use','{"task": "open https://drsquatch.com/cart/123:1 and check out"}')
+        app.store.add_activity(self.cid,'run9','tool.started','memory','x')
+        e=app.purchases.get(p['id']);rows=app.store._all("SELECT tool, detail FROM activity WHERE run_id = ? AND kind = 'tool.started' ORDER BY id",('run9',))
+        app.purchases.update(e['id'],steps=[{'tool':r['tool'],'detail':r['detail']} for r in rows if r['tool'] not in app.recipes.IGNORED_TOOLS])
+        # Buy again: the same link and address, search and choose skipped, both approvals still happen
+        text=f"🔁 Buy again: Dr. Squatch Body Wash [{p['id']}]"
+        self.assertEqual(app._buy_again(text)['id'],p['id']);self.assertIsNone(app._buy_again('buy again [p_0000000000]'))
+        book=app.purchases.playbook(app._buy_again(text))
+        self.assertIn('https://drsquatch.com/cart/123:1',book);self.assertIn('3105 Sandhurst Rd',book);self.assertIn('$7.95 shipping',book)
+        self.assertIn('browser_use',book);self.assertIn('pay_with_link',book)
+        app._pick_recipe(self.cid,text,'buy_again')
+        st=app.store.setting(f'recipe:{self.cid}');self.assertEqual(st['done'],['search','choose'])
+        # buying it again updates the same card instead of adding another
+        app._link_handed['lsrq_test2']={**app._link_handed.get('x',{}),'cid':self.cid,'at':time.time(),'amount':1394,'ship_to':'3105 Sandhurst Rd, Jacksonville FL 32277',
+            'merchant_name':'Dr. Squatch','merchant_url':'https://drsquatch.com','items':[],'subtotal':699,'shipping':695,'tax':None}
+        await app.internal_link_outcome(app.LinkOutcomeIn(spend_request='lsrq_test2',outcome='success',order='1002'),ok=True)
+        listed=(await app.purchases_list(dev={'id':'p','name':'Phone'}))['purchases']
+        self.assertEqual(len(listed),1);self.assertEqual((listed[0]['times'],listed[0]['total'],listed[0]['order']),(2,'$13.94','1002'))
+        self.assertEqual(app.purchases.order_number('Thanks! Confirmation #K7QX2P9'),'K7QX2P9')
+        await app.purchases_delete(p['id'],dev={'id':'p','name':'Phone'})
+        self.assertEqual((await app.purchases_list(dev={'id':'p','name':'Phone'}))['purchases'],[])
+        with self.assertRaises(HTTPException):await app.purchases_delete('../x',dev={'id':'p','name':'Phone'})
 
     def test_browser_pay_step_fills_card_presses_order_and_hides_digits(self):
         fields=browse.actions.card_fields("""- Iframe "Secure card payment input frame" [ref=e2]

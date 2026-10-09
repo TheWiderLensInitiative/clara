@@ -95,6 +95,7 @@ fun AssistantHub(state: UiState, onOpen: (String) -> Unit, onBack: () -> Unit) {
             HubRow(Icons.Filled.Face, "Identity", "Clara's personality and what she remembers") { onOpen("identity") }
             HubRow(Icons.Filled.Star, "Clara's look", "Colors, style and accessories · she can restyle herself") { onOpen("look") }
             HubRow(Icons.Filled.Lock, "Passwords", "Logins Clara can use without seeing them") { onOpen("passwords") }
+            HubRow(Icons.Filled.ShoppingCart, "Purchases", "Orders Clara placed · buy again in one tap") { onOpen("purchases") }
             HubRow(Icons.AutoMirrored.Filled.List, "Recipes", "Step-by-step jobs Clara follows, including ones she learned") { onOpen("recipes") }
             HubRow(Icons.Filled.Email, "Connectors", "Gmail, Outlook, Spotify, Notion, Slack, YouTube and more",
                 badge = state.connectors.count { it.connected }.takeIf { it > 0 }?.let { "$it connected" }) { onOpen("connectors") }

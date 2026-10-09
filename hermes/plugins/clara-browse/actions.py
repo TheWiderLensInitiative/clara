@@ -340,6 +340,17 @@ def pay_check(text: str, approved_cents, ship_zip: str = ""):
     return None
 
 
+_ORDER_NO = re.compile(r"\b(?:order|confirmation)\s*(?:number|no\.?|id|#)?\s*[:#]?\s*#?\s*([A-Z0-9][A-Z0-9-]{3,24})\b", re.I)
+
+
+def order_number(text: str) -> str:
+    """The order number on a confirmation page ("Order #1001", "Confirmation #A1B2C3"), or ""."""
+    for m in _ORDER_NO.finditer(text or ""):
+        if any(ch.isdigit() for ch in m.group(1)):
+            return m.group(1)
+    return ""
+
+
 def veto(action: dict, snapshot: str):
     """A hard stop for this step, or None when it may run. Passwords and card numbers never get typed."""
     kind = action.get("action")

@@ -70,6 +70,7 @@ data class UiState(
     val goals: List<info.thewiderlens.clara.data.Goal> = emptyList(),
     val library: List<info.thewiderlens.clara.data.LibraryFile> = emptyList(),
     val recipes: List<info.thewiderlens.clara.data.RecipeView> = emptyList(),
+    val purchases: List<info.thewiderlens.clara.data.PurchaseView>? = null,
     val identity: info.thewiderlens.clara.data.Identity = info.thewiderlens.clara.data.Identity(),
     val screenAt: Long = 0L,
     val logins: List<info.thewiderlens.clara.data.SavedLogin> = emptyList(),
@@ -311,6 +312,10 @@ class ClaraViewModel : ViewModel() {
 
     fun refreshRecipes() = launchSafe { api?.let { a -> val fetched = a.recipes(); _ui.update { it.copy(recipes = fetched) } } }
     fun deleteRecipe(name: String) = launchSafe { api?.let { a -> a.deleteRecipe(name); val fetched = a.recipes(); _ui.update { it.copy(recipes = fetched) } } }
+    fun refreshPurchases() = launchSafe { api?.let { a -> val fetched = a.purchases(); _ui.update { it.copy(purchases = fetched) } } }
+    fun deletePurchase(id: String) = launchSafe { api?.let { a -> a.deletePurchase(id); val fetched = a.purchases(); _ui.update { it.copy(purchases = fetched) } } }
+    /** Buy again: a message in the open chat; the Bridge replays the saved playbook (same link and address, both approvals). */
+    fun buyAgain(p: info.thewiderlens.clara.data.PurchaseView) = send("🔁 Buy again: ${p.title.take(80)} [${p.id}]")
     fun refreshLibrary() = launchSafe { api?.let { a -> run { val fetched0 = a.library(); _ui.update { it.copy(library = fetched0) } } } }
     suspend fun libraryBytes(path: String): ByteArray? = api?.let {
         it.bytes(if (path.startsWith("https://")) it.shopImageUrl(path) else it.libraryUrl(path))   // product photos come through the PC

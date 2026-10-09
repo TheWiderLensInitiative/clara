@@ -190,8 +190,14 @@ def _pay(task_id, session_id, spend_request, fields, submit, submit_name, url):
         still = actions.card_fields(after)
         if "number" in still and actions._line(after, still["number"][0]).rstrip().endswith("••••" + str(card["number"])[-4:]):
             raise RuntimeError("the order didn't go through: the card form is still filled in")
-        outcome = {"success": True, "summary": f"Paid with the one-time Link card •••• {str(card['number'])[-4:]} and pressed {submit_name}. "
-                                               "Check the page for the order confirmation."}
+        try:
+            done_page = str((_browser(task_id, "eval", ["document.body?.innerText?.slice(0,8000)"], timeout=10).get("data") or {}).get("result") or "")
+        except Exception:
+            done_page = ""
+        order = actions.order_number(actions.scrub(done_page, _card_secrets))
+        outcome = {"success": True, "order": order,
+                   "summary": f"Paid with the one-time Link card •••• {str(card['number'])[-4:]} and pressed {submit_name}. " +
+                              (f"Order number: {order}." if order else "Check the page for the order confirmation.")}
     except Exception as e:
         for ref, role, _ in values:   # take the card back off the page before anything looks at it again
             if role not in actions.CHOICE_ROLES:
@@ -202,7 +208,8 @@ def _pay(task_id, session_id, spend_request, fields, submit, submit_name, url):
         outcome = {"success": False, "error": str(e)[:200]}
     try:
         _link("/internal/link/outcome", {"spend_request": spend_request, "outcome": "success" if outcome["success"] else "blocked",
-                                         "domain": urlparse(url).netloc, "detail": outcome.get("error", "")}, timeout=20)
+                                         "domain": urlparse(url).netloc, "detail": outcome.get("error", ""),
+                                         "order": outcome.get("order", "")}, timeout=20)
     except Exception:
         pass
     return outcome

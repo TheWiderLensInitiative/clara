@@ -140,14 +140,14 @@ private fun ProductCards(json: String, load: (suspend (String) -> ByteArray?)?, 
 }
 
 @Composable
-private fun ProductPhoto(url: String, load: (suspend (String) -> ByteArray?)?) {
+fun ProductPhoto(url: String, load: (suspend (String) -> ByteArray?)?, modifier: Modifier = Modifier.fillMaxWidth().height(150.dp)) {
     var bmp by remember(url) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
     LaunchedEffect(url) {
         if (url.isNotBlank() && load != null) bmp = runCatching { load(url) }.getOrNull()?.let {
             android.graphics.BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap()
         }
     }
-    Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White), contentAlignment = Alignment.Center) {
+    Box(modifier.background(Color.White), contentAlignment = Alignment.Center) {
         bmp?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize().padding(8.dp)) }
             ?: Text("🛍️", style = MaterialTheme.typography.headlineMedium)
     }
