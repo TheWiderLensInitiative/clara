@@ -1087,7 +1087,7 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         cid=app.store.create_conversation()['id']
         app.store.set_setting(f'shop_last:{cid}',{'at':__import__('time').time(),'products':[
             {'choice':4,'title':'Arm & Hammer Body Wash','price':'$13.16','seller':'Celaura Beauty','store':'celaurabeauty.com',
-             'checkout_url':'https://celaurabeauty.com/cart/4455:1?_gsid=x'}]}])
+             'checkout_url':'https://celaurabeauty.com/cart/4455:1?_gsid=x'}]})
         client=types.SimpleNamespace(post=AsyncMock(return_value=response(500,{'detail':'isolated'})))
         with patch.object(app,'hermes',client),patch.object(app,'_job_ids',new=AsyncMock(return_value=set())):
             await app._agent(cid,[],'#4 · Arm & Hammer Body Wash · Celaura Beauty · $13.16','task')
