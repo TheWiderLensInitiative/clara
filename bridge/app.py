@@ -682,6 +682,8 @@ async def _send_message(cid: str, body: MessageIn, dev):
             need, need_conf = "profile", 1.0       # "my name is …": telling her about themselves means save it
     elif MAKE_REQUEST.search(text):
         route_name, source = "task", "make"        # images and code need the agent's tools (and cloud boost)
+    elif SHOP_REQUEST.search(text) or recipes.match(text, _connected()):
+        route_name, source = "task", "shop"        # buying needs the agent's shop_search and Link (Laya once sent "find me one and order it" to chat)
     else:
         r = await _router_call(router.route, text)
         store.log_route(user_msg["id"], text, r)
@@ -721,6 +723,9 @@ async def _send_message(cid: str, body: MessageIn, dev):
 
 PHOTO_QUESTION = re.compile(r"^\W*(what|who|where|which|how|why|is|are|was|does|do|did|can you (tell|see|describe|read|identify|explain)|"
                             r"describe|tell me|explain|identify|read|translate|rate|thoughts)\b|\?\s*$", re.I)
+SHOP_REQUEST = re.compile(r"\b(buy|order|purchase|re-?order)\s+(it|them|this|that|one|some|more|another|me|for me|a|an|us|my)\b"
+                          r"|\b(buy|order|purchase|re-?order)\b.{0,60}\b(online|ship|deliver|for me|cheap|cheapest)\b"
+                          r"|\brunning (low|out) (on|of)\b.{0,80}\b(buy|order|get|find)\b", re.I)
 NEEDS_TOOLS = re.compile(r"\b(buy|order|price|cost|shop|store|search|look (it |this |that )?up|google|online|website|link|find|save|file|folder|"
                          r"remind|schedule|send|email|text|post|upload|download|edit|crop|resize|convert)\b", re.I)
 CONNECT_REQUEST = re.compile(r"\b(e-?mails?|inbox|gmail|outlook|unread|calendar|schedule[ds]? (a|my|the)|meetings?|appointments?|events? (on|for|tomorrow|today|this|next)|"

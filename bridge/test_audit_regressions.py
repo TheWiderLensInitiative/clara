@@ -968,6 +968,14 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             await app.connector_disconnect('link',dev={'id':'p','name':'Phone'})
             self.assertFalse(app._connector_view('link')['connected'])
 
+    def test_shopping_requests_always_reach_the_agent(self):
+        # Laya sent this to chat (0.95) on 2026-10-09, so Clara said she couldn't shop
+        for t in ("Hey Clara, I'm running low on body wash. Can you find me a decent cheap one and order it?",
+                  "Buy me a bottle of Arm & Hammer body wash","can you reorder my shampoo","I'm running out of coffee, can you get me some?"):
+            self.assertTrue(app.SHOP_REQUEST.search(t),t)
+        for t in ("what order should I read these books in","in order to sleep better what should I do","did my order arrive?","I bought a new phone today"):
+            self.assertFalse(app.SHOP_REQUEST.search(t),t)
+
     async def test_purchase_is_saved_as_a_playbook_and_buy_again_replays_it(self):
         product={'choice':1,'title':'Dr. Squatch Body Wash','price':'$6.99','seller':'Squatch','store':'drsquatch.com','image':'https://cdn.shopify.com/a.jpg',
                  'checkout_url':'https://drsquatch.com/cart/123:1','url':'https://drsquatch.com/p/wash','product_id':'p1','variant_id':'v1'}
