@@ -490,12 +490,14 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         app.store.set_active_run(self.cid,None)
 
     async def test_digests_come_with_safe_one_tap_actions(self):
-        brief=('Morning! Overnight: Sam asked if Thursday works for the review. Vercel says your Pro trial ends Oct 8 '
+        import datetime as _dt
+        soon=_dt.date.today()+_dt.timedelta(days=3);d=f"{soon.strftime('%b')} {soon.day}"   # always in the future (a fixed "Oct 8" went stale)
+        brief=('Morning! Overnight: Sam asked if Thursday works for the review. Vercel says your Pro trial ends '+d+' '
                'and you will be charged $20. Florida says DEVIGNITE LLC needs reinstatement by Oct 31. Your Chewy order shipped '
                'and arrives Wednesday. Nothing else needs you today.')
-        reply='{"actions": ["Draft a reply to Sam saying Thursday works", "Pay the Vercel bill", "Add the Vercel trial end (Oct 8) to my calendar"]}'
+        reply='{"actions": ["Draft a reply to Sam saying Thursday works", "Pay the Vercel bill", "Add the Vercel trial end ('+d+') to my calendar"]}'
         with patch.object(app,'_llm_once',new=AsyncMock(return_value=reply)):
-            self.assertEqual(await app._suggest_actions(brief),['Draft a reply to Sam saying Thursday works','Add the Vercel trial end (Oct 8) to my calendar'])
+            self.assertEqual(await app._suggest_actions(brief),['Draft a reply to Sam saying Thursday works','Add the Vercel trial end ('+d+') to my calendar'])
             app.store.set_job_conversation('job-brief',self.cid)
             await app._deliver_cron('job-brief',brief)
         msg=app.store.messages(self.cid)[-1]
