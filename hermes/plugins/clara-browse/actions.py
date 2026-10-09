@@ -556,6 +556,17 @@ def signin_blocked(text: str) -> bool:
     return bool(SIGNIN_BLOCKED.search(text or ""))
 
 
+def cycling(trail, size=2, times=3) -> bool:
+    """The last steps are the same short pattern over and over (open → click → open → click…), going nowhere.
+    Scrolling and waiting don't count: going down a long page is the same step many times on purpose."""
+    trail = [t for t in trail if not t.startswith(("scroll", "wait"))]
+    for n in range(1, size + 1):
+        tail = trail[-n * times:]
+        if len(tail) == n * times and all(tail[i] == tail[i % n] for i in range(len(tail))):
+            return True
+    return False
+
+
 def same_step(a: dict, b: dict) -> bool:
     return a.get("action") == b.get("action") and {k: v for k, v in a.items() if k != "summary"} == {
         k: v for k, v in b.items() if k != "summary"

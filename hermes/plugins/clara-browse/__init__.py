@@ -806,6 +806,7 @@ def _drive(goal, start_url, task_id, session_id, run=None):
     history = []
     repeated = None
     repeat_count = 0
+    trail = []   # each step by what it touched (name or address, not its changing ref), to catch back-and-forth loops
     previous_progress = None
     approved = set()   # (url, label) the user already OKed during this task
     rejected = 0       # times the checker said "not done yet"
@@ -905,6 +906,14 @@ def _drive(goal, start_url, task_id, session_id, run=None):
         else:
             repeated, repeat_count = action, 1
         previous_progress = progress
+        step_key = action["action"] + " " + (action.get("_name") or re.sub(r"[?#].*", "", str(action.get("url") or ""))
+                                             or (re.search(r'"([^"\n]*)"', actions._line(snapshot, action.get("ref", ""))) or [None, ""])[1]
+                                             or action.get("ref", ""))
+        if actions.cycling(trail[-8:] + [step_key]):
+            return {"success": False, "url": url,
+                    "summary": f"I was going back and forth between the same steps without getting anywhere, so I stopped. "
+                               f"Last page: {url}. Steps: {'; '.join(history[-6:])}", "steps": history[-12:]}
+        trail.append(step_key)
         if repeat_count >= 3:
             return {"success": False, "url": url,
                     "summary": f"I kept repeating the same step and stopped. Last page: {url}. Steps: {'; '.join(history[-6:])}",
@@ -964,7 +973,6 @@ def _drive(goal, start_url, task_id, session_id, run=None):
             _ready(task_id)
             continue
 
-        import re
         name = re.search(r'"([^"\n]*)"', actions._line(snapshot, action.get("ref", "")))
         if name:
             action = {**action, "_name": name.group(1)}

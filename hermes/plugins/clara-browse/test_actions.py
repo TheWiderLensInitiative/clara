@@ -184,6 +184,10 @@ split = actions.card_fields('- textbox "Card number" [ref=e1]\n- combobox "Expir
 check("separate month/year", sorted(v for _, _, v in actions.card_values(card, split)), sorted(["4000009990001984", "06", "2029", "100"]))
 check("scrub card digits", actions.scrub('- textbox "Card number" [ref=e5]: 4000009990001984 cvc 100', ["4000009990001984", "100"]),
       '- textbox "Card number" [ref=e5]: ••••1984 cvc •••')
+check("cycling: open/click/open/click", actions.cycling(["open https://a", "click Browse", "open https://a", "click Browse", "open https://a", "click Browse"]), True)
+check("cycling: real progress", actions.cycling(["open https://a", "click Add", "fill Email", "click Next", "scroll down", "click Pay"]), False)
+check("cycling: same click thrice", actions.cycling(["click Next", "click Next", "click Next"]), True)
+check("cycling: scrolling a long page is fine", actions.cycling(["scroll down", "scroll down", "scroll down", "scroll down"]), False)
 tap = actions.tap_events(60, 24)
 check("tap ends up", [e["eventType"] for e in tap], ["mouseMoved", "mouseReleased", "mousePressed", "mouseReleased"])
 check("tap point", (tap[-1]["x"], tap[-1]["y"], tap[-1]["button"]), (60, 24, "left"))

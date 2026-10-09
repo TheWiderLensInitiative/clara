@@ -1083,6 +1083,18 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(app.store.setting(f'recipe:{cid}')['done'],['search','choose'])
         with self.assertRaises(HTTPException):await app.shop_image('https://evil.example/x.png',dev={'id':'p'})
 
+    async def test_choosing_a_card_hands_clara_the_exact_checkout_link(self):
+        cid=app.store.create_conversation()['id']
+        app.store.set_setting(f'shop_last:{cid}',{'at':__import__('time').time(),'products':[
+            {'choice':4,'title':'Arm & Hammer Body Wash','price':'$13.16','seller':'Celaura Beauty','store':'celaurabeauty.com',
+             'checkout_url':'https://celaurabeauty.com/cart/4455:1?_gsid=x'}]}])
+        client=types.SimpleNamespace(post=AsyncMock(return_value=response(500,{'detail':'isolated'})))
+        with patch.object(app,'hermes',client),patch.object(app,'_job_ids',new=AsyncMock(return_value=set())):
+            await app._agent(cid,[],'#4 · Arm & Hammer Body Wash · Celaura Beauty · $13.16','task')
+        instr=client.post.call_args.kwargs['json']['instructions']
+        self.assertIn('https://celaurabeauty.com/cart/4455:1?_gsid=x',instr);self.assertIn("Don't make up",instr)
+        self.assertIsNone(app._chosen_product(cid,'#9 · something else'))
+
     async def test_recipe_runs_through_the_agent(self):
         import recipes
         cid=app.store.create_conversation()['id']
