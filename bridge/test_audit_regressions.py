@@ -1055,6 +1055,34 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             await app.recipes_delete(learned.name,dev={'id':'p','name':'P'})
             self.assertIsNone(recipes.get(learned.name))
 
+    async def test_shopping_results_become_product_cards(self):
+        cid=app.store.create_conversation()['id']
+        prods=[{'title':'Body wash 12 oz','price':'$6.99','price_cents':699,'seller':'MarketCOL','store':'marketcol.com',
+                'image':'https://cdn.shopify.com/a.png','rating':4.8,'reviews':120,'url':'https://marketcol.com/p','checkout_url':'https://marketcol.com/cart/1:1'}]
+        async def fake_search(*a,**k):return [dict(p) for p in prods]
+        async def run_search():
+            await app.internal_shop_search(app.ShopSearchIn(conversation_id=cid,query='body wash'),ok=True)
+            return 'data: '+json.dumps({"event":"tool.started","tool":"shop_search"})
+        class S(Stream):
+            async def aiter_lines(self):
+                yield await run_search()
+                yield 'data: '+json.dumps({"event":"run.completed","output":"My pick is the 12 oz at $6.99 from MarketCOL. Choose a card."})
+        client=types.SimpleNamespace(post=AsyncMock(return_value=response(200,{'run_id':'r1'})),stream=lambda *a,**k:S(200,[]))
+        with patch.object(app.shopify_catalog,'search',fake_search),patch.object(app,'hermes',client),\
+             patch.object(app,'_job_ids',new=AsyncMock(return_value=set())),patch.object(app,'_identity_cache',return_value={'user':'','memory':''}):
+            await app._agent(cid,[],'find body wash','task')
+        meta=app.store.messages(cid)[-1]['meta']
+        self.assertEqual(meta['kind'],'products');cards=json.loads(meta['products'])
+        self.assertEqual(cards[0]['choice'],1);self.assertEqual(cards[0]['image'],'https://cdn.shopify.com/a.png');self.assertNotIn('checkout_url',cards[0])
+        self.assertIsInstance(meta['products'],str)   # the app reads message details as text values
+        # a card's Choose answers the recipe's "which one?" even though it's long
+        import recipes
+        rec=recipes.get('buy_product');st={**recipes.start(rec,'buy body wash'),'done':['search'],'waiting':True}
+        app.store.set_setting(f'recipe:{cid}',st)
+        app._pick_recipe(cid,'#1 · Body wash 12 oz with aloe and shea for sensitive skin · MarketCOL · $6.99','laya')
+        self.assertEqual(app.store.setting(f'recipe:{cid}')['done'],['search','choose'])
+        with self.assertRaises(HTTPException):await app.shop_image('https://evil.example/x.png',dev={'id':'p'})
+
     async def test_recipe_runs_through_the_agent(self):
         import recipes
         cid=app.store.create_conversation()['id']

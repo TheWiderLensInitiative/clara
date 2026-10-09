@@ -312,7 +312,9 @@ class ClaraViewModel : ViewModel() {
     fun refreshRecipes() = launchSafe { api?.let { a -> val fetched = a.recipes(); _ui.update { it.copy(recipes = fetched) } } }
     fun deleteRecipe(name: String) = launchSafe { api?.let { a -> a.deleteRecipe(name); val fetched = a.recipes(); _ui.update { it.copy(recipes = fetched) } } }
     fun refreshLibrary() = launchSafe { api?.let { a -> run { val fetched0 = a.library(); _ui.update { it.copy(library = fetched0) } } } }
-    suspend fun libraryBytes(path: String): ByteArray? = api?.let { it.bytes(it.libraryUrl(path)) }
+    suspend fun libraryBytes(path: String): ByteArray? = api?.let {
+        it.bytes(if (path.startsWith("https://")) it.shopImageUrl(path) else it.libraryUrl(path))   // product photos come through the PC
+    }
     fun deleteLibraryFile(path: String) = launchSafe { api?.let { a -> a.deleteLibraryFile(path); val fetched = a.library(); _ui.update { it.copy(library = fetched) } } }
     fun saveLibraryFile(path: String, text: String) = launchSafe { api?.let { a -> a.saveLibraryFile(path, text); val fetched = a.library(); _ui.update { it.copy(library = fetched) } } }
 

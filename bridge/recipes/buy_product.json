@@ -8,7 +8,7 @@
  ],
  "steps": [
   {"id": "search", "tool": "shop_search", "do": "Search for the product with shop_search (the user's saved ZIP is used automatically). If nothing fits, try one shorter query."},
-  {"id": "choose", "ask": true, "do": "Show the user up to 5 options as a numbered list (name, price, store) and ask which one to buy and how many."},
+  {"id": "choose", "ask": true, "do": "The options appear as product cards with a Choose button under your reply. In one or two sentences give your pick and why, and ask them to choose a card (and how many, if more than one)."},
   {"id": "checkout", "tool": "browser_use", "do": "Open the chosen product's checkout_url with browser_use. Fill in the user's name, email and their saved address copied exactly from memory, choose the cheapest shipping, and stop at the payment step. Read the exact total, shipping and tax. Don't enter any card details."},
   {"id": "pay", "tool": "pay_with_link", "do": "Call pay_with_link with the exact total in cents, the store's name and page, the item, and ship_to set to the address you entered at checkout."},
   {"id": "place", "tool": "browser_use", "do": "After Link approval, call browser_use on the same checkout page with the spend_request id and tell it to use its pay action, which fills the one-time card and places the order."},

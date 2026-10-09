@@ -88,6 +88,71 @@ fun markdown(raw: String): AnnotatedString = buildAnnotatedString {
     append(text.substring(i))
 }
 
+@kotlinx.serialization.Serializable
+private data class ProductCard(val choice: Int = 0, val title: String = "", val price: String = "", val seller: String = "",
+                               val store: String = "", val image: String = "", val rating: Double? = null, val reviews: Int? = null,
+                               val url: String = "")
+
+@Composable
+private fun ProductCards(json: String, load: (suspend (String) -> ByteArray?)?, onChoose: ((String) -> Unit)?) {
+    val cards = remember(json) {
+        runCatching { kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromString<List<ProductCard>>(json) }.getOrDefault(emptyList())
+    }
+    var chosen by remember(json) { mutableStateOf<Int?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    androidx.compose.foundation.lazy.LazyRow(
+        Modifier.padding(top = 6.dp).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp),
+    ) {
+        items(cards.size) { i ->
+            val c = cards[i]
+            Column(
+                Modifier.width(196.dp).clip(RoundedCornerShape(18.dp)).background(ClaraColors.Panel)
+                    .border(1.5.dp, if (chosen == c.choice) ClaraColors.Cyan else ClaraColors.Line, RoundedCornerShape(18.dp)),
+            ) {
+                ProductPhoto(c.image, load)
+                Column(Modifier.padding(10.dp)) {
+                    Text(c.title, style = MaterialTheme.typography.bodyMedium, maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.height(40.dp))
+                    Text(c.price, style = MaterialTheme.typography.titleMedium, color = ClaraColors.Text)
+                    Text(c.seller.ifBlank { c.store }, style = MaterialTheme.typography.labelSmall, color = ClaraColors.Muted, maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    c.rating?.let { r ->
+                        Text("★ " + "%.1f".format(r) + (c.reviews?.let { n -> " · $n reviews" } ?: ""), style = MaterialTheme.typography.labelSmall,
+                            color = ClaraColors.Cyan)
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (onChoose != null && chosen == null) GradientButton("Choose", modifier = Modifier.weight(1f)) {
+                            chosen = c.choice
+                            onChoose("#${c.choice} · ${c.title.take(70)} · ${c.seller.ifBlank { c.store }} · ${c.price}")
+                        } else Text(if (chosen == c.choice) "✓ Chosen" else " ", color = ClaraColors.Cyan,
+                            style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f).padding(vertical = 8.dp))
+                        if (c.url.isNotBlank()) Text("View", style = MaterialTheme.typography.labelMedium, color = ClaraColors.Muted,
+                            modifier = Modifier.padding(start = 8.dp).clickable {
+                                runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(c.url))) }
+                            })
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProductPhoto(url: String, load: (suspend (String) -> ByteArray?)?) {
+    var bmp by remember(url) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    LaunchedEffect(url) {
+        if (url.isNotBlank() && load != null) bmp = runCatching { load(url) }.getOrNull()?.let {
+            android.graphics.BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap()
+        }
+    }
+    Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White), contentAlignment = Alignment.Center) {
+        bmp?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize().padding(8.dp)) }
+            ?: Text("🛍️", style = MaterialTheme.typography.headlineMedium)
+    }
+}
+
 /** A file Clara made, under her reply: tap to read it in the Library's viewer. */
 @Composable
 private fun MadeFileCard(path: String, load: suspend (String) -> ByteArray?) {
@@ -112,7 +177,8 @@ private fun MadeFileCard(path: String, load: suspend (String) -> ByteArray?) {
 }
 
 @Composable
-fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, onOpenBrowser: () -> Unit = {}) {
+fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, onOpenBrowser: () -> Unit = {},
+                  onChoose: ((String) -> Unit)? = null) {
     val mine = m.role == "user"
     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = if (mine) Arrangement.End else Arrangement.Start) {
         if (mine) {
@@ -189,6 +255,8 @@ fun MessageBubble(m: Message, load: (suspend (String) -> ByteArray?)? = null, on
                 if (load != null) m.attachments.filter { it !in images }.forEach { p ->
                     if (isImagePath(p)) InlineImage(p, load) else if (isVideoPath(p)) InlineVideo(p, load) else MadeFileCard(p, load)
                 }
+                // products from a shopping search (like Muse): swipe the cards, tap Choose
+                if (m.meta?.get("kind") == "products") m.meta["products"]?.let { ProductCards(it, load, onChoose) }
                 val shot = m.meta?.get("browser")
                 if (shot != null && load != null) BrowserSnapshotCard(shot, m.meta["browser_url"].orEmpty(), load, onOpenBrowser)
                 // a post Clara prepared for a site that doesn't let apps post (Reddit): one tap opens it, the user posts it

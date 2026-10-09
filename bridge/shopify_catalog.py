@@ -60,8 +60,14 @@ def summarize(product: dict) -> dict:
     variants = product.get("variants") or []
     v = variants[0] if variants else {}
     seller = v.get("seller") or {}
+    media = [m for m in (v.get("media") or []) + (product.get("media") or []) if m.get("type") == "image" and m.get("url")]
+    rating = product.get("rating") or {}
     return {
         "title": product.get("title", "")[:140],
+        "image": media[0]["url"] if media else "",
+        "url": v.get("url") or seller.get("url") or "",
+        "about": ((product.get("description") or {}).get("plain") or "")[:220],
+        "reviews": rating.get("count"),
         "price": _money(v.get("price") or (product.get("price_range") or {}).get("min")),
         "price_cents": (v.get("price") or {}).get("amount"),
         "seller": seller.get("name", ""),
@@ -70,7 +76,7 @@ def summarize(product: dict) -> dict:
         "product_id": product.get("id"), "variant_id": v.get("id"),
         "checkout_url": v.get("checkout_url") or "",
         "options": len(variants),
-        "rating": (product.get("rating") or {}).get("value"),
+        "rating": rating.get("value"),
     }
 
 

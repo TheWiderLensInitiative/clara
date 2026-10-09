@@ -233,7 +233,9 @@ fun ChatScreen(
                 }
             } else {
                 LazyColumn(state = list, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), modifier = Modifier.fillMaxSize()) {
-                    items(state.messages, key = { it.id }) { MessageBubble(it, loadImage, onOpenBrowser = onWatch) }
+                    items(state.messages, key = { it.id }) {
+                        MessageBubble(it, loadImage, onOpenBrowser = onWatch, onChoose = if (state.working) null else onSend)
+                    }
                     if (chips.isNotEmpty()) item("chips-" + lastMsg!!.id) { SuggestionChips(chips) { onSend(it) } }
                     items(pendingHere, key = { "a-" + it.id }) { a -> ApprovalCard(a) { onAnswer(a, it) } }
                     items(state.vaultRequests, key = { "v-" + it.id }) { r -> info.thewiderlens.clara.ui.components.VaultCard(r) { ok -> onVault(r, ok) } }

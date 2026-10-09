@@ -187,9 +187,13 @@ SHOP_SCHEMA = {
 }
 
 
-def handle_shop(args, **_):
+def handle_shop(args, session_id=None, **_):
     try:
-        return json.dumps(_link("/internal/shop/search", args or {}, timeout=60))[:12000]
+        res = _link("/internal/shop/search", {**(args or {}), "conversation_id": _conversation(session_id)}, timeout=60)
+        if res.get("products"):   # the user sees them as cards with Choose buttons: keep the reply short
+            res["note"] = ("The user sees these as product cards with a Choose button under your reply. Write one or two "
+                           "sentences with your pick and why; don't list them all again. " + res.get("note", ""))
+        return json.dumps(res)[:12000]
     except Exception as e:
         return json.dumps({"error": f"Couldn't reach the Clara Bridge: {type(e).__name__}"})
 

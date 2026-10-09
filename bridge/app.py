@@ -1198,6 +1198,19 @@ TAKEOVER_NO_BROWSER = ("(Automatic follow-up from Clara's app) You asked the use
                        "action, and then carry on after they hand it back.")
 
 
+@app.get("/v1/shop/image")
+async def shop_image(u: str, dev=Depends(device)):
+    """Product photos for the app's cards, fetched by the PC (Shopify's image host only)."""
+    from urllib.parse import urlparse as _up
+    if _up(u).scheme != "https" or _up(u).hostname != "cdn.shopify.com":
+        raise HTTPException(400, "only Shopify product images")
+    async with httpx.AsyncClient(timeout=20, follow_redirects=False) as c:
+        r = await c.get(u, params={"width": "480"})
+    if r.status_code != 200 or not r.headers.get("content-type", "").startswith("image/"):
+        raise HTTPException(404)
+    return Response(r.content[:3_000_000], media_type=r.headers["content-type"], headers={"Cache-Control": "max-age=86400"})
+
+
 @app.get("/v1/recipes")
 async def recipes_list(dev=Depends(device)):
     """Built-in and learned recipes for the app's Recipes page."""
@@ -1234,7 +1247,7 @@ def _recipe_after_run(cid, recipe, state, tool_order, text, final):
             store.add_activity(cid, None, "recipe.learned", None, f"{learned.title} · worked {learned.wins}×")
 
 
-RECIPE_ANSWER = re.compile(r"^\W*(\d+|#\d+|number \d+|(the )?(first|second|third|fourth|fifth|last|cheapest|top) ?(one)?|"
+RECIPE_ANSWER = re.compile(r"^\W*(\d+|number \d+|(the )?(first|second|third|fourth|fifth|last|cheapest|top) ?(one)?|"
                            r"yes|yeah|yep|sure|ok(ay)?|go (ahead|with)|that one|this one|send it|looks good)\b", re.I)
 
 
@@ -1245,7 +1258,7 @@ def _pick_recipe(cid, text, source):
     state = store.setting(key)
     rec = recipes.get(state["name"]) if recipes.fresh(state) else None
     # an answer to "which one?" that arrives late still counts if it looks like one ("2", "the second one", "yes, that")
-    answer_like = bool(RECIPE_ANSWER.search(text)) and len(text.split()) <= 8
+    answer_like = (bool(RECIPE_ANSWER.search(text)) and len(text.split()) <= 8) or bool(re.match(r"\s*#\d+\b", text))   # a card's Choose
     if rec and (source in ("followup", "active_run") or (state.get("waiting") and answer_like)):
         state = recipes.advance(rec, state, [], answered=True)
         store.set_setting(key, state)
@@ -1473,6 +1486,13 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
         suggestions = None
         meta.pop("browser", None); meta.pop("browser_url", None)
     made = _made_files(files_before, await asyncio.to_thread(_workspace_marks)) if terminal else []
+    shop = store.setting(f"shop:{cid}")
+    if shop and shop.get("at", 0) >= run_started - 5 and "shop_search" in tools_used:
+        # product cards (like Muse): picture, name, price, store, rating and a Choose button under her reply
+        cards = [{k: p.get(k) for k in ("choice", "title", "price", "seller", "store", "image", "rating", "reviews", "url")}
+                 for p in shop["products"]]
+        meta.update({"kind": "products", "products": json.dumps(cards)})
+        store.set_setting(f"shop:{cid}", None)
     msg = store.add_message(cid, "assistant", (final or "The task stream ended before completion could be confirmed. Please check the result before retrying.").strip(), route=route_name, run_id=run_id,
                             suggestions=suggestions, meta=meta or None, attachments=made)
     store.add_activity(cid, run_id, "run.finished", None, (final or "")[:300])
@@ -3657,6 +3677,7 @@ async def internal_link_purchase(body: LinkPurchaseIn, ok=Depends(link)):
 
 
 class ShopSearchIn(BaseModel):
+    conversation_id: Optional[str] = None
     query: str
     ships_to_zip: str = ""
     max_price: Optional[float] = None    # dollars
@@ -3688,6 +3709,10 @@ async def internal_shop_search(body: ShopSearchIn, ok=Depends(link)):
     except shopify_catalog.CatalogError as e:
         return {"error": str(e)}
     found.sort(key=lambda p: p.get("price_cents") or 10**9)
+    for i, p in enumerate(found, 1):
+        p["choice"] = i
+    if body.conversation_id:   # shown as cards under Clara's reply, each with a Choose button
+        store.set_setting(f"shop:{body.conversation_id}", {"at": time.time(), "products": found[:8]})
     return {"ships_to_zip": zip_code or "(unknown)", "products": found,
             "note": "Prices are before shipping and tax (the checkout shows those). Show the user a short numbered list "
                     "(name, price, store) and let them pick. To buy, open the product's checkout_url with browser_use, "

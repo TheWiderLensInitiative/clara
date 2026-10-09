@@ -145,6 +145,7 @@ class BridgeApi(val baseUrl: String, private val token: String?) {
     suspend fun recipes(): List<RecipeView> = json.decodeFromString<RecipeList>(call("GET", "/v1/recipes")).recipes
     suspend fun deleteRecipe(name: String) { call("DELETE", "/v1/recipes/" + java.net.URLEncoder.encode(name, "UTF-8")) }
     fun libraryUrl(path: String) = url("/v1/library/file?path=" + java.net.URLEncoder.encode(path, "UTF-8"))
+    fun shopImageUrl(u: String) = url("/v1/shop/image?u=" + java.net.URLEncoder.encode(u, "UTF-8"))
     suspend fun deleteLibraryFile(path: String) { call("DELETE", "/v1/library/file?path=" + java.net.URLEncoder.encode(path, "UTF-8")) }
     suspend fun saveLibraryFile(path: String, text: String) {
         call("PUT", "/v1/library/file?path=" + java.net.URLEncoder.encode(path, "UTF-8"), obj("text" to text))
