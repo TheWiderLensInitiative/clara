@@ -1301,7 +1301,9 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                                 "a card. Only what a person must do (a password, a code, a CAPTCHA, card details) goes to the user, from inside "
                                 "the task: tell browser_use to use its help action there, or call ask_user_for_browser_help, "
                                 "then wait and carry on after they hand it back. Never end the task just to ask them to take over: your "
-                                "browser closes when the task ends, so there would be nothing to take over.")}
+                                "browser closes when the task ends, so there would be nothing to take over. "
+                                "When the user asks to take over your browser themselves, open the page they mean and hand it over "
+                                "right away (ask_user_for_browser_help); don't try to do the rest of it first.")}
     if coding and store.api("openrouter"):
         payload["instructions"] += (" This is a coding task and the user has set up cloud boost for exactly this: hand the whole job to a cloud "
                                     "sub-agent with delegate_task (give it the complete goal, the folder to work in, and how to verify, e.g. run the tests), "
