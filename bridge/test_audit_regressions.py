@@ -978,6 +978,38 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
         for t in ("what order should I read these books in","in order to sleep better what should I do","did my order arrive?","I bought a new phone today"):
             self.assertFalse(app.SHOP_REQUEST.search(t),t)
 
+    async def test_store_pages_the_browser_read_become_product_cards(self):
+        tiles=[{'title':'Dove Men+Care Body Wash, Clean Comfort, 18 oz','price':'$5.97','url':'https://www.walmart.com/ip/dove/123',
+                'image':'https://i5.walmartimages.com/a.jpg','rating':4.7,'reviews':2013},
+               {'title':'Dr Teal\'s Body Wash Eucalyptus 24 oz','price':'$6.48','url':'https://www.walmart.com/ip/teal/456','image':'https://i5.walmartimages.com/b.jpg'},
+               {'title':'tiny','price':'$1.00','url':'https://www.walmart.com/ip/x/1'},
+               {'title':'Not a real price here at all','price':'call','url':'https://www.walmart.com/ip/y/2'}]
+        r=await app.internal_shop_browser_results(app.BrowserProductsIn(conversation_id=self.cid,url='https://www.walmart.com/search?q=body+wash',products=tiles),ok=True)
+        self.assertEqual(r['shown'],2)
+        shop=app.store.setting(f'shop:{self.cid}');self.assertEqual(shop['source'],'browser')
+        self.assertEqual([(p['choice'],p['store'],p['price_cents']) for p in shop['products']],[(1,'walmart.com',597),(2,'walmart.com',648)])
+        # Choose works without a Shopify checkout link: she's sent to that exact product page
+        chosen=app._chosen_product(self.cid,'#2 · Dr Teal\'s Body Wash · walmart.com · $6.48')
+        self.assertEqual(chosen['url'],'https://www.walmart.com/ip/teal/456')
+        # only the photos of shown cards (and Shopify's) go through the PC's image proxy
+        self.assertTrue(app._image_allowed('https://i5.walmartimages.com/a.jpg'));self.assertTrue(app._image_allowed('https://cdn.shopify.com/x.jpg'))
+        self.assertFalse(app._image_allowed('https://192.168.1.1/admin.png'));self.assertFalse(app._image_allowed('https://evil.example/a.jpg'))
+        with self.assertRaises(HTTPException):await app.shop_image('http://localhost:8700/v1/x',dev={'id':'p','name':'Phone'})
+        one=await app.internal_shop_browser_results(app.BrowserProductsIn(conversation_id=self.cid,url='https://www.walmart.com/ip/1',products=tiles[:1]),ok=True)
+        self.assertEqual(one['shown'],0)   # a single product page isn't a list of choices
+        amz=await app.internal_shop_browser_results(app.BrowserProductsIn(conversation_id=self.cid,url='https://www.amazon.com/s',
+              products=[{**t,'url':t['url'].replace('walmart','amazon')} for t in tiles[:2]]),ok=True)
+        self.assertEqual(amz['shown'],0)   # the user doesn't buy from Amazon
+        # a purchase from a store page can be bought again from its product page
+        app.store.set_setting(f'shop_chosen:{self.cid}',{**chosen,'at':time.time()})
+        app._link_handed['lsrq_wm1']={'cid':self.cid,'at':time.time(),'amount':1050,'ship_to':'3105 Sandhurst Rd, Jacksonville FL 32277',
+            'merchant_name':'Walmart','merchant_url':'https://www.walmart.com','items':[],'subtotal':648,'shipping':0,'tax':None}
+        e=app._record_purchase('lsrq_wm1','2000123')
+        self.assertEqual(e['product_page'],'https://www.walmart.com/ip/teal/456')
+        self.assertIn('Product page: https://www.walmart.com/ip/teal/456',app.purchases.playbook(e))
+        self.assertTrue([p for p in (await app.purchases_list(dev={'id':'p','name':'Phone'}))['purchases'] if p['id']==e['id']][0]['can_repeat'])
+        app.purchases.delete(e['id'])
+
     async def test_purchase_is_saved_as_a_playbook_and_buy_again_replays_it(self):
         product={'choice':1,'title':'Dr. Squatch Body Wash','price':'$6.99','seller':'Squatch','store':'drsquatch.com','image':'https://cdn.shopify.com/a.jpg',
                  'checkout_url':'https://drsquatch.com/cart/123:1','url':'https://drsquatch.com/p/wash','product_id':'p1','variant_id':'v1'}

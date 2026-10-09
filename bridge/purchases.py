@@ -81,7 +81,8 @@ def delete(pid) -> bool:
 
 
 def same_item(a: dict, b: dict) -> bool:
-    return bool(a.get("checkout_url")) and a.get("checkout_url") == b.get("checkout_url")
+    ka, kb = a.get("checkout_url") or a.get("product_page"), b.get("checkout_url") or b.get("product_page")
+    return bool(ka) and ka == kb
 
 
 def record(entry: dict) -> dict:
@@ -107,7 +108,9 @@ def playbook(e: dict) -> str:
             f" + {money(e['tax_cents'])} tax" if isinstance(e.get("tax_cents"), int) else "") + ")"
     return (f" BUY AGAIN: the user tapped Buy again on a past order. Repeat it exactly; no searching, no choosing.\n"
             f"- Item: {e.get('title')} (quantity {e.get('quantity') or 1}) from {e.get('store') or e.get('merchant_name')}\n"
-            f"- Checkout link: {e.get('checkout_url')} : open exactly this with browser_use\n"
+            + (f"- Checkout link: {e['checkout_url']} : open exactly this with browser_use\n" if e.get("checkout_url") else
+               f"- Product page: {e.get('product_page')} : open exactly this with browser_use, add the same item (quantity "
+               f"{e.get('quantity') or 1}) to the cart and check out the same way as last time\n") +
             f"- Ship to: {e.get('ship_to')} (copy it exactly)\n"
             f"- Last time: {last}; pick the same (cheapest) shipping again\n"
             + (f"- Steps that worked last time:\n{steps}\n" if steps else "") +

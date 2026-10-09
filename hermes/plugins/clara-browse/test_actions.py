@@ -202,6 +202,13 @@ check("no total refused", "total" in (actions.pay_check("Payment", 1494) or ""),
 check("order number", actions.order_number("Thank you, Jorge!\nConfirmation #K7QX2P9\nYour order is confirmed"), "K7QX2P9")
 check("order number #", actions.order_number("Order #1001 is confirmed"), "1001")
 check("no order number", actions.order_number("Your order is confirmed"), "")
+tiles = [{"title": "Dove Body Wash 18 oz", "price": "$5.97", "url": "https://www.walmart.com/ip/1", "image": "https://i5.walmartimages.com/a.jpg", "rating": 4.7},
+         {"title": "Dr Teal's Body Wash", "price": "$6.48", "url": "https://www.walmart.com/ip/2", "image": "javascript:x", "reviews": "lots"},
+         {"title": "short", "price": "$1.00", "url": "https://www.walmart.com/ip/3"}]
+got = actions.page_products(tiles, "www.walmart.com")
+check("page products cleaned", [(p["price"], p["image"], p["reviews"]) for p in got], [("$5.97", "https://i5.walmartimages.com/a.jpg", None), ("$6.48", "", None)])
+check("no amazon cards", actions.page_products(tiles, "www.amazon.com"), [])
+check("one product isn't a list", actions.page_products(tiles[:1], "www.walmart.com"), [])
 tap = actions.tap_events(60, 24)
 check("tap ends up", [e["eventType"] for e in tap], ["mouseMoved", "mouseReleased", "mousePressed", "mouseReleased"])
 check("tap point", (tap[-1]["x"], tap[-1]["y"], tap[-1]["button"]), (60, 24, "left"))

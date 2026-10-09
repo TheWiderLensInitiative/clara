@@ -340,6 +340,48 @@ def pay_check(text: str, approved_cents, ship_zip: str = ""):
     return None
 
 
+# Product tiles on a store's results page (Walmart, Target, any shop): each link with a photo and a price near it.
+# Read straight from the page, so the cards show what the store shows, never what the model retyped.
+PRODUCTS_SCRIPT = r"""(() => {
+  const money = /\$\s?\d{1,4}(?:,\d{3})*(?:\.\d{2})?/, out = [], seen = new Set();
+  for (const a of document.querySelectorAll('a[href]')) {
+    let el = a, txt = '';
+    for (let i = 0; i < 6 && el; i++) { txt = el.innerText || ''; if (money.test(txt) && el.querySelector('img')) break; el = el.parentElement; }
+    if (!el || !money.test(txt)) continue;
+    const im = a.querySelector('img') || el.querySelector('img');
+    if (!im || im.getBoundingClientRect().width < 60) continue;
+    let u; try { u = new URL(a.href); } catch (e) { continue; }
+    if (u.protocol !== 'https:' || u.host !== location.host) continue;
+    const key = u.pathname; if (seen.has(key) || key.length < 3) continue;
+    const title = (im.alt || a.getAttribute('aria-label') || a.innerText || '').replace(/\s+/g, ' ').trim();
+    if (title.length < 8) continue;
+    seen.add(key);
+    const rating = (txt.match(/(\d(?:\.\d)?) out of 5/) || [])[1], reviews = (txt.match(/([\d,]+) (?:reviews|ratings)/i) || [])[1];
+    out.push({title: title.slice(0, 140), price: (txt.match(money) || [''])[0].replace(/\s/g, ''), url: u.href,
+              image: im.currentSrc || im.src || '', rating: rating ? Number(rating) : null, reviews: reviews ? Number(reviews.replace(/,/g, '')) : null});
+    if (out.length >= 8) break;
+  }
+  return JSON.stringify(out);
+})()"""
+
+
+def page_products(found, host: str) -> list:
+    """Clean product tiles from PRODUCTS_SCRIPT: real https links and photos on this store, a price, a name. None from Amazon."""
+    if "amazon." in (host or "") or not isinstance(found, list):
+        return []
+    out = []
+    for p in found[:8]:
+        if not isinstance(p, dict):
+            continue
+        title, price, url, image = (str(p.get(k) or "").strip() for k in ("title", "price", "url", "image"))
+        if len(title) < 8 or not re.fullmatch(r"\$[\d,]+(\.\d{2})?", price) or not url.startswith("https://"):
+            continue
+        out.append({"title": title[:140], "price": price, "url": url[:600], "image": image[:600] if image.startswith("https://") else "",
+                    "rating": p.get("rating") if isinstance(p.get("rating"), (int, float)) else None,
+                    "reviews": p.get("reviews") if isinstance(p.get("reviews"), int) else None})
+    return out if len(out) >= 2 else []
+
+
 _ORDER_NO = re.compile(r"\b(?:order|confirmation)\s*(?:number|no\.?|id|#)?\s*[:#]?\s*#?\s*([A-Z0-9][A-Z0-9-]{3,24})\b", re.I)
 
 

@@ -389,6 +389,20 @@ def _ok(label, url, session_id=None, action=None, snapshot=""):
     return choice in ("once", "session")
 
 
+def _show_products(task_id, session_id) -> int:
+    """A store's results page at the end of a task: its product tiles become cards in the chat (like shop_search's)."""
+    try:
+        here = _safe_page(task_id)
+        found = actions.page_products(_eval(task_id, actions.PRODUCTS_SCRIPT), urlparse(here).hostname or "")
+        if not found:
+            return 0
+        r = _link("/internal/shop/browser-results", {"conversation_id": _conversation(session_id), "url": here, "products": found}, timeout=10)
+        return int(r.get("shown") or 0)
+    except Exception as e:
+        logger.info("browser_use: no product cards: %s", e)
+        return 0
+
+
 def _report(session_id, text):
     """Put one browser step in Clara's activity log (the app's Updates page), so the user can see what she did."""
     try:
@@ -907,6 +921,10 @@ def _drive(goal, start_url, task_id, session_id, run=None):
                     history.append(f"you said done, but the page doesn't show it yet: {verdict['reason'] or 'check the page again'}")
                     logger.info("browser_use: done rejected: %s", verdict["reason"][:200])
                     continue
+            shown = _show_products(task_id, session_id)
+            if shown:
+                summary += (f" [{shown} product cards from this page are shown to the user under your reply, numbered in page order, "
+                            "with a Choose button. Give your pick in a sentence or two and ask them to choose a card; don't list them all again.]")
             return {"success": True, "url": _safe_page(task_id), "summary": summary, "steps": history[-12:],
                     **({} if rejected < 2 else {"unverified": True, "note": "The page never clearly showed this was done. Check it yourself."})}
         if action["action"] == "select" and actions.option_owner(snapshot, action["ref"]):

@@ -1205,14 +1205,62 @@ TAKEOVER_NO_BROWSER = ("(Automatic follow-up from Clara's app) You asked the use
                        "action, and then carry on after they hand it back.")
 
 
+class BrowserProductsIn(BaseModel):
+    conversation_id: str = ""
+    url: str = ""
+    products: list[dict] = []
+
+
+_shop_images: dict = {}   # photo URLs of products shown as cards (browser stores): the only non-Shopify images the proxy fetches
+
+
+@app.post("/internal/shop/browser-results")
+async def internal_shop_browser_results(body: BrowserProductsIn, ok=Depends(link)):
+    """Product tiles the browser read off a store's results page (Walmart, Target, …): shown as cards like shop_search's."""
+    cid = body.conversation_id or _current_conversation()
+    if not cid or not store.get_conversation(cid):
+        return {"shown": 0}
+    from urllib.parse import urlparse
+    host = urlparse(body.url).hostname or ""
+    found = []
+    for p in body.products[:8]:
+        title, price, url, image = (str(p.get(k) or "")[:600] for k in ("title", "price", "url", "image"))
+        if len(title) < 8 or not re.fullmatch(r"\$[\d,]+(\.\d{2})?", price) or not url.startswith("https://") or "amazon." in url:
+            continue
+        cents = int(round(float(price[1:].replace(",", "")) * 100))
+        found.append({"choice": len(found) + 1, "title": title[:140], "price": price, "price_cents": cents, "url": url,
+                      "image": image if image.startswith("https://") else "", "seller": host.removeprefix("www."),
+                      "store": host.removeprefix("www."), "rating": p.get("rating"), "reviews": p.get("reviews"),
+                      "checkout_url": "", "source": "browser"})
+    if len(found) < 2:
+        return {"shown": 0}
+    for p in found:
+        if p["image"]:
+            _shop_images[p["image"]] = time.time()
+    while len(_shop_images) > 400:
+        _shop_images.pop(next(iter(_shop_images)))
+    now = time.time()
+    store.set_setting(f"shop:{cid}", {"at": now, "products": found, "source": "browser"})
+    store.set_setting(f"shop_last:{cid}", {"at": now, "products": found})
+    return {"shown": len(found)}
+
+
+def _image_allowed(u: str) -> bool:
+    from urllib.parse import urlparse
+    if urlparse(u).hostname == "cdn.shopify.com":
+        return True
+    return u in _shop_images or any(e.get("image") == u for e in purchases.all_entries())
+
+
 @app.get("/v1/shop/image")
 async def shop_image(u: str, dev=Depends(device)):
-    """Product photos for the app's cards, fetched by the PC (Shopify's image host only)."""
+    """Product photos for the app's cards, fetched by the PC: Shopify's image host, or a photo of a product Clara showed as
+    a card (only those exact addresses, so this can't be used to fetch anything else)."""
     from urllib.parse import urlparse as _up
-    if _up(u).scheme != "https" or _up(u).hostname != "cdn.shopify.com":
-        raise HTTPException(400, "only Shopify product images")
+    if _up(u).scheme != "https" or not _image_allowed(u):
+        raise HTTPException(400, "only product photos from Clara's cards")
     async with httpx.AsyncClient(timeout=20, follow_redirects=False) as c:
-        r = await c.get(u, params={"width": "480"})
+        r = await c.get(u, params={"width": "480"} if _up(u).hostname == "cdn.shopify.com" else None)
     if r.status_code != 200 or not r.headers.get("content-type", "").startswith("image/"):
         raise HTTPException(404)
     return Response(r.content[:3_000_000], media_type=r.headers["content-type"], headers={"Cache-Control": "max-age=86400"})
@@ -1226,7 +1274,7 @@ async def purchases_list(dev=Depends(device)):
                            "shipping": purchases.money(e["shipping_cents"]) if isinstance(e.get("shipping_cents"), int) else "",
                            "order": e.get("order", ""), "at": e.get("at", 0), "times": e.get("times", 1),
                            "quantity": e.get("quantity", 1), "ship_to": e.get("ship_to", ""),
-                           "can_repeat": bool(e.get("checkout_url")),
+                           "can_repeat": bool(e.get("checkout_url") or e.get("product_page")),
                            "steps": [f"{s['tool']}: {s['detail'][:140]}" for s in e.get("steps") or []][:12]}
                           for e in purchases.all_entries()]}
 
@@ -1284,7 +1332,7 @@ def _chosen_product(cid, text):
     last = store.setting(f"shop_last:{cid}")
     if not m or not last or time.time() - last.get("at", 0) > 6 * 3600:
         return None
-    return next((p for p in last["products"] if p.get("choice") == int(m.group(1)) and p.get("checkout_url")), None)
+    return next((p for p in last["products"] if p.get("choice") == int(m.group(1)) and (p.get("checkout_url") or p.get("url"))), None)
 
 
 def _pick_recipe(cid, text, source):
@@ -1403,10 +1451,14 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                                                                           "price", "product_id", "variant_id")} | {"at": time.time(), "again": again["id"]})
     if chosen:
         store.set_setting(f"shop_chosen:{cid}", {**chosen, "at": time.time()})   # what a purchase in this chat is for
-    if chosen:   # a card's Choose: hand her the exact checkout link (she once typed a product address from memory and looped)
+    if chosen and chosen.get("checkout_url"):   # a card's Choose: hand her the exact checkout link (she once typed a product address from memory and looped)
         payload["instructions"] += (f" The user chose #{chosen['choice']}: {chosen['title']} — {chosen['price']} from {chosen['seller'] or chosen['store']}. "
                                     f"Its checkout link is {chosen['checkout_url']} : open exactly this address with browser_use "
                                     "(it puts the item in the cart and goes to checkout). Don't make up or look for another address.")
+    elif chosen:   # a card from a store page the browser read (Walmart, Target, …)
+        payload["instructions"] += (f" The user chose #{chosen['choice']}: {chosen['title']} — {chosen['price']} at {chosen['store']}. "
+                                    f"Its product page is {chosen['url']} : open exactly this address with browser_use, add one to the "
+                                    "cart and go through checkout as a guest if the store allows it. Don't make up or look for another address.")
     recipe_state = store.setting(f"recipe:{cid}")
     recipe = recipes.get(recipe_state["name"]) if recipes.fresh(recipe_state) else None
     if recipe:
@@ -1549,7 +1601,7 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
         meta.pop("browser", None); meta.pop("browser_url", None)
     made = _made_files(files_before, await asyncio.to_thread(_workspace_marks)) if terminal else []
     shop = store.setting(f"shop:{cid}")
-    if shop and shop.get("at", 0) >= run_started - 5 and "shop_search" in tools_used:
+    if shop and shop.get("at", 0) >= run_started - 5 and ("shop_search" in tools_used or shop.get("source") == "browser"):
         # product cards (like Muse): picture, name, price, store, rating and a Choose button under her reply
         cards = [{**{k: p.get(k) for k in ("choice", "title", "seller", "store", "image", "rating", "reviews", "url")},
                   "price": f"{p.get('price')} + shipping"} for p in shop["products"]]
@@ -3905,7 +3957,9 @@ def _record_purchase(rid, order=""):
         "cid": cid, "title": chosen.get("title") or item.get("name") or info["merchant_name"],
         "image": chosen.get("image") or "", "store": chosen.get("store") or chosen.get("seller") or info["merchant_name"],
         "merchant_name": info["merchant_name"], "merchant_url": info["merchant_url"], "url": chosen.get("url") or info["merchant_url"],
-        "checkout_url": chosen.get("checkout_url") or "", "product_id": chosen.get("product_id"), "variant_id": chosen.get("variant_id"),
+        "checkout_url": chosen.get("checkout_url") or "",
+        "product_page": chosen.get("url") if chosen.get("source") == "browser" or (not chosen.get("checkout_url") and chosen.get("url")) else "",
+        "product_id": chosen.get("product_id"), "variant_id": chosen.get("variant_id"),
         "quantity": int(item.get("quantity") or 1), "total_cents": info["amount"], "subtotal_cents": info.get("subtotal"),
         "shipping_cents": info.get("shipping"), "tax_cents": info.get("tax"), "ship_to": info["ship_to"],
         "order": order, "spend_request": rid, "run_started": info["at"]})
