@@ -147,11 +147,18 @@ class ClaraViewModel : ViewModel() {
     fun unpair() = viewModelScope.launch { ClaraHub.unpair(); _ui.value = UiState(paired = false) }
 
     // --- loading -------------------------------------------------------------------
+    private var refreshFor: info.thewiderlens.clara.data.BridgeApi? = null
+
     fun refreshAll() {
-        if (refreshJob?.isActive == true) return
+        // A refresh still running for another address (home Wi-Fi while away, before Tailscale) is restarted, not waited on:
+        // on 2026-10-09 the old one timed out and the chat list stayed empty while everything else loaded.
+        if (refreshJob?.isActive == true && refreshFor === api) return
+        refreshJob?.cancel()
+        refreshFor = api
         refreshJob = launchSafe {
         val a = api ?: return@launchSafe
         val convs = a.conversations()
+        if (api !== a) return@launchSafe
         run { val fetched0 = a.approvals("pending"); _ui.update { it.copy(conversations = convs, pending = fetched0) } }
         runCatching { a.character() }.getOrNull()?.let { c -> _ui.update { it.copy(character = c) } }
         runCatching { a.openHelp() }.onSuccess { h -> _ui.update { it.copy(help = h) } }
@@ -159,6 +166,8 @@ class ClaraViewModel : ViewModel() {
         if (cid != null) openConversation(cid) else newChat()
         }
     }
+
+    fun refreshConversations() = launchSafe { api?.let { a -> val convs = a.conversations(); if (api === a) _ui.update { it.copy(conversations = convs) } } }
 
     fun openConversation(cid: String): kotlinx.coroutines.Job {
         pendingConversation = cid

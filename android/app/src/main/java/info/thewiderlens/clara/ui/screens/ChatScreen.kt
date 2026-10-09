@@ -108,6 +108,7 @@ fun ChatScreen(
     onCloud: (info.thewiderlens.clara.data.CloudRequest, String) -> Unit = { _, _ -> },
     onBudget: (info.thewiderlens.clara.data.BudgetSuggestion, Boolean) -> Unit = { _, _ -> },
     loadImage: (suspend (String) -> ByteArray?)? = null,
+    onRefreshChats: () -> Unit = {},
     onDelete: (String) -> Unit = {},
     onAttach: (name: String, bytes: ByteArray, mime: String) -> Unit = { _, _, _ -> },
     onRemoveDraft: (Long) -> Unit = {},
@@ -361,6 +362,7 @@ fun ChatScreen(
     }
 
     if (showHistory) {
+        LaunchedEffect(Unit) { onRefreshChats() }   // always the PC's current list (it once stayed empty after a network switch)
         ModalBottomSheet(onDismissRequest = { showHistory = false }, containerColor = ClaraColors.Panel) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("Chats", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))

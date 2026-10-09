@@ -233,7 +233,7 @@ private fun Home(state: UiState, vm: ClaraViewModel) {
                         else (context as MainActivity).confirmIdentity("Let Clara sign in to ${r.name}?", r.site) { vm.answerVault(r, true) }
                     },
                     onApi = vm::answerApi, onCloud = vm::answerCloud, onBudget = vm::answerBudget,
-                    loadImage = vm::libraryBytes, onDelete = vm::deleteConversation,
+                    loadImage = vm::libraryBytes, onDelete = vm::deleteConversation, onRefreshChats = vm::refreshConversations,
                     onAttach = vm::attach, onRemoveDraft = vm::removeDraft, onVoice = { page = "voice" })
                 1 -> GoalsScreen(state, vm::refreshGoals, vm::addGoal, vm::toggleGoal, vm::deleteGoal,
                     onPlan = { g -> tab = 0; vm.send("Help me make a simple plan for my goal: ${g.title}") },
