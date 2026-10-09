@@ -188,6 +188,17 @@ check("cycling: open/click/open/click", actions.cycling(["open https://a", "clic
 check("cycling: real progress", actions.cycling(["open https://a", "click Add", "fill Email", "click Next", "scroll down", "click Pay"]), False)
 check("cycling: same click thrice", actions.cycling(["click Next", "click Next", "click Next"]), True)
 check("cycling: scrolling a long page is fine", actions.cycling(["scroll down", "scroll down", "scroll down", "scroll down"]), False)
+order_page = '- radio "Shop Pay" [ref=e1]\n- button "Pay now" [ref=e2]\n- button "Continue to shipping" [ref=e3]\n- button "Complete order" [ref=e4]'
+check("order button only through pay", bool(actions.veto({"action": "click", "ref": "@e2"}, order_page)), True)
+check("complete order blocked too", bool(actions.veto({"action": "click", "ref": "@e4"}, order_page)), True)
+check("moving through checkout is fine", actions.veto({"action": "click", "ref": "@e3"}, order_page), None)
+check("saved wallet seen", bool(actions.SAVED_WALLET.search('- radio "Cashapp •••• 6042" [ref=e5]')), True)
+summary = "Subtotal\n$6.99\nShipping\n$7.95\nTotal\nUSD $14.94\nShip to 3105 Sandhurst Rd, Jacksonville FL 32277"
+check("page totals skip subtotal", actions.page_totals(summary), [1494])
+check("total above approval refused", "more than" in (actions.pay_check(summary, 899, "32277") or ""), True)
+check("total matches approval", actions.pay_check(summary, 1494, "32277"), None)
+check("wrong ZIP refused", "ZIP" in (actions.pay_check(summary, 1494, "60601") or ""), True)
+check("no total refused", "total" in (actions.pay_check("Payment", 1494) or ""), True)
 tap = actions.tap_events(60, 24)
 check("tap ends up", [e["eventType"] for e in tap], ["mouseMoved", "mouseReleased", "mousePressed", "mouseReleased"])
 check("tap point", (tap[-1]["x"], tap[-1]["y"], tap[-1]["button"]), (60, 24, "left"))

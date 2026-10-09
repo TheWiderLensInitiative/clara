@@ -1347,7 +1347,8 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
                                     "browser_use, go through checkout up to the payment step (guest checkout when possible; use their "
                                     "name, address and email from memory), read the exact total including shipping and tax, call "
                                     "pay_with_link, and once it's approved call browser_use with its spend_request id and the pay "
-                                    "action. Link asks the user to approve each purchase; never pay another way or type card details. "
+                                    "action. Never sign in to Shop Pay or another wallet and never press the order button yourself: "
+                                    "pick the plain credit card option so the card form shows. Link asks the user to approve each purchase; never pay another way or type card details. "
                                     "To find products, use shop_search first (Shopify stores: prices, store and a checkout link "
                                     "in one call), then open the chosen product's checkout_url with browser_use. "
                                     "Ship only to an address the user gave you or that's saved in your memory about them, copied exactly; "
@@ -1471,6 +1472,9 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
         store.expire_run_approvals(run_id)
         for job_id in await _job_ids() - jobs_before:  # jobs this run created report back into this chat
             store.set_job_conversation(job_id, cid)
+    for rid, info in list(_link_open.items()):   # the task ended without using an approved card: give the money back
+        if info["cid"] == cid and info["at"] >= run_started - 5:
+            await _link_cancel_unused(rid, "the purchase didn't finish")
     if completed and cid not in _stop_requested:
         _recipe_after_run(cid, recipe, recipe_state, tool_order, text, final)
     missing = _ungrounded(final, tools_used) if mail and completed and cid not in _stop_requested else None
@@ -1503,8 +1507,8 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     shop = store.setting(f"shop:{cid}")
     if shop and shop.get("at", 0) >= run_started - 5 and "shop_search" in tools_used:
         # product cards (like Muse): picture, name, price, store, rating and a Choose button under her reply
-        cards = [{k: p.get(k) for k in ("choice", "title", "price", "seller", "store", "image", "rating", "reviews", "url")}
-                 for p in shop["products"]]
+        cards = [{**{k: p.get(k) for k in ("choice", "title", "seller", "store", "image", "rating", "reviews", "url")},
+                  "price": f"{p.get('price')} + shipping"} for p in shop["products"]]
         meta.update({"kind": "products", "products": json.dumps(cards)})
         store.set_setting(f"shop:{cid}", None)
     msg = store.add_message(cid, "assistant", (final or "The task stream ended before completion could be confirmed. Please check the result before retrying.").strip(), route=route_name, run_id=run_id,
@@ -3625,6 +3629,27 @@ async def vault_answer(rid: str, body: VaultAnswer, dev=Depends(device)):
 
 # --- paying with Link: one-time cards, approved by the user in the Link app ------------------------------------------
 _link_cards_used: set = set()   # spend requests whose card was already handed to the browser (once only)
+_link_open: dict = {}           # approved but not yet used: spend id -> {cid, at, amount, ship_to}
+PURCHASE_CAP = int(os.environ.get("CLARA_PURCHASE_CAP_CENTS", "10000"))   # per purchase, unless the user raises it
+LINK_UNUSED_MINUTES = 20
+
+
+async def _link_expire(rid, after=LINK_UNUSED_MINUTES * 60):
+    """An approved one-time card nobody used gets canceled, so the money goes back (2026-10-08 one sat unused when the
+    checkout had switched to Shop Pay)."""
+    await asyncio.sleep(after)
+    await _link_cancel_unused(rid, "not used within 20 minutes")
+
+
+async def _link_cancel_unused(rid, why):
+    info = _link_open.pop(rid, None)
+    if info is None or rid in _link_cards_used:
+        return
+    await linkpay.cancel(rid)
+    store.add_activity(info["cid"], None, "purchase.canceled", None, f"{_cents(info['amount'])} · {rid} · {why}; the money goes back")
+    msg = store.add_message(info["cid"], "assistant", f"I canceled the unused Link card for {_cents(info['amount'])} ({why}), so that money "
+                            "goes back to your card. Nothing was ordered.", route="schedule")
+    bus.publish("notification", conversation_id=info["cid"], message=msg)
 
 
 class LinkPurchaseIn(BaseModel):
@@ -3635,6 +3660,8 @@ class LinkPurchaseIn(BaseModel):
     context: str
     items: list[dict] = []          # [{"name", "quantity", "unit_amount"}]
     ship_to: str = ""               # the delivery address used at checkout: shown to the user in the approval
+    subtotal_cents: Optional[int] = None
+    card_form_visible: bool = False  # the checkout shows an empty card-number form (not Shop Pay / a saved wallet card)
     shipping_cents: Optional[int] = None
     tax_cents: Optional[int] = None
     test: bool = False
@@ -3653,7 +3680,34 @@ async def internal_link_purchase(body: LinkPurchaseIn, ok=Depends(link)):
     if len(body.ship_to.strip()) < 8:
         return {"error": "ship_to is required: the delivery address you entered at checkout, exactly as entered (or 'pickup' / "
                          "'digital' when nothing is shipped). The user checks it before approving."}
+    if not body.card_form_visible:
+        return {"error": "First get the checkout to show an empty card form: if Shop Pay, Apple Pay, Google Pay, PayPal or a saved card "
+                         "is selected, switch the payment method to 'Credit card' / 'Debit or credit card' (don't sign in to any "
+                         "wallet). The Link card can only go into a card form; paying with a saved wallet would charge the user twice."}
+    cap = int(store.setting("purchase_cap_cents", PURCHASE_CAP))
+    if body.amount_cents > cap:
+        return {"error": f"That's over the user's per-purchase limit of {_cents(cap)}. Tell them the total and stop; they can raise the "
+                         "limit if they want to."}
+    try:   # a request Link would refuse never reaches the user's approval
+        linkpay.check_request(body.amount_cents, body.merchant_name.strip(), body.merchant_url.strip(), body.context.strip())
+    except linkpay.LinkError as e:
+        return {"error": str(e)}
     cid = body.conversation_id or _current_conversation()
+    # The user sees and OKs the whole breakdown in Clara before Link moves any money (2026-10-08: a $6.99 card became
+    # $14.94 with shipping, which they only learned after Link had charged them).
+    sub = body.subtotal_cents if body.subtotal_cents is not None else (
+        body.amount_cents - (body.shipping_cents or 0) - (body.tax_cents or 0) if body.shipping_cents is not None else None)
+    lines = ([f"Items: {_cents(sub)}"] if sub is not None else []) + \
+            ([f"Shipping: {_cents(body.shipping_cents)}"] if body.shipping_cents is not None else ["Shipping: not given"]) + \
+            ([f"Tax: {_cents(body.tax_cents)}"] if body.tax_cents is not None else []) + \
+            [f"TOTAL: {_cents(body.amount_cents)}", f"Ships to: {body.ship_to.strip()[:200]}", f"Store: {body.merchant_name} ({body.merchant_url})"]
+    if sub is not None and body.shipping_cents and body.shipping_cents > sub:
+        lines.append("Note: shipping costs more than the item.")
+    names = ", ".join(str(i.get("name", ""))[:50] for i in body.items[:3]) or body.merchant_name
+    choice = await _phone_approval(f"🛒 Buy {names} for {_cents(body.amount_cents)} at {body.merchant_name}", "\n".join(lines),
+                                   f"purchase:{body.merchant_url}:{body.amount_cents}", choices=("once", "deny"), conversation_id=cid)
+    if choice != "once":
+        return {"status": "declined", "note": "The user didn't approve this total. Tell them and stop; don't create a Link payment."}
     items = [f"name:{str(i.get('name', 'Item'))[:80].replace(',', ' ')},quantity:{int(i.get('quantity') or 1)}"
              + (f",unit_amount:{int(i['unit_amount'])}" if i.get("unit_amount") else "") for i in body.items[:10]]
     totals = ([f"type:shipping,display_text:Shipping,amount:{body.shipping_cents}"] if body.shipping_cents is not None else []) + \
@@ -3665,7 +3719,9 @@ async def internal_link_purchase(body: LinkPurchaseIn, ok=Depends(link)):
     except linkpay.LinkError as e:
         return {"error": f"Link refused the request: {e}"}
     what = f"{_cents(body.amount_cents)} at {body.merchant_name}" + (" (test, no charge)" if body.test else "")
-    card_msg = store.add_message(cid, "assistant", f"💳 **Approve in Link:** {what}.\n📦 Ships to: **{body.ship_to.strip()[:200]}**\n"
+    breakdown = " · ".join(l for l in lines if not l.startswith(("Ships to", "Store", "TOTAL")))
+    card_msg = store.add_message(cid, "assistant", f"💳 **Approve in Link:** {what}" + (f" ({breakdown})" if breakdown else "") +
+                                 f".\n📦 Ships to: **{body.ship_to.strip()[:200]}**\n"
                                  "Check the address, then approve in Link (it shows the store, the items and the total). "
                                  "Clara waits for your answer.", route="share",
                                  meta={"kind": "share", "url": req["approval_url"], "label": "Approve in Link"})
@@ -3679,7 +3735,11 @@ async def internal_link_purchase(body: LinkPurchaseIn, ok=Depends(link)):
         return {"error": f"Couldn't check the purchase with Link: {e}"}
     st = d.get("status")
     store.add_activity(cid, None, f"purchase.{st}", None, f"{what} · {req['id']}")
+    if st == "pending_approval":   # she was stopped while waiting: don't leave a request the user might approve later
+        await linkpay.cancel(req["id"])
     if st == "approved":
+        _link_open[req["id"]] = {"cid": cid, "at": time.time(), "amount": body.amount_cents, "ship_to": body.ship_to.strip()}
+        asyncio.create_task(_link_expire(req["id"]))
         return {"status": "approved", "spend_request": req["id"], "amount": _cents(body.amount_cents),
                 "next": "Pay with browser_use: give it the checkout page and this spend_request id, and tell it to use the pay "
                         "action (it fills the one-time card and places the order in one step). Never type card details."}
@@ -3729,7 +3789,8 @@ async def internal_shop_search(body: ShopSearchIn, ok=Depends(link)):
         store.set_setting(f"shop:{body.conversation_id}", {"at": time.time(), "products": found[:8]})
         store.set_setting(f"shop_last:{body.conversation_id}", {"at": time.time(), "products": found[:8]})   # for the choice
     return {"ships_to_zip": zip_code or "(unknown)", "products": found,
-            "note": "Prices are before shipping and tax (the checkout shows those). Show the user a short numbered list "
+            "note": "Prices are before shipping and tax (the checkout shows those; on cheap items shipping can cost more "
+                    "than the item, so prefer a store you've seen free or cheap shipping from when prices are close). Show the user a short numbered list "
                     "(name, price, store) and let them pick. To buy, open the product's checkout_url with browser_use, "
                     "fill in their name, email and saved address, read the total, then pay_with_link and the pay action."}
 
@@ -3738,18 +3799,33 @@ class LinkCardIn(BaseModel):
     spend_request: str
 
 
+@app.post("/internal/link/expect")
+async def internal_link_expect(body: LinkCardIn, ok=Depends(link)):
+    """What the pay step checks on the checkout before the card is fetched: the approved total and the ship-to ZIP."""
+    info = _link_open.get(body.spend_request)
+    if not info or body.spend_request in _link_cards_used:
+        return {"error": "that Link card isn't open any more (used, canceled or never approved); start a new pay_with_link"}
+    zips = re.findall(r"\b\d{5}\b", info.get("ship_to", ""))
+    return {"approved_cents": info["amount"], "ship_zip": zips[-1] if zips else ""}
+
+
 @app.post("/internal/link/card")
 async def internal_link_card(body: LinkCardIn, ok=Depends(link)):
     """For the browser plugin's pay step only (Guardian blocks Clara from calling it herself). Each card once."""
     if not re.fullmatch(r"lsrq_[A-Za-z0-9]+", body.spend_request) or body.spend_request in _link_cards_used:
         return {"error": "This purchase's card was already used or isn't valid. Ask the user to approve a new one."}
+    if body.spend_request not in _link_open:   # only a card the user approved in this run and that wasn't canceled
+        return {"error": "This purchase's card isn't open (canceled or never approved here). Start a new pay_with_link."}
     try:
         c = await linkpay.card(body.spend_request)
     except linkpay.LinkError as e:
         return {"error": f"Link didn't give a card: {e}"}
     _link_cards_used.add(body.spend_request)
+    opened = _link_open.pop(body.spend_request, {})
     store.add_activity(None, None, "purchase.card", None, f"one-time {c.get('brand', 'card')} •••• {str(c['number'])[-4:]} filled in · {body.spend_request}")
-    return {"card": c}
+    zips = re.findall(r"\b\d{5}\b", opened.get("ship_to", ""))
+    # what the pay step checks on the page before filling: the total isn't above what was approved, the address matches
+    return {"card": c, "approved_cents": opened.get("amount"), "ship_zip": zips[-1] if zips else ""}
 
 
 class LinkOutcomeIn(BaseModel):

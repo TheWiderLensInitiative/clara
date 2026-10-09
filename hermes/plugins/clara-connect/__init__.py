@@ -165,9 +165,12 @@ PAY_SCHEMA = {
         "items": {"type": "array", "items": {"type": "object", "properties": {"name": S, "quantity": {"type": "integer"},
                   "unit_amount": {"type": "integer", "description": "cents"}}}},
         "ship_to": {"type": "string", "description": "the delivery address you entered at checkout, exactly as entered; the user checks it"},
+        "subtotal_cents": {"type": "integer", "description": "items before shipping and tax, from the checkout"},
+        "card_form_visible": {"type": "boolean", "description": "true only if the checkout now shows an empty card-number form "
+                              "(switch away from Shop Pay / Apple Pay / a saved card first)"},
         "shipping_cents": {"type": "integer"}, "tax_cents": {"type": "integer"},
         "test": {"type": "boolean", "description": "Link test mode: a test card, no charge. Only when the user says it's a test."},
-    }, "required": ["amount_cents", "merchant_name", "merchant_url", "context", "ship_to"]},
+    }, "required": ["amount_cents", "merchant_name", "merchant_url", "context", "ship_to", "shipping_cents", "card_form_visible"]},
 }
 
 

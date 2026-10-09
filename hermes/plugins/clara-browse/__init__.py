@@ -161,6 +161,16 @@ def _snapshot_text(result) -> str:
 def _pay(task_id, session_id, spend_request, fields, submit, submit_name, url):
     """Fill the approved one-time Link card into the checkout and press the order button, in one step: the model never
     sees the page while the card is on it. If the order doesn't go through, the card fields are emptied again."""
+    try:   # the page must match what the user approved before the card is even fetched
+        page = str((_browser(task_id, "eval", ["document.body?.innerText?.slice(0,20000)"], timeout=10).get("data") or {}).get("result") or "")
+    except Exception:
+        page = ""
+    expect = _link("/internal/link/expect", {"spend_request": spend_request}, timeout=20)
+    if expect.get("error"):
+        return {"success": False, "error": expect["error"]}
+    why = actions.pay_check(page, expect.get("approved_cents"), expect.get("ship_zip") or "")
+    if why:
+        return {"success": False, "error": why}
     got = _link("/internal/link/card", {"spend_request": spend_request}, timeout=60)
     card = got.get("card")
     if not card:
@@ -951,7 +961,10 @@ def _drive(goal, start_url, task_id, session_id, run=None):
             if not line:
                 history.append("pay needs submit: the ref of the button that places the order"); continue
             if not ({"number", "cvc"} <= set(fields) and ("exp" in fields or {"exp_month", "exp_year"} <= set(fields))):
-                history.append("pay: there's no card form on this page yet; go to the step where the card number goes"); continue
+                wallet = actions.SAVED_WALLET.search(snapshot)
+                history.append("pay: there's no card form on this page" + (
+                    f" ({wallet.group(0)!r} is selected: choose the 'Credit card' payment option instead; never sign in to a wallet)"
+                    if wallet else " yet; go to the step where the card number goes")); continue
             submit_name = (re.search(r'"([^"\n]*)"', line) or [None, "the order button"])[1]
             answer = _ok(f'place the order: "{submit_name}" (pays with the one-time Link card you approved)', url, session_id,
                          {"action": "click", "ref": submit}, snapshot)

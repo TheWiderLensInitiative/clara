@@ -308,6 +308,38 @@ def tap_events(x: float, y: float) -> list:
     return events
 
 
+# Buttons that place an order and charge money: only the pay action presses them (with the one-time Link card the user
+# approved). A plain click there could pay with a saved wallet (Shop Pay, a stored card) the user never approved.
+ORDER_BUTTON = re.compile(r"^\s*(pay now|pay \$|place (my |your )?order|complete (my |your )?(order|purchase)|submit (my |your )?order|"
+                          r"confirm (and pay|order|purchase)|buy now with|pay with shop|checkout with shop|shop ?pay\b)", re.I)
+SAVED_WALLET = re.compile(r"shop ?pay|apple pay|google pay|paypal|•{2,}\s?\d{4}|\*{2,}\s?\d{4}|ending in \d{4}", re.I)
+_TOTAL = re.compile(r"(?<![a-z])total\b(?! savings)[^$\d]{0,40}\$\s?([\d,]+\.\d{2})", re.I)
+
+
+def page_totals(text: str) -> list:
+    """Every "Total ... $X.XX" on the checkout page in cents (not subtotals), so the pay step can refuse a total above
+    what the user approved."""
+    out = []
+    for m in _TOTAL.finditer(text or ""):
+        if text[max(0, m.start() - 3):m.start()].lower().endswith("sub"):
+            continue
+        out.append(int(round(float(m.group(1).replace(",", "")) * 100)))
+    return out
+
+
+def pay_check(text: str, approved_cents, ship_zip: str = ""):
+    """Why the order must not be placed on this page, or None. Checked before the card is fetched."""
+    totals = page_totals(text)
+    if not totals:
+        return "couldn't read the order total on the checkout page; scroll to the order summary and try again"
+    if approved_cents and max(totals) > approved_cents:
+        return (f"the checkout total (${max(totals) / 100:,.2f}) is more than the ${approved_cents / 100:,.2f} the user approved; "
+                "don't pay. Tell the user the new total")
+    if ship_zip and ship_zip not in (text or ""):
+        return f"the checkout doesn't show the user's ZIP {ship_zip}: check the delivery address before paying"
+    return None
+
+
 def veto(action: dict, snapshot: str):
     """A hard stop for this step, or None when it may run. Passwords and card numbers never get typed."""
     kind = action.get("action")
@@ -323,6 +355,12 @@ def veto(action: dict, snapshot: str):
             return "That's a human check. Hand the page to the user with help; never solve it yourself."
         if kind == "drag" and target.get("role") in SLIDER_ROLES:
             return "That's a slider: use set with the setting you want instead of dragging it."
+    if kind in ("click", "click_at", "press"):
+        name = control(_line(snapshot, action.get("ref") or ""))[1] if kind == "click" else \
+            str((action.get("_target") or {}).get("name") or "")
+        if name and ORDER_BUTTON.search(name):
+            return ("That button places the order and charges money. Orders are only placed with the pay action, after "
+                    "pay_with_link: make sure the card form shows (pick 'Credit card', not Shop Pay or a saved card), then use pay.")
     if kind == "set" and control(_line(snapshot, action.get("ref") or ""))[0] not in SLIDER_ROLES:
         return "set is only for sliders. Click options, buttons and checkboxes instead."
     if kind == "fill":
