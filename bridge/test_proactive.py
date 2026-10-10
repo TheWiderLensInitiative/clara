@@ -38,7 +38,7 @@ check("weekly right day", p.goal_due(w, D(27, 19, 5)), True)            # Sunday
 check("parse", p.parse_suggestions('```json\n{"message": "Morning!", "suggestions": ["Remind me at 3", "Plan dinner", "x", "y"]}\n```'),
       ("Morning!", ["Remind me at 3", "Plan dinner", "x"]))
 check("parse junk", p.parse_suggestions("sorry"), (None, []))
-check("actions", p.parse_actions('```json\n{"actions": ["Draft a reply to Sam saying Thursday works.", "Add the Vercel trial end (Oct 8) to my calendar", "draft a reply to sam saying thursday works"]}\n```'),
+check("actions", p.parse_actions('```json\n{"actions": ["Draft a reply to Sam saying Thursday works.", "Add the Vercel trial end (Oct 8) to my calendar", "draft a reply to sam saying thursday works"]}\n```', today=dt.date(2026, 10, 6)),   # fixed day: Oct 8 is still ahead (the test once went stale)
       ["Draft a reply to Sam saying Thursday works", "Add the Vercel trial end (Oct 8) to my calendar"])
 check("actions drop risky", p.parse_actions('{"actions": ["Pay the $20 Vercel bill", "Delete the Amazon email", "Wire $500 to the contractor", "Remind me Thursday at 9 to file the reinstatement"]}'),
       ["Remind me Thursday at 9 to file the reinstatement"])

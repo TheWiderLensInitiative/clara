@@ -775,6 +775,14 @@ def _ready(task_id):
 
 
 def _prepare(task_id):
+    # Tabs left over from earlier tasks confuse the next one (it switched to an old tab and looped, 2026-10-09):
+    # keep only the tab she's on, so a follow-up still continues from the same page.
+    try:
+        for t in _tabs(task_id):
+            if not t.get("active") and re.fullmatch(r"t\d+", str(t.get("tabId") or "")):
+                _browser(task_id, "tab", ["close", t["tabId"]], timeout=10)
+    except Exception as e:
+        logger.info("browser_use: couldn't close old tabs: %s", e)
     _browser(task_id, "set", ["viewport", "1280", "800"], timeout=20)
     _browser(task_id, "stream", ["enable", "--port", STREAM_PORT], timeout=15)
 
@@ -838,6 +846,7 @@ def _drive(goal, start_url, task_id, session_id, run=None):
     repeated = None
     repeat_count = 0
     trail = []   # each step by what it touched (name or address, not its changing ref), to catch back-and-forth loops
+    cycle_warned = False
     previous_progress = None
     approved = set()   # (url, label) the user already OKed during this task
     rejected = 0       # times the checker said "not done yet"
@@ -944,6 +953,15 @@ def _drive(goal, start_url, task_id, session_id, run=None):
         step_key = action["action"] + " " + (action.get("_name") or re.sub(r"[?#].*", "", str(action.get("url") or ""))
                                              or (re.search(r'"([^"\n]*)"', actions._line(snapshot, action.get("ref", ""))) or [None, ""])[1]
                                              or action.get("ref", ""))
+        if actions.cycling(trail[-8:] + [step_key]) and not cycle_warned:
+            # the first time, say so and let her change course (2026-10-09: stopping at once broke a task she used to
+            # recover from on her own); the second time, stop
+            cycle_warned = True
+            trail.clear()
+            history.append(f"you're going back and forth ({'; '.join(history[-4:])}) without getting anywhere: don't repeat "
+                           "those steps. Look at the page again and try something different (another control, scroll, or a "
+                           "tab that's already open)")
+            continue
         if actions.cycling(trail[-8:] + [step_key]):
             return {"success": False, "url": url,
                     "summary": f"I was going back and forth between the same steps without getting anywhere, so I stopped. "
