@@ -269,7 +269,7 @@ ACTION_TOOLS = {"email_search", "email_read", "calendar_events", "calendar_free"
 
 # Grounding: in an email/calendar conversation, an answer that reports emails or events must come from this run's
 # tools. Bonsai once listed a made-up inbox (a GitHub PR, a LinkedIn DM) after only checking the calendar.
-EMAIL_TOOLS = {"email_search", "email_read", "email_draft", "email_send"}
+EMAIL_TOOLS = {"email_search", "email_read", "email_draft", "email_send", "email_mark"}
 CALENDAR_TOOLS = {"calendar_events", "calendar_free", "calendar_add", "calendar_update", "calendar_delete"}
 MAIL_TALK = re.compile(r"\b(e-?mails?|inbox|gmail|outlook|unread|calendar|meetings?|appointments?|events?|schedule|am i free|"
                        r"free (time|slots?)|morning brief|digest)\b", re.I)
@@ -1436,7 +1436,8 @@ async def _agent(cid, history, text, route_name, coding=False, voice=False, effo
     if mail:
         names = " and ".join("Google (Gmail)" if p == "google" else "Microsoft (Outlook)" for p in mail)
         payload["instructions"] += (f" The user's {names} account{'s are' if len(mail) > 1 else ' is'} connected: for their email use email_search / email_read / email_draft / "
-                                    "email_send, and for their calendar use calendar_events / calendar_free / calendar_add / calendar_update / "
+                                    "email_send / email_mark (mark read or unread, by ids or a whole query like 'is:unread': "
+                                    "never use connection_call or the browser for that), and for their calendar use calendar_events / calendar_free / calendar_add / calendar_update / "
                                     "calendar_delete" + (" (searches and calendars cover both accounts; pass account='outlook' or "
                                     "'gmail' to pick one, e.g. which address to send from)" if len(mail) > 1 else "") +
                                     ". To list or sum up emails, work from email_search's results (sender, subject, date, snippet): "
@@ -2188,6 +2189,7 @@ async def connector_call(body: ConnectorCall, ok=Depends(link)):
         _approval_context.reset(token)
 
 
+MARK_MAX = 10000   # emails one email_mark call may change
 MAIL_ACCOUNTS = ("google", "microsoft")   # the services behind email_* and calendar_*
 _ACCOUNT_WORDS = {"google": ("google", "gmail"), "microsoft": ("microsoft", "outlook", "hotmail", "live", "office", "365")}
 
@@ -2252,6 +2254,30 @@ async def _connector_call(body):
             events_fn = lambda st, s, e, limit=50, all_pages=True: _merged_events(st, s, e, None, limit, all_pages, accounts)
             return {"free": await connectors.free_slots(store, str(a.get("day") or dt.date.today().isoformat()), int(a.get("minutes") or 60),
                                                         events_fn=events_fn)}
+        if act == "email_mark":   # marking read/unread is easy to undo: no approval
+            read = a.get("read", True) not in (False, "false", "unread")
+            limit = max(1, min(int(a.get("limit") or 1000), MARK_MAX))
+            given = [str(i) for i in (a.get("ids") or []) if str(i).strip()][:limit]
+            if not given and not str(a.get("query") or "").strip():
+                return {"error": "Give ids (from email_search) or a query like 'is:unread' or 'is:unread from:dropbox'."}
+            named = _mail_account(a) if a.get("account") else None
+            if named and named not in _mail_accounts():
+                return _not_connected(named)
+            marked = {}
+            for p in ([named] if named else _mail_accounts()):
+                ms_ = p == "microsoft"
+                mine = [i for i in given if outlook.is_outlook(i) == ms_]
+                if not given:
+                    query = str(a["query"])
+                    if read and "is:unread" not in query:
+                        query += " is:unread"
+                    mine = await (outlook.ids if ms_ else connectors.gmail_ids)(store, query, limit)
+                if mine:
+                    marked[connectors.PROVIDERS[p]["name"]] = await (outlook.mark if ms_ else connectors.gmail_mark)(store, mine, read)
+            total = sum(marked.values())
+            store.add_activity(None, None, "email.marked", None, f"{total} email(s) marked {'read' if read else 'unread'}: {marked}")
+            return {"marked": marked, "total": total, "as": "read" if read else "unread",
+                    **({"note": f"Stopped at {limit}; call again for more."} if any(v >= limit for v in marked.values()) else {})}
         item = a.get("id") or a.get("reply_to_id") or a.get("event_id")
         provider = _mail_account(a, item)
         if provider not in _mail_accounts():

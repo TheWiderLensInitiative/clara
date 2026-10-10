@@ -95,6 +95,15 @@ async def tools():
     r = await call("email_read", id=first)
     body = (r.get("email") or {}).get("body", "")
     check("read an email whose id has / + = in it, as text", "Invoice 77" in body and r["email"]["message_id"] == "<m1@vendor>", r)
+    r = await call("email_mark", ids=[first])
+    check("mark read: an id with / + = is encoded, no approval asked", r.get("total") == 1, r)
+    r = await call("email_search", query="is:unread")
+    check("it's read now", not (r.get("emails") or []), r)
+    r = await call("email_mark", ids=[first], read=False)
+    r2 = await call("email_mark", query="is:unread")
+    check("mark unread, then everything unread by query", r.get("total") == 1 and r2.get("total") == 1 and r2.get("as") == "read", (r, r2))
+    check("nothing to mark without ids or a query", "error" in await call("email_mark"))
+    await call("email_mark", ids=[first], read=False)   # the checks below expect it unread again
     r = await call("email_read", id=next(e["id"] for e in (await call("email_search", query="lunch"))["emails"]))
     check("HTML email comes back as text", r.get("email", {}).get("body", "").strip() == "Want to grab lunch Thursday?", r)
 

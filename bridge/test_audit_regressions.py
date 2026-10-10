@@ -970,6 +970,27 @@ class BridgeTests(unittest.IsolatedAsyncioTestCase):
             await app.connector_disconnect('link',dev={'id':'p','name':'Phone'})
             self.assertFalse(app._connector_view('link')['connected'])
 
+    async def test_email_mark_marks_a_whole_gmail_query_in_batches(self):
+        calls=[]
+        async def fake_api(store,provider,method,url,**kw):
+            calls.append((method,url.rsplit('/',1)[-1],kw))
+            if method=='GET':   # 1200 unread over three pages
+                tok=(kw.get('params') or {}).get('pageToken')
+                page={None:('p2',range(0,500)),'p2':('p3',range(500,1000)),'p3':(None,range(1000,1200))}[tok]
+                return {'messages':[{'id':f'g{i}'} for i in page[1]],**({'nextPageToken':page[0]} if page[0] else {})}
+            return {}
+        with patch.object(app,'_mail_accounts',return_value=['google']),patch.object(app.connectors,'api',fake_api),\
+             patch.object(app,'_phone_approval',AsyncMock(side_effect=AssertionError('marking read never asks'))):
+            r=await app._connector_call(app.ConnectorCall(action='email_mark',args={'query':'from:dropbox','limit':5000}))
+        self.assertEqual(r['total'],1200)
+        lists=[c for c in calls if c[0]=='GET'];mods=[c for c in calls if c[1]=='batchModify']
+        self.assertEqual(lists[0][2]['params']['q'],'from:dropbox is:unread')   # only what's unread
+        self.assertEqual([len(m[2]['json']['ids']) for m in mods],[1000,200]);self.assertEqual(mods[0][2]['json']['removeLabelIds'],['UNREAD'])
+        calls.clear()
+        with patch.object(app,'_mail_accounts',return_value=['google']),patch.object(app.connectors,'api',fake_api):
+            r=await app._connector_call(app.ConnectorCall(action='email_mark',args={'ids':['g7'],'read':False}))
+        self.assertEqual((r['total'],r['as']),(1,'unread'));self.assertEqual(calls[0][2]['json'],{'ids':['g7'],'addLabelIds':['UNREAD']})
+
     def test_shopping_requests_always_reach_the_agent(self):
         # Laya sent this to chat (0.95) on 2026-10-09, so Clara said she couldn't shop
         for t in ("Hey Clara, I'm running low on body wash. Can you find me a decent cheap one and order it?",

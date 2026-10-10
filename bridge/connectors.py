@@ -464,6 +464,30 @@ async def gmail_search(store, query="", limit=10):
     return list(await asyncio.gather(*(one(ref) for ref in lst.get("messages", []))))
 
 
+async def gmail_ids(store, query="", limit=500) -> list:
+    """Ids of every email matching a Gmail query (up to limit), for marking many at once."""
+    out, token = [], None
+    while len(out) < limit:
+        params = {"q": query or "in:inbox", "maxResults": min(500, limit - len(out))}
+        if token:
+            params["pageToken"] = token
+        r = await api(store, "google", "GET", f"{GMAIL}/messages", params=params)
+        out += [m["id"] for m in r.get("messages", [])]
+        token = r.get("nextPageToken")
+        if not token:
+            break
+    return out[:limit]
+
+
+async def gmail_mark(store, msg_ids, read=True) -> int:
+    """Mark emails read or unread, up to 1000 per request."""
+    ids = [str(i) for i in msg_ids]
+    for start in range(0, len(ids), 1000):
+        await api(store, "google", "POST", f"{GMAIL}/messages/batchModify",
+                  json={"ids": ids[start:start + 1000], ("removeLabelIds" if read else "addLabelIds"): ["UNREAD"]})
+    return len(ids)
+
+
 async def gmail_read(store, msg_id):
     m = await api(store, "google", "GET", f"{GMAIL}/messages/{msg_id}", params={"format": "full"})
     return summarize_message(m, with_body=True)

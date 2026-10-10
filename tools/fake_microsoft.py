@@ -166,6 +166,23 @@ def delete_event(eid: str, request: Request):
     check(request); events.pop(eid); return Response(status_code=204)
 
 
+@app.post("/v1.0/$batch")
+async def batch(request: Request):
+    """JSON batching: up to 20 requests; here only marking mail read/unread. Inner urls must have their ids encoded."""
+    check(request); body = await request.json(); out = []
+    from urllib.parse import unquote
+    if len(body.get("requests", [])) > 20:
+        raise HTTPException(400, "Too many requests in a batch")
+    for r in body["requests"]:
+        mid = unquote(r["url"].removeprefix("/me/messages/"))
+        if r["method"] != "PATCH" or "/" in r["url"].removeprefix("/me/messages/") or mid not in mails:
+            out.append({"id": r["id"], "status": 400, "body": {"error": {"code": "ErrorInvalidIdMalformed", "message": "Id is malformed."}}})
+            continue
+        mails[mid]["isRead"] = bool(r["body"]["isRead"])
+        out.append({"id": r["id"], "status": 200, "body": {"id": mid}})
+    return {"responses": out}
+
+
 @app.get("/_state")
 def state():
     return {**log, "events": list(events.values())}

@@ -132,6 +132,36 @@ async def search(store, query="", limit=10):
     return [summarize_message(m) for m in found[:limit]]
 
 
+async def ids(store, query="", limit=500) -> list:
+    """Ids of every email matching a Gmail-syntax query (up to limit), for marking many at once."""
+    folder, filters, kql, checks = to_graph(query)
+    path = f"/me/mailFolders/{folder}/messages" if folder else "/me/messages"
+    if kql:
+        params = {"$search": '"' + kql.replace('"', "") + '"', "$top": 100, "$select": "id,isRead,receivedDateTime,flag,hasAttachments,importance,inferenceClassification"}
+    else:
+        params = {"$filter": " and ".join(filters), "$orderby": "receivedDateTime desc", "$top": 100, "$select": "id,isRead,receivedDateTime"}
+    out, url = [], path
+    while url and len(out) < limit:
+        r = await _api(store, "GET", url, params=params)
+        out += [PREFIX + m["id"] for m in r.get("value", []) if not kql or all(c(m) for c in checks)]
+        url, params = r.get("@odata.nextLink"), None   # the next link carries the query
+    return out[:limit]
+
+
+async def mark(store, msg_ids, read=True) -> int:
+    """Mark emails read or unread, 20 per Graph $batch request. Outlook ids contain / and +, so each one is encoded here
+    (Clara once spent ten minutes failing to do that by hand through connection_call)."""
+    done = 0
+    raw = [str(i)[len(PREFIX):] if is_outlook(i) else str(i) for i in msg_ids]
+    for start in range(0, len(raw), 20):
+        chunk = raw[start:start + 20]
+        r = await _api(store, "POST", "/$batch", json={"requests": [
+            {"id": str(n), "method": "PATCH", "url": f"/me/messages/{quote(m, safe='')}", "body": {"isRead": bool(read)},
+             "headers": {"Content-Type": "application/json"}} for n, m in enumerate(chunk)]})
+        done += sum(1 for x in r.get("responses", []) if 200 <= int(x.get("status", 500)) < 300)
+    return done
+
+
 async def read(store, msg_id):
     m = await _api(store, "GET", f"/me/messages/{_raw(msg_id)}", headers=TEXT,
                    params={"$select": LIST_FIELDS + ",body,ccRecipients,internetMessageId"})
